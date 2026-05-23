@@ -1,0 +1,11 @@
+{
+  "name": "ai-capability-diagnosis",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "track1:backend": "node scripts/track1-backend-evaluate.js",
+    "track1:backend:sample": "node scripts/track1-backend-evaluate.js examples/track1/sample_success.json --questionnaire examples/track1/sample_questionnaire_answers.json",
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "evidence_mode": "visible_history",
+  "evidence_notice": "Assessment based on repeated observable interaction patterns.",
+  "signals": {
+    "A": "high",
+    "B": "low",
+    "C": "medium",
+    "D": "high"
+  },
+  "confidence": {
+    "A": "high",
+    "B": "medium",
+    "C": "medium",
+    "D": "high"
+  },
+  "notes": {
+    "A": "Frequently integrates AI into ongoing task workflows.",
+    "B": "Uses a task-focused tone with limited emotional or social engagement.",
+    "C": "Builds on useful AI outputs while checking details as normal quality control.",
+    "D": "Consistently specifies goals, structure, formatting, and revision directions."
+  },
+  "verdict": "A structured user who treats AI as an active productivity tool.",
+  "tags": ["workflow-heavy", "task-focused", "directive"]
+}
