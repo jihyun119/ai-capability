@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/track2/submit", "destination": "/api/track2/submit" },
+    { "source": "/api/track2/:resultId", "destination": "/api/track2/[resultId]" }
+  ]
+}
