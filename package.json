@@ -7,6 +7,7 @@
     "track1:backend": "node scripts/track1-backend-evaluate.js",
     "track1:backend:sample": "node scripts/track1-backend-evaluate.js examples/track1/sample_success.json --questionnaire examples/track1/sample_questionnaire_answers.json",
     "track2:test": "node scripts/track2-test-scorer.js",
+    "track2:e2e": "node scripts/track2-e2e-test.js",
     "test": "node --test"
   },
   "dependencies": {

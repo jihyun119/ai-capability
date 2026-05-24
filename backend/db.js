@@ -6,6 +6,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// ── 응시자 생성 ───────────────────────────────────────────────────────────────
+
+export async function createRespondent(nickname) {
+  const accessToken = randomUUID().replace(/-/g, "");
+
+  const { data, error } = await supabase
+    .from("respondents")
+    .insert({ nickname, access_token: accessToken })
+    .select("id, nickname, access_token")
+    .single();
+
+  if (error || !data) throw new Error(`응시자 생성 실패: ${error?.message}`);
+  return data;
+}
+
 // ── 응시자 검증 ───────────────────────────────────────────────────────────────
 
 export async function validateRespondent(respondentId, accessToken) {
