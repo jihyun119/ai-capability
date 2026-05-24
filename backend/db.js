@@ -1,97 +1,95 @@
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-/**
- * Track 2 결과를 DB에 저장
- */
-export async function saveTrack2Result({ resultId, answers, freeText, scoringResult, feedbackSummary, respondentInfo = {} }) {
-  const { axes, total, grade, strengths, weaknesses } = scoringResult;
-  const ax = Object.fromEntries(axes.map((a) => [a.key, a]));
+// ── 응시자 검증 ───────────────────────────────────────────────────────────────
 
-  const record = {
-    result_id: resultId,
-    track: "track2",
-    version: "track2-v1",
-    status: "success",
+export async function validateRespondent(respondentId, accessToken) {
+  const { data, error } = await supabase
+    .from("respondents")
+    .select("id, nickname, access_token")
+    .eq("id", respondentId)
+    .single();
 
-    // respondent_info
-    nickname:   respondentInfo.nickname   || null,
-    gender:     respondentInfo.gender     || null,
-    birth_year: respondentInfo.birthYear  || null,
+  if (error || !data) throw new Error("응시자를 찾을 수 없습니다.");
+  if (data.access_token !== accessToken) throw new Error("access_token이 일치하지 않습니다.");
 
-    // mc_raw_answers
-    q1_answer: answers.Q1 || null,
-    q2_answer: answers.Q2 || null,
-    q3_answer: answers.Q3 || null,
-    q4_answer: answers.Q4 || null,
+  await supabase.from("respondents")
+    .update({ last_seen_at: new Date().toISOString() })
+    .eq("id", respondentId);
 
-    // mc_scores (정규화된 값)
-    mc_score_task_clarity: ax.task_clarity?.mcNormalized    ?? null,
-    mc_score_context:      ax.context_provision?.mcNormalized ?? null,
-    mc_score_role:         ax.role_assignment?.mcNormalized  ?? null,
-    mc_score_format:       ax.output_format?.mcNormalized    ?? null,
-    mc_score_iteration:    ax.iteration?.mcNormalized        ?? null,
-    mc_score_critical:     ax.critical_review?.mcNormalized  ?? null,
-
-    // prompt_input
-    free_text: freeText,
-
-    // prompt_llm_evidence (규칙 기반 추출)
-    evidence_task_clarity: ax.task_clarity?.evidence    ?? null,
-    evidence_context:      ax.context_provision?.evidence ?? null,
-    evidence_role:         ax.role_assignment?.evidence  ?? null,
-    evidence_format:       ax.output_format?.evidence    ?? null,
-    evidence_iteration:    ax.iteration?.evidence        ?? null,
-    evidence_critical:     ax.critical_review?.evidence  ?? null,
-
-    // prompt_scores
-    prompt_score_task_clarity: ax.task_clarity?.essayScore    ?? null,
-    prompt_score_context:      ax.context_provision?.essayScore ?? null,
-    prompt_score_role:         ax.role_assignment?.essayScore  ?? null,
-    prompt_score_format:       ax.output_format?.essayScore    ?? null,
-    prompt_score_iteration:    ax.iteration?.essayScore        ?? null,
-    prompt_score_critical:     ax.critical_review?.essayScore  ?? null,
-
-    // final_scores
-    score_task_clarity: ax.task_clarity?.finalScore    ?? null,
-    score_context:      ax.context_provision?.finalScore ?? null,
-    score_role:         ax.role_assignment?.finalScore  ?? null,
-    score_format:       ax.output_format?.finalScore    ?? null,
-    score_iteration:    ax.iteration?.finalScore        ?? null,
-    score_critical:     ax.critical_review?.finalScore  ?? null,
-    total_score: total,
-
-    // final_result
-    grade,
-    strength_1:    strengths[0] || null,
-    strength_2:    strengths[1] || null,
-    weakness_1:    weaknesses[0] || null,
-    weakness_2:    weaknesses[1] || null,
-    feedback_text: feedbackSummary || null,
-
-    created_at: new Date().toISOString()
-  };
-
-  const { error } = await supabase.from("track2_results").insert(record);
-  if (error) throw new Error(`DB 저장 실패: ${error.message}`);
-
-  return resultId;
+  return data;
 }
 
-/**
- * resultId로 Track 2 결과 조회
- */
-export async function getTrack2Result(resultId) {
+// ── Track 2 결과 저장 ─────────────────────────────────────────────────────────
+
+export async function saveTrack2Result({ respondentId, nicknameSnapshot, answers, scoringResult, feedbackSummary }) {
+  const { axes, total, grade, strengths, weaknesses } = scoringResult;
+  const resultId = randomUUID();
+  const shareSlug = generateSlug();
+
+  const mcScores        = Object.fromEntries(axes.map((ax) => [ax.key, ax.mcNormalized]));
+  const extractedFeatures = Object.fromEntries(axes.map((ax) => [ax.key, { evidence: ax.evidence, frequency: ax.freqWord }]));
+  const promptScores    = Object.fromEntries(axes.map((ax) => [ax.key, ax.essayScore]));
+  const finalScores     = Object.fromEntries(axes.map((ax) => [ax.key, ax.finalScore]));
+
+  const { error } = await supabase.from("track2_results").insert({
+    result_id:            resultId,
+    respondent_id:        respondentId,
+    nickname_snapshot:    nicknameSnapshot,
+    version:              "track2-v1",
+    status:               "success",
+    questionnaire_version: "track2-4-v1",
+    mc_raw_answers:       { Q1: answers.Q1, Q2: answers.Q2, Q3: answers.Q3, Q4: answers.Q4 },
+    mc_scores:            mcScores,
+    extracted_features:   extractedFeatures,
+    prompt_scores:        promptScores,
+    final_scores:         finalScores,
+    total_score:          total,
+    grade,
+    feedback:             { strengths, weaknesses, summary: feedbackSummary },
+    share_slug:           shareSlug,
+    created_at:           new Date().toISOString()
+  });
+
+  if (error) throw new Error(`track2_results 저장 실패: ${error.message}`);
+
+  // diagnosis_answers 저장 (Q1~Q4)
+  const diagnosisRows = Object.entries(answers).map(([qKey, answer]) => ({
+    respondent_id:        respondentId,
+    result_id:            resultId,
+    track:                "track2",
+    questionnaire_version: "track2-4-v1",
+    question_key:         qKey,
+    answer_value:         String(answer),
+    axis_key:             "multi"
+  }));
+
+  const { error: diagError } = await supabase.from("diagnosis_answers").insert(diagnosisRows);
+  if (diagError) console.error("diagnosis_answers 저장 실패:", diagError.message);
+
+  return { resultId, shareSlug };
+}
+
+// ── Track 2 결과 조회 ─────────────────────────────────────────────────────────
+
+export async function getTrack2Result(shareSlug) {
   const { data, error } = await supabase
     .from("track2_results")
     .select("*")
-    .eq("result_id", resultId)
+    .eq("share_slug", shareSlug)
     .single();
 
-  if (error) throw new Error(`결과 조회 실패: ${error.message}`);
+  if (error || !data) throw new Error("결과를 찾을 수 없습니다.");
   return data;
+}
+
+// ── 유틸 ──────────────────────────────────────────────────────────────────────
+
+function generateSlug() {
+  return randomUUID().replace(/-/g, "").slice(0, 10);
 }

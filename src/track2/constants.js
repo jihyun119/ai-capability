@@ -5,16 +5,16 @@ export const AXIS_NAMES = [
 ];
 
 export const AXIS_KEYS = [
-  "task_clarity", "context_provision", "role_assignment",
+  "task_clarity", "context", "role",
   "output_format", "iteration", "critical_review"
 ];
 
 export const AXIS_MAX = {
-  task_clarity:    20,
-  context_provision: 20,
-  role_assignment: 15,
-  output_format:   15,
-  iteration:       15,
+  task_clarity: 20,
+  context:      20,
+  role:         15,
+  output_format: 15,
+  iteration:    15,
   critical_review: 15
 };
 
@@ -36,12 +36,12 @@ export const AXIS_KEYWORDS = {
     "requirement", "condition", "parameter", "instruction", "task",
     "what should", "what not", "narrow", "explicit"
   ],
-  context_provision: [
+  context: [
     "background", "context", "purpose", "audience", "upfront", "situation",
     "workflow", "surrounding", "intent", "explain", "before asking",
     "provide", "prior to", "setup"
   ],
-  role_assignment: [
+  role: [
     "role", "persona", "expert", "assign", "perspective", "title",
     "act as", "identity", "framed", "position", "specialist"
   ],
@@ -73,14 +73,14 @@ export const SCORE_MAP = {
     rarely: 4,
     never: 0, NONE: 0
   },
-  context_provision: {
+  context: {
     always: 20, consistently: 20,
     frequently: 16,
     sometimes: 10, occasionally: 10,
     rarely: 4,
     never: 0, NONE: 0
   },
-  role_assignment: {
+  role: {
     always: 15, consistently: 15, frequently: 15,
     sometimes: 10, occasionally: 10,
     rarely: 5,
@@ -107,7 +107,7 @@ export const SCORE_MAP = {
 };
 
 // ── 객관식 점수표 ─────────────────────────────────────────────────────────────
-// 배열 순서: [task_clarity, context_provision, role_assignment, output_format, iteration, critical_review]
+// 배열 순서: [task_clarity, context, role, output_format, iteration, critical_review]
 
 export const MC_SCORES = {
   Q1: {
@@ -142,12 +142,12 @@ export const MC_SCORES = {
 
 // 객관식 축별 최대점수 (정규화 기준)
 export const MC_AXIS_MAX = {
-  task_clarity:     67,
-  context_provision: 52,
-  role_assignment:  45,
-  output_format:    30,
-  iteration:        45,
-  critical_review:  45
+  task_clarity: 67,
+  context:      52,
+  role:         45,
+  output_format: 30,
+  iteration:    45,
+  critical_review: 45
 };
 
 // ── 등급 기준 ─────────────────────────────────────────────────────────────────
