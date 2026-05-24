@@ -1,4 +1,4 @@
-import { getTrack2Result } from "../../src/db.js";
+import { getTrack2Result } from "../../db.js";
 
 /**
  * GET /api/track2/:resultId

@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { validateSubmitInput } from "../../src/validate.js";
-import { score } from "../../src/scorer.js";
-import { generateFeedback } from "../../src/feedback.js";
-import { saveTrack2Result } from "../../src/db.js";
+import { validateSubmitInput } from "../../validate.js";
+import { score } from "../../../src/track2/scorer.js";
+import { generateFeedback } from "../../feedback.js";
+import { saveTrack2Result } from "../../db.js";
 
 /**
  * POST /api/track2/submit

@@ -3,7 +3,7 @@
  * 로컬 채점 테스트 스크립트
  * 사용: node scripts/test-scorer.js
  */
-import { score } from "../src/scorer.js";
+import { score } from "../src/track2/scorer.js";
 
 const sampleEssay = `
 I usually give the AI my goal, audience, and constraints before asking for an output.
