@@ -1,6 +1,10 @@
+import { randomUUID } from "node:crypto";
+
 const AXES = ["A", "B", "C", "D"];
 const SIGNALS = new Set(["low", "medium", "high"]);
 const CONFIDENCE = new Set(["low", "medium", "high"]);
+const TRACK = "track1";
+const DEFAULT_VERSION = "track1-v1";
 
 const SIGNAL_BASE = {
   low: 25,
@@ -18,6 +22,11 @@ const CONFIDENCE_CAP = {
   low: 5,
   medium: 8,
   high: 12
+};
+
+const BINARY_THRESHOLDS = {
+  high: 56,
+  low: 44
 };
 
 const AXIS_LABELS = {
@@ -154,45 +163,74 @@ const INTIMACY_TERMS = ["emotional", "personal", "gratitude", "thanks", "jokes",
 const TASK_FOCUSED_TERMS = ["task-focused", "functional", "goal-oriented", "output-focused", "transactional", "businesslike", "업무", "기능", "목적", "결과", "실무", "도구"];
 const DISTRUST_TERMS = ["distrust", "rejects", "challenges", "correctness", "demands sources", "skeptic", "refuses", "is this right", "불신", "반박", "정답", "출처", "거부", "의심", "맞는지", "근거"];
 
-export function evaluateTrack1({ llmResult, questionnaire = null }) {
+export function evaluateTrack1({
+  llmResult,
+  questionnaire = null,
+  tieBreaks = null,
+  includeInternal = false,
+  resultId = createResultId(),
+  version = DEFAULT_VERSION,
+  createdAt = new Date().toISOString()
+} = {}) {
   const canonical = validateCanonicalResult(llmResult);
 
   if (canonical.status !== "success") {
     return {
-      status: canonical.status,
-      decision_state: canonical.status === "insufficient_history" ? "insufficient_history" : "retry_needed",
-      reason: canonical.reason || "진단 가능한 Track 1 JSON이 아닙니다.",
-      retry_prompt_needed: true
+      status: "error",
+      track: TRACK,
+      version,
+      resultId,
+      createdAt,
+      error: {
+        code: canonical.status === "insufficient_history" ? "INSUFFICIENT_HISTORY" : "INVALID_LLM_RESULT",
+        message: canonical.reason || "진단 가능한 Track 1 JSON이 아닙니다.",
+        retryable: true,
+        details: canonical.errors || []
+      }
     };
   }
 
   const questionnaireScores = questionnaire ? scoreQuestionnaire(questionnaire) : null;
   const promptScores = scorePromptResult(canonical);
   const combinedScores = combineScores(questionnaireScores, promptScores);
-  const binary = mapScoresToBinary(combinedScores, questionnaireScores);
+  const binary = mapScoresToBinary(combinedScores, { questionnaireScores, tieBreaks });
   const guarded = applyTypeGuards(binary, combinedScores, canonical);
-  const type = resolveType(guarded.binary_profile);
-  const resultCard = buildResultCard(type, guarded.binary_profile, combinedScores, canonical, guarded.guard_notes);
+  const type = resolveType(guarded.binaryProfile);
+
+  const response = {
+    status: "success",
+    track: TRACK,
+    version,
+    resultId,
+    createdAt,
+    decisionState: "diagnosable",
+    type: {
+      id: type.id,
+      name: type.name
+    },
+    binaryProfile: guarded.binaryProfile,
+    axisScores: buildAxisScores(combinedScores),
+    resultCard: buildResultCard(type, canonical)
+  };
+
+  if (!includeInternal) return response;
 
   return {
-    status: "success",
-    decision_state: "diagnosable",
-    input_summary: {
-      has_questionnaire: Boolean(questionnaireScores),
-      evidence_mode: canonical.evidence_mode || null,
-      evidence_notice: canonical.evidence_notice || null
-    },
-    axis_scores: {
+    ...response,
+    scoreBreakdown: {
       questionnaire: questionnaireScores,
       prompt: promptScores,
       final: combinedScores
     },
-    binary_profile: guarded.binary_profile,
-    tie_axes: binary.tie_axes,
-    type_id: type.type_id,
-    type_name: type.type_name,
-    result_card: resultCard,
-    internal_notes: guarded.guard_notes
+    tieAxes: binary.tieAxes,
+    tieResolution: binary.tieResolution,
+    sourceTags: canonical.tags,
+    inputSummary: {
+      hasQuestionnaire: Boolean(questionnaireScores),
+      evidenceMode: canonical.evidence_mode || null,
+      evidenceNotice: canonical.evidence_notice || null
+    },
+    internalNotes: guarded.guardNotes
   };
 }
 
@@ -247,7 +285,13 @@ export function validateCanonicalResult(input) {
   }
 
   const errors = [];
+  if (parsed.profile && typeof parsed.profile === "object") {
+    errors.push("profile 숫자 점수는 허용하지 않습니다. 외부 LLM은 signals만 반환해야 합니다.");
+  }
   for (const axis of AXES) {
+    if (typeof parsed.profile?.[axis] === "number") {
+      errors.push(`profile.${axis} 숫자 점수는 백엔드에서만 계산합니다.`);
+    }
     if (!SIGNALS.has(parsed.signals?.[axis])) {
       errors.push(`signals.${axis}는 low/medium/high 중 하나여야 합니다.`);
     }
@@ -259,7 +303,11 @@ export function validateCanonicalResult(input) {
     }
   }
 
-  if (!Array.isArray(parsed.tags)) errors.push("tags는 배열이어야 합니다.");
+  if (!Array.isArray(parsed.tags)) {
+    errors.push("tags는 배열이어야 합니다.");
+  } else if (parsed.tags.length !== 3) {
+    errors.push("tags는 핵심 키워드 3개여야 합니다.");
+  }
   if (typeof parsed.verdict !== "string") errors.push("verdict는 문자열이어야 합니다.");
 
   if (errors.length > 0) {
@@ -277,7 +325,7 @@ export function validateCanonicalResult(input) {
     signals: pickAxes(parsed.signals),
     confidence: pickAxes(parsed.confidence),
     notes: sanitizeNotes(pickAxes(parsed.notes)),
-    tags: parsed.tags.slice(0, 5).map(String),
+    tags: parsed.tags.slice(0, 3).map(String),
     verdict: stripPrivateLikeText(parsed.verdict)
   };
 }
@@ -342,29 +390,55 @@ export function combineScores(questionnaireScores, promptScores) {
   return scores;
 }
 
-export function mapScoresToBinary(finalScores, questionnaireScores = null) {
+export function mapScoresToBinary(finalScores, options = {}) {
+  const questionnaireScores = options?.questionnaireScores || null;
+  const tieBreaks = normalizeTieBreaks(options?.tieBreaks || null);
   const binary = {};
   const tieAxes = [];
+  const tieResolution = {};
 
   for (const axis of AXES) {
     const score = finalScores[axis];
-    if (score >= 56) {
+    if (score >= BINARY_THRESHOLDS.high) {
       binary[axis] = "고";
-    } else if (score <= 44) {
+      tieResolution[axis] = {
+        source: "local_threshold",
+        reason: `${score}점이 고 기준(${BINARY_THRESHOLDS.high}점 이상)을 충족했습니다.`
+      };
+    } else if (score <= BINARY_THRESHOLDS.low) {
       binary[axis] = "저";
+      tieResolution[axis] = {
+        source: "local_threshold",
+        reason: `${score}점이 저 기준(${BINARY_THRESHOLDS.low}점 이하)에 해당합니다.`
+      };
     } else {
       tieAxes.push(axis);
-      if (questionnaireScores) {
+      if (tieBreaks?.[axis] === "고" || tieBreaks?.[axis] === "저") {
+        binary[axis] = tieBreaks[axis];
+        tieResolution[axis] = {
+          source: "llm_judge",
+          reason: "중간 범위 축이라 notes 기반 LLM Judge 판정을 우선 적용했습니다."
+        };
+      } else if (questionnaireScores) {
         binary[axis] = questionnaireScores[axis] >= 50 ? "고" : "저";
+        tieResolution[axis] = {
+          source: "questionnaire_fallback",
+          reason: "LLM Judge 판정이 없거나 tie라 객관식 점수 방향을 보조 기준으로 적용했습니다."
+        };
       } else {
         binary[axis] = score >= 50 ? "고" : "저";
+        tieResolution[axis] = {
+          source: "score_fallback",
+          reason: "LLM Judge와 객관식 입력이 없어 50점을 기준으로 임시 판정했습니다."
+        };
       }
     }
   }
 
   return {
-    binary_profile: binary,
-    tie_axes: tieAxes
+    binaryProfile: binary,
+    tieAxes,
+    tieResolution
   };
 }
 
@@ -372,13 +446,13 @@ export function resolveType(binaryProfile) {
   const key = AXES.map((axis) => (binaryProfile[axis] === "고" ? "H" : "L")).join("");
   const [typeId, typeName] = TYPE_MAP[key];
   return {
-    type_id: typeId,
-    type_name: typeName
+    id: typeId,
+    name: typeName
   };
 }
 
 function applyTypeGuards(binaryResult, finalScores, canonical) {
-  const binary = { ...binaryResult.binary_profile };
+  const binary = { ...binaryResult.binaryProfile };
   const guardNotes = [];
   const type = resolveType(binary);
 
@@ -389,18 +463,18 @@ function applyTypeGuards(binaryResult, finalScores, canonical) {
   const hasDistrust = containsAny(noteC, DISTRUST_TERMS);
   const hasQualityControl = containsAny(noteC, QUALITY_CONTROL_TERMS);
 
-  if (type.type_id === 16 && (!hasIntimacy || !hasActiveTrust || hasDistrust || hasQualityControl)) {
+  if (type.id === 16 && (!hasIntimacy || !hasActiveTrust || hasDistrust || hasQualityControl)) {
     binary.B = hasIntimacy ? binary.B : "저";
     binary.C = hasActiveTrust && !hasDistrust ? binary.C : "저";
     guardNotes.push("집착하는 애인형은 명확한 친밀/신뢰 근거가 부족해 보수적으로 조정했습니다.");
   }
 
-  if (type.type_id === 10 && !hasDistrust) {
+  if (type.id === 10 && !hasDistrust) {
     binary.C = hasActiveTrust || hasQualityControl ? "고" : binary.C;
     guardNotes.push("프로 트집러형은 명확한 불신 근거가 부족해 C축을 보수적으로 조정했습니다.");
   }
 
-  if (type.type_id === 12 && !hasActiveTrust) {
+  if (type.id === 12 && !hasActiveTrust) {
     if (finalScores.C < 65 || hasQualityControl) {
       binary.C = hasDistrust ? "저" : binary.C;
       guardNotes.push("선긋는 상사형은 명확한 수용/활용 근거가 약해 신뢰 축을 보수적으로 유지했습니다.");
@@ -408,26 +482,43 @@ function applyTypeGuards(binaryResult, finalScores, canonical) {
   }
 
   return {
-    binary_profile: binary,
-    guard_notes: guardNotes
+    binaryProfile: binary,
+    guardNotes
   };
 }
 
-function buildResultCard(type, binaryProfile, finalScores, canonical, guardNotes) {
-  const copy = RESULT_COPY[type.type_id];
+function normalizeTieBreaks(tieBreaks) {
+  if (!tieBreaks || typeof tieBreaks !== "object") return null;
+  return Object.fromEntries(
+    AXES.map((axis) => {
+      const value = tieBreaks[axis];
+      return [axis, value === "high" ? "고" : value === "low" ? "저" : value];
+    })
+  );
+}
+
+function buildAxisScores(finalScores) {
+  return Object.fromEntries(
+    AXES.map((axis) => [
+      axis,
+      {
+        label: AXIS_LABELS[axis],
+        score: finalScores[axis],
+        level: uiLevel(finalScores[axis]),
+        gauge: makeGauge(finalScores[axis])
+      }
+    ])
+  );
+}
+
+function buildResultCard(type, canonical) {
+  const copy = RESULT_COPY[type.id];
   return {
-    type_id: type.type_id,
-    type_name: type.type_name,
-    binary_profile: binaryProfile,
-    axis_levels: Object.fromEntries(AXES.map((axis) => [axis, uiLevel(finalScores[axis])])),
-    axis_labels: AXIS_LABELS,
-    gauge: Object.fromEntries(AXES.map((axis) => [axis, makeGauge(finalScores[axis])])),
-    core_keywords: copy.keywords,
+    title: type.name,
     description: copy.description,
-    reason_story: copy.reason,
-    evidence_notice_ko: evidenceNoticeKo(canonical.evidence_mode),
-    source_tags: canonical.tags,
-    guard_notes: guardNotes
+    keywords: copy.keywords,
+    reasonStory: copy.reason,
+    evidenceNotice: evidenceNoticeKo(canonical.evidence_mode)
   };
 }
 
@@ -516,4 +607,8 @@ function evidenceNoticeKo(evidenceMode) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function createResultId() {
+  return `res_${randomUUID().replaceAll("-", "").slice(0, 12)}`;
 }
