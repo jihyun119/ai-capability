@@ -7,7 +7,7 @@
 import {
   AXIS_KEYS, AXIS_NAMES, AXIS_MAX,
   AXIS_KEYWORDS, FREQ_WORDS, PROXIMITY,
-  SCORE_MAP, MC_SCORES, MC_AXIS_MAX, GRADE_SCALE
+  SCORE_MAP, MC_SCORES, MC_AXIS_MAX, GRADE_SCALE, BASE_SCORE
 } from "./constants.js";
 
 // ── 빈도 부사 추출 ────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export function score(essay, mcAnswers = null) {
     return { key, name, maxScore, freqWord, evidence, essayScore, essayNormalized, mcRaw, mcNormalized, finalScore };
   });
 
-  const total = round1(axes.reduce((sum, ax) => sum + ax.finalScore, 0));
+  const total = round1(axes.reduce((sum, ax) => sum + ax.finalScore, 0) + BASE_SCORE);
   const grade = decideGrade(total);
 
   // 강점/약점 (비율 기준 정렬)
