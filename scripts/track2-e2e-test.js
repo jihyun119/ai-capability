@@ -76,13 +76,16 @@ function step2_score() {
 // ── Step 3: 피드백 생성 ───────────────────────────────────────────────────────
 async function step3_feedback(scoringResult) {
   console.log("\n[3] 피드백 생성...");
-  const summary = await generateFeedback(scoringResult);
-  console.log("  피드백:", summary);
-  return summary;
+  const feedbackResult = await generateFeedback(scoringResult);
+  console.log("  요약:", feedbackResult.summary);
+  console.log("  강점:", feedbackResult.strengths.map((s) => s.name).join(", "));
+  console.log("  약점:", feedbackResult.weaknesses.map((w) => w.name).join(", "));
+  console.log("  인사이트:", feedbackResult.insight);
+  return feedbackResult;
 }
 
 // ── Step 4: DB 저장 ───────────────────────────────────────────────────────────
-async function step4_save(respondent, scoringResult, feedbackSummary) {
+async function step4_save(respondent, scoringResult, feedbackResult) {
   console.log("\n[4] DB 저장...");
   const { saveTrack2Result } = await import("../backend/db.js");
   const { resultId, shareSlug } = await saveTrack2Result({
@@ -90,7 +93,7 @@ async function step4_save(respondent, scoringResult, feedbackSummary) {
     nicknameSnapshot: respondent.nickname,
     answers:          TEST_ANSWERS,
     scoringResult,
-    feedbackSummary
+    feedbackResult
   });
   console.log("  ✅ resultId:", resultId);
   console.log("  ✅ shareSlug:", shareSlug);

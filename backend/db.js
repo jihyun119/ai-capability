@@ -42,8 +42,8 @@ export async function validateRespondent(respondentId, accessToken) {
 
 // ── Track 2 결과 저장 ─────────────────────────────────────────────────────────
 
-export async function saveTrack2Result({ respondentId, nicknameSnapshot, answers, scoringResult, feedbackSummary }) {
-  const { axes, total, grade, strengths, weaknesses } = scoringResult;
+export async function saveTrack2Result({ respondentId, nicknameSnapshot, answers, scoringResult, feedbackResult }) {
+  const { axes, total, grade } = scoringResult;
   const resultId = randomUUID();
   const shareSlug = generateSlug();
 
@@ -66,7 +66,7 @@ export async function saveTrack2Result({ respondentId, nicknameSnapshot, answers
     final_scores:         finalScores,
     total_score:          total,
     grade,
-    feedback:             { strengths, weaknesses, summary: feedbackSummary },
+    feedback:             feedbackResult,
     share_slug:           shareSlug,
     created_at:           new Date().toISOString()
   });
