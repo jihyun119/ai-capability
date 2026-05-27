@@ -784,6 +784,10 @@ async function submitTrack1() {
     }
 
     state.t1Result = result;
+
+    // 최소 2.5초 로딩 유지 (너무 빨리 넘어가는 것 방지)
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+
     render();
     showScreen("t1-result");
   } catch (error) {
