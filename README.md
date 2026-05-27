@@ -2,6 +2,17 @@
 
 상태: 진행 중
 
+## Frontend prototype
+
+Figma 모바일 와이어프레임 기반 정적 프론트 프로토타입은 `frontend/` 폴더에 있습니다.
+
+```powershell
+cd frontend
+node .\preview-server.cjs
+```
+
+브라우저에서 `http://127.0.0.1:4173/`로 확인할 수 있습니다.
+
 # < AI 역량 테스트 개발 >
 
 ## 문제의식
