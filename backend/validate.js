@@ -1,13 +1,13 @@
 const VALID_CHOICES = new Set(["A", "B", "C", "D", "E"]);
 const MC_QUESTIONS = ["Q1", "Q2", "Q3", "Q4"];
 
-export function validateSubmitInput(body) {
+export function validateSubmitInput(body, { requireRespondent = true } = {}) {
   const errors = [];
 
-  if (!body.respondentId || typeof body.respondentId !== "string")
+  if (requireRespondent && (!body.respondentId || typeof body.respondentId !== "string"))
     errors.push("respondentId가 없습니다.");
 
-  if (!body.accessToken || typeof body.accessToken !== "string")
+  if (requireRespondent && (!body.accessToken || typeof body.accessToken !== "string"))
     errors.push("accessToken이 없습니다.");
 
   if (!body.answers || typeof body.answers !== "object") {

@@ -918,6 +918,7 @@ mark {
 }
 
 .answer-list button:hover,
+.answer-list button.is-selected,
 .job-grid button:hover {
   border-color: var(--violet);
   background: var(--violet);
@@ -1099,9 +1100,26 @@ mark {
 }
 
 .t1-scale-row button:hover i,
-.t1-scale-row button:focus-visible i {
+.t1-scale-row button:focus-visible i,
+.t1-scale-row button.is-selected i {
   border-color: var(--violet);
   background: var(--violet);
+}
+
+.t1-scale-row button.is-selected span {
+  color: var(--violet);
+  font-weight: 800;
+}
+
+.form-error {
+  display: block;
+  margin-top: 10px;
+  color: #e04848;
+  font-family: Pretendard, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .t1-scale-arrow {
@@ -1514,6 +1532,24 @@ input {
   line-height: 1.35;
 }
 
+.keyword-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.keyword-row i {
+  border: 1px solid var(--black);
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: var(--lime);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
 .result-detail,
 .scores,
 .radar-list {
@@ -1551,12 +1587,13 @@ input {
 .t1-result-screen {
   min-height: 852px;
   padding: 44px 20px 0;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .t1-result-screen .result-card {
   width: 353px;
-  height: 396px;
+  min-height: 396px;
+  height: auto;
   margin-top: 31px;
   border-radius: 10px;
   padding: 20px 22px 28px;
@@ -1590,9 +1627,9 @@ input {
 .t1-result-screen .result-card strong {
   margin-top: 15px;
   font-family: Pretendard, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 300;
-  line-height: normal;
+  line-height: 1.35;
 }
 
 .t1-result-screen .scores {
@@ -1603,11 +1640,11 @@ input {
 
 .t1-result-screen .scores p {
   display: grid;
-  grid-template-columns: 65px 275px;
+  grid-template-columns: 140px 1fr;
   gap: 13px;
   align-items: center;
   font-family: Pretendard, sans-serif;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 24px;
 }
@@ -1619,9 +1656,9 @@ input {
 }
 
 .t1-result-screen .nav-buttons {
-  left: 20px;
-  right: 20px;
-  bottom: 89px;
+  position: static;
+  margin-top: 24px;
+  padding-bottom: 36px;
   grid-template-columns: 156px 156px;
   justify-content: space-between;
   gap: 0;

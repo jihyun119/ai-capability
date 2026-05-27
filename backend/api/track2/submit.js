@@ -1,7 +1,6 @@
 import { validateSubmitInput } from "../../validate.js";
 import { score } from "../../../src/track2/scorer.js";
 import { generateFeedback } from "../../feedback.js";
-import { validateRespondent, saveTrack2Result } from "../../db.js";
 
 /**
  * POST /api/track2/submit
@@ -35,7 +34,8 @@ export default async function handler(req, res) {
     });
   }
 
-  const { valid, errors } = validateSubmitInput(req.body);
+  const isDemoMode = !req.body?.respondentId || !req.body?.accessToken;
+  const { valid, errors } = validateSubmitInput(req.body, { requireRespondent: !isDemoMode });
   if (!valid) {
     return res.status(400).json({
       status: "error", track: "track2", version: "track2-v1",
@@ -46,7 +46,28 @@ export default async function handler(req, res) {
   const { respondentId, accessToken, answers, freeText } = req.body;
 
   try {
+    if (isDemoMode) {
+      const scoringResult = score(freeText, answers);
+      const feedbackResult = await generateFeedback(scoringResult);
+      const axesResponse = buildAxesResponse(scoringResult);
+
+      return res.status(200).json({
+        status:    "success",
+        track:     "track2",
+        version:   "track2-v1",
+        resultId:  `demo_${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        result: {
+          total:    scoringResult.total,
+          grade:    scoringResult.grade,
+          axes:     axesResponse,
+          feedback: feedbackResult
+        }
+      });
+    }
+
     // 응시자 검증
+    const { validateRespondent, saveTrack2Result } = await import("../../db.js");
     const respondent = await validateRespondent(respondentId, accessToken);
 
     // 채점 (LLM 없이 규칙 기반)
@@ -65,14 +86,7 @@ export default async function handler(req, res) {
     });
 
     // 축별 응답 구성 (레이더 차트용)
-    const axesResponse = Object.fromEntries(
-      scoringResult.axes.map((ax) => [ax.key, {
-        label: ax.name,
-        score: ax.finalScore,
-        max:   ax.maxScore,
-        rate:  Math.round((ax.finalScore / ax.maxScore) * 100) / 100
-      }])
-    );
+    const axesResponse = buildAxesResponse(scoringResult);
 
     return res.status(200).json({
       status:    "success",
@@ -100,4 +114,16 @@ export default async function handler(req, res) {
       }
     });
   }
+}
+
+function buildAxesResponse(scoringResult) {
+  return Object.fromEntries(
+    scoringResult.axes.map((ax) => [ax.key, {
+      label: ax.name,
+      score: ax.finalScore,
+      max:   ax.maxScore,
+      rate:  Math.round((ax.finalScore / ax.maxScore) * 100) / 100,
+      evidence: ax.evidence
+    }])
+  );
 }

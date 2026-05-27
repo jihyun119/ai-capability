@@ -89,6 +89,17 @@ const t1Questions = [
 
 const t1Options = ["1 A에 가까움", "2", "3 중간", "4", "5 B에 가까움"];
 
+const state = {
+  t1Answers: {},
+  t1LlmText: "",
+  t1Result: null,
+  t1Error: "",
+  t2Answers: {},
+  t2FreeText: "",
+  t2Result: null,
+  t2Error: "",
+};
+
 const t2Questions = [
   {
     label: "상황 1",
@@ -141,6 +152,11 @@ const app = document.querySelector("#app");
 function char(key, className = "character") {
   const [name, file] = characters[key];
   return `<img class="${className}" src="${characterDir}${file}" alt="${name}" />`;
+}
+
+function charByType(typeName, className = "character") {
+  const safeTypeName = typeName || "AI 몰라형";
+  return `<img class="${className}" src="${characterDir}${safeTypeName}.png" alt="${safeTypeName}" />`;
 }
 
 function header() {
@@ -266,7 +282,11 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
       ${progress(index, total)}
       <h1>${title}</h1>
       <div class="answer-list">
-        ${options.map((option) => `<button type="button">${option}</button>`).join("")}
+        ${options.map((option) => {
+          const value = option.trim().charAt(0);
+          const selected = state.t2Answers[`Q${index}`] === value ? " is-selected" : "";
+          return `<button class="${selected}" type="button" data-t2-question="Q${index}" data-t2-answer="${value}">${option}</button>`;
+        }).join("")}
       </div>
     </section>
     <nav class="nav-buttons">
@@ -278,6 +298,7 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
 }
 
 function t1QuestionScreen(question, index, total, prev, next) {
+  const selectedValue = state.t1Answers[`Q${index}`];
   return screen(
     `t1-q-${index}`,
     `Track 1 객관식 질문 ${index}`,
@@ -288,7 +309,10 @@ function t1QuestionScreen(question, index, total, prev, next) {
       <article class="t1-scale-card">
         <p class="t1-scale-a">${question.a}</p>
         <div class="t1-scale-row">
-          ${[1, 2, 3, 4, 5].map((value) => `<button type="button" aria-label="${value}점"><span>${value}</span><i></i></button>`).join("")}
+          ${[1, 2, 3, 4, 5].map((value) => {
+            const selected = selectedValue === value ? " is-selected" : "";
+            return `<button class="${selected}" type="button" aria-label="${value}점" data-t1-question="Q${index}" data-t1-answer="${value}"><span>${value}</span><i></i></button>`;
+          }).join("")}
         </div>
         <div class="t1-scale-arrow" aria-hidden="true"><span></span></div>
         <p class="t1-scale-b">${question.b}</p>
@@ -385,6 +409,7 @@ function t1CopyScreen() {
 }
 
 function pasteScreen(id, title, desc, placeholder, prev, next, cta) {
+  const value = id === "t1-paste" ? state.t1LlmText : "";
   return screen(
     id,
     title.replace(/<br \/>/g, " "),
@@ -392,7 +417,8 @@ function pasteScreen(id, title, desc, placeholder, prev, next, cta) {
     <section class="paste-area">
       <h1>${title}</h1>
       <p>${desc}</p>
-      <textarea placeholder="${placeholder}"></textarea>
+      <textarea data-field="${id}" placeholder="${placeholder}">${escapeHtml(value)}</textarea>
+      ${id === "t1-paste" && state.t1Error ? `<em class="form-error">${state.t1Error}</em>` : ""}
       <small>답변이 길수록 분석이 더 구체적일 수 있습니다.</small>
     </section>
     <nav class="nav-buttons">
@@ -431,21 +457,35 @@ function loadingScreen(id, title, messages, next) {
 }
 
 function t1ResultScreen() {
+  const result = state.t1Result;
+  const typeName = result?.type?.name || "분석 대기 중";
+  const card = result?.resultCard || {
+    description: "아직 분석 결과가 없습니다.\n객관식 답변과 AI JSON을 제출하면 결과가 표시됩니다.",
+    keywords: ["분석전", "대기중", "Track1"],
+    reasonStory: ["객관식 답변을 완료합니다.", "AI가 반환한 JSON을 붙여넣습니다.", "백엔드가 점수를 계산합니다.", "16개 유형 중 하나로 매칭합니다.", "결과 화면에 유형과 이유를 표시합니다."],
+    evidenceNotice: "아직 분석 전입니다.",
+  };
+  const axes = result?.axisScores || {};
   return screen(
     "t1-result",
     "T1-06 Track 1 결과",
     `${header()}
     <section class="result-card t1-result-card">
       <p>당신의 AI 관계 유형은</p>
-      <h1>든든한 파트너형</h1>
-      ${char("partner", "result-character")}
-      <strong>자주 쓰고 친하고 신뢰하며 AI에게 맡기는 편</strong>
+      <h1>${typeName}</h1>
+      ${charByType(typeName === "분석 대기 중" ? "AI 몰라형" : typeName, "result-character")}
+      <strong>${escapeHtml(card.description).replace(/\n/g, "<br />")}</strong>
+      <div class="keyword-row">${card.keywords.map((keyword) => `<i>${keyword}</i>`).join("")}</div>
     </section>
     <section class="scores">
-      <p><span>A.의존도</span><i style="--score:38%"></i></p>
-      <p><span>B.친밀도</span><i style="--score:57%"></i></p>
-      <p><span>C.신뢰도</span><i style="--score:69%"></i></p>
-      <p><span>D.통제력</span><i style="--score:38%"></i></p>
+      ${["A", "B", "C", "D"].map((axis) => {
+        const axisScore = axes[axis] || { label: axis, score: 0, level: "-" };
+        return `<p><span>${axis}.${axisScore.label} ${axisScore.score}점 · ${axisScore.level}</span><i style="--score:${axisScore.score}%"></i></p>`;
+      }).join("")}
+    </section>
+    <section class="result-detail">
+      <article><strong>왜 이 유형이 나왔나요?</strong><span>${card.reasonStory.map((line) => escapeHtml(line)).join("<br />")}</span></article>
+      <article><strong>근거 안내</strong><span>${card.evidenceNotice}</span></article>
     </section>
     <nav class="nav-buttons">
       ${button("공유하기", "t1-share", "secondary")}
@@ -532,7 +572,8 @@ function t2PasteScreen() {
         <span>복사할 프롬프트</span>
         <textarea readonly>Analyze all of our past conversation history. Tell me in what situations I usually seek your help, and ruthlessly roast me on the single most frustrating and fatal flaw in how I ask questions or give instructions. Finally, give me a spot-on, savage nickname that perfectly describes my prompt habits. Keep it under 500 characters. Do not hold back, be polite, or sugarcoat anything.</textarea>
       </label>
-      <textarea class="answer-box" placeholder="AI가 생성한 답변을 여기에 붙여넣어 주세요."></textarea>
+      <textarea class="answer-box" data-field="t2-paste" placeholder="AI가 생성한 답변을 여기에 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
+      ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
     </section>
     <nav class="nav-buttons">
       ${button("이전", "t2-q-4", "secondary")}
@@ -543,24 +584,32 @@ function t2PasteScreen() {
 }
 
 function t2ResultScreen() {
-  const labels = ["작업 명확성", "배경·맥락 설명", "역할 지정", "출력 형식 지정", "반복 개선", "비판적 검토"];
+  const result = state.t2Result?.result;
+  const axes = result?.axes || {};
+  const axisList = Object.values(axes);
+  const feedback = result?.feedback || {
+    summary: "아직 분석 결과가 없습니다.",
+    strengths: [{ name: "분석전", description: "답변 제출 후 표시됩니다." }],
+    weaknesses: [{ name: "분석전", description: "답변 제출 후 표시됩니다." }],
+    insight: "답변을 제출하면 AI 활용 스타일 문장이 생성됩니다.",
+  };
   return screen(
     "t2-result",
     "T2-04 Track 2 결과",
     `${header()}
     <section class="score-hero">
       <p>AI 활용 역량 점수</p>
-      <h1>76점</h1>
-      <strong>실무 적응형</strong>
-      <span>AI를 업무에 활용하는 감각은 좋지만, 검증과 출력 설계에서 더 성장할 여지가 있습니다.</span>
+      <h1>${result?.total ?? "--"}점</h1>
+      <strong>${result?.grade || "분석 대기 중"}</strong>
+      <span>${feedback.summary}</span>
     </section>
     <section class="radar-list">
-      ${labels.map((label, index) => `<p><span>${label}</span><i style="--score:${62 + index * 5}%"></i></p>`).join("")}
+      ${axisList.map((axis) => `<p><span>${axis.label} ${axis.score}/${axis.max}</span><i style="--score:${Math.round(axis.rate * 100)}%"></i></p>`).join("")}
     </section>
     <section class="result-detail">
-      <article><strong>강점</strong><span>반복 업무를 구조화하고 원하는 결과물을 명확히 요청하는 능력이 좋습니다.</span></article>
-      <article><strong>보완할 점</strong><span>AI가 틀릴 수 있는 상황에서 로직을 검증하는 전략은 아직 보완이 필요합니다.</span></article>
-      <article><strong>면접에서 이렇게 말할 수 있어요</strong><span>저는 AI를 단순한 답변 생성 도구가 아니라 업무 효율을 높이는 보조 시스템으로 활용합니다.</span></article>
+      <article><strong>강점</strong><span>${feedback.strengths.map((item) => `${item.name}: ${item.description}`).join("<br />")}</span></article>
+      <article><strong>보완할 점</strong><span>${feedback.weaknesses.map((item) => `${item.name}: ${item.description}`).join("<br />")}</span></article>
+      <article><strong>면접에서 이렇게 말할 수 있어요</strong><span>${feedback.insight}</span></article>
     </section>
     <nav class="nav-buttons">
       ${button("Track 선택", "track", "secondary")}
@@ -644,16 +693,34 @@ function showScreen(name) {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
   });
   app.scrollTop = 0;
-
-  if (name === "t1-loading") {
-    window.clearTimeout(showScreen.loadingTimer);
-    showScreen.loadingTimer = window.setTimeout(() => showScreen("t1-result"), 1500);
-  }
 }
 
 render();
 
+document.addEventListener("input", (event) => {
+  const field = event.target.closest("[data-field]");
+  if (!field) return;
+  if (field.dataset.field === "t1-paste") state.t1LlmText = field.value;
+  if (field.dataset.field === "t2-paste") state.t2FreeText = field.value;
+});
+
 document.addEventListener("click", async (event) => {
+  const t1Answer = event.target.closest("[data-t1-answer]");
+  if (t1Answer) {
+    state.t1Answers[t1Answer.dataset.t1Question] = Number(t1Answer.dataset.t1Answer);
+    t1Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
+    t1Answer.classList.add("is-selected");
+    return;
+  }
+
+  const t2Answer = event.target.closest("[data-t2-answer]");
+  if (t2Answer) {
+    state.t2Answers[t2Answer.dataset.t2Question] = t2Answer.dataset.t2Answer;
+    t2Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
+    t2Answer.classList.add("is-selected");
+    return;
+  }
+
   const copyTarget = event.target.closest("[data-copy-prompt]");
   if (copyTarget) {
     const prompt = document.querySelector(".screen.active .prompt-box textarea")?.value;
@@ -668,5 +735,120 @@ document.addEventListener("click", async (event) => {
   const target = event.target.closest("[data-go]");
   if (!target) return;
   event.preventDefault();
+
+  if (target.dataset.go === "t1-loading") {
+    await submitTrack1();
+    return;
+  }
+
+  if (target.dataset.go === "t2-result") {
+    await submitTrack2();
+    return;
+  }
+
   showScreen(target.dataset.go);
 });
+
+async function submitTrack1() {
+  state.t1Error = "";
+  const missing = t1Questions
+    .map((_, index) => `Q${index + 1}`)
+    .filter((key) => !state.t1Answers[key]);
+
+  if (missing.length > 0) {
+    state.t1Error = "객관식 12문항에 모두 답변해 주세요.";
+    render();
+    showScreen("t1-paste");
+    return;
+  }
+
+  if (!state.t1LlmText.trim()) {
+    state.t1Error = "AI가 반환한 JSON을 붙여넣어 주세요.";
+    render();
+    showScreen("t1-paste");
+    return;
+  }
+
+  showScreen("t1-loading");
+
+  try {
+    const result = await postJson("/api/track1/submit", {
+      questionnaireVersion: "track1-12",
+      questionnaire: { answers: state.t1Answers },
+      llmResult: state.t1LlmText,
+    });
+
+    if (result.status !== "success") {
+      throw new Error(result.error?.message || "Track 1 분석에 실패했습니다.");
+    }
+
+    state.t1Result = result;
+    render();
+    showScreen("t1-result");
+  } catch (error) {
+    state.t1Error = error.message;
+    render();
+    showScreen("t1-paste");
+  }
+}
+
+async function submitTrack2() {
+  state.t2Error = "";
+  const missing = t2Questions
+    .map((_, index) => `Q${index + 1}`)
+    .filter((key) => !state.t2Answers[key]);
+
+  if (missing.length > 0) {
+    state.t2Error = "상황 문항 4개에 모두 답변해 주세요.";
+    render();
+    showScreen("t2-paste");
+    return;
+  }
+
+  if (state.t2FreeText.trim().length < 10) {
+    state.t2Error = "AI가 생성한 답변을 10자 이상 붙여넣어 주세요.";
+    render();
+    showScreen("t2-paste");
+    return;
+  }
+
+  showScreen("t2-result");
+
+  try {
+    const result = await postJson("/api/track2/submit", {
+      answers: state.t2Answers,
+      freeText: state.t2FreeText,
+    });
+
+    if (result.status !== "success") {
+      throw new Error(result.error?.message || "Track 2 분석에 실패했습니다.");
+    }
+
+    state.t2Result = result;
+    render();
+    showScreen("t2-result");
+  } catch (error) {
+    state.t2Error = error.message;
+    render();
+    showScreen("t2-paste");
+  }
+}
+
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error?.message || "요청을 처리할 수 없습니다.");
+  return result;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}

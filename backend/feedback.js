@@ -1,7 +1,5 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 /**
  * OpenAI로 한국어 피드백 생성
  * 반환: { summary, strengths: [{name, description}], weaknesses: [{name, description}], insight }
@@ -41,9 +39,13 @@ ${axisLines}
     {"name": "약점 축 이름2", "description": "이 축이 왜 낮은지 + 지금 당장 실천할 수 있는 구체적 개선 팁 1문장"}
   ],
   "insight": "면접에서 말할 수 있는 나의 AI 활용 스타일 1~2문장. '저는 AI를...' 으로 시작하는 1인칭 문장. 강점을 중심으로 실무에서 어떻게 활용하는지 구체적으로."
-}`;
+  }`;
 
   try {
+    const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_API_KEY;
+    if (!apiKey) throw new Error("OPENAI_API_KEY is not configured.");
+
+    const openai = new OpenAI({ apiKey });
     const response = await openai.chat.completions.create({
       model:           "gpt-4o-mini",
       messages:        [{ role: "user", content: prompt }],
