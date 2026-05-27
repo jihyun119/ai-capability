@@ -681,6 +681,7 @@ function render() {
     t2IntroScreen(),
     t2QuestionScreens(),
     t2PasteScreen(),
+    loadingScreen("t2-loading", "AI 활용 패턴을<br />분석하는 중", ["객관식 응답을 지표로 환산하는 중", "프롬프트 습관을 분석하는 중", "6가지 역량 점수를 계산하는 중", "맞춤 피드백을 생성하는 중"], "t2-result"),
     t2ResultScreen(),
     t3Screens(),
     myReportScreen(),
@@ -812,7 +813,7 @@ async function submitTrack2() {
     return;
   }
 
-  showScreen("t2-result");
+  showScreen("t2-loading");
 
   try {
     const result = await postJson("/api/track2/submit", {
@@ -825,6 +826,10 @@ async function submitTrack2() {
     }
 
     state.t2Result = result;
+
+    // 최소 2초 로딩 유지 (너무 빨리 넘어가는 것 방지)
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     render();
     showScreen("t2-result");
   } catch (error) {
