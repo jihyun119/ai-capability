@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(cp \"C:/Users/Shin Ji Won/track2-backend/api/track2/submit.js\" \"C:/Users/Shin Ji Won/ai-capability/backend/api/track2/\")",
+      "Bash(cp \"C:/Users/Shin Ji Won/track2-backend/api/track2/[resultId].js\" \"C:/Users/Shin Ji Won/ai-capability/backend/api/track2/\")",
+      "Bash(cp \"C:/Users/Shin Ji Won/track2-backend/scripts/test-scorer.js\" \"C:/Users/Shin Ji Won/ai-capability/backend/scripts/\")",
+      "Bash(cp \"C:/Users/Shin Ji Won/track2-backend/examples/sample_input.json\" \"C:/Users/Shin Ji Won/ai-capability/backend/examples/\")",
+      "Bash(cp \"C:/Users/Shin Ji Won/track2-backend/package.json\" \"C:/Users/Shin Ji Won/ai-capability/backend/\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(node scripts/track2-test-scorer.js)",
+      "Bash(git commit *)"
+    ]
+  }
+}
