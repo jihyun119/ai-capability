@@ -132,16 +132,16 @@ function buildTrack2DemoResponse(scoringResult) {
       grade: scoringResult.grade,
       axes,
       feedback: {
-        summary: `${scoringResult.grade} 수준으로, ${scoringResult.strengths.join(", ")}에서 강점이 보입니다.`,
+        summary: `${scoringResult.grade} 수준입니다. ${scoringResult.strengths.join(", ")}은 비교적 안정적으로 활용하고 있습니다.`,
         strengths: scoringResult.strengths.map((name) => ({
           name,
-          description: `${name} 측면에서 비교적 안정적인 활용 패턴을 보여줍니다.`,
+          description: `${name}을 프롬프트에 자연스럽게 반영하는 편입니다.`,
         })),
         weaknesses: scoringResult.weaknesses.map((name) => ({
           name,
-          description: `${name} 영역은 프롬프트에 더 명시적으로 포함하면 좋아집니다.`,
+          description: `요청을 보내기 전 ${name}이 드러나는 문장을 한 줄 더 추가해보세요.`,
         })),
-        insight: `저는 AI를 활용할 때 ${scoringResult.strengths.join("과 ")}을 중심으로 결과를 구체화하는 편입니다.`,
+        insight: `저는 AI를 활용할 때 ${scoringResult.strengths.join("과 ")}을 먼저 정리해 결과의 방향을 잡는 편입니다.`,
       },
     },
   };

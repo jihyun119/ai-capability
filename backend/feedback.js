@@ -78,23 +78,23 @@ function buildTemplateFeedback({ grade, strengths, weaknesses }) {
 }
 
 function buildTemplateSummary({ grade, strengths, weaknesses }) {
-  return `${grade} 수준으로, ${strengths[0]}과 ${strengths[1]} 측면에서 높은 역량을 보여줍니다. 반면 ${weaknesses[0]} 영역이 가장 약한 부분으로, 이 부분을 의식적으로 보완하면 AI 활용 수준을 한 단계 높일 수 있습니다.`;
+  return `${grade} 수준입니다. ${strengths[0]}과 ${strengths[1]}은 비교적 안정적으로 활용하고 있지만, ${weaknesses[0]}과 ${weaknesses[1]}은 프롬프트에 더 의식적으로 넣어볼 필요가 있습니다.`;
 }
 
 function buildTemplateStrengths(strengths) {
   return strengths.map((name) => ({
     name,
-    description: `${name} 측면에서 일관성 있는 활용 패턴을 보여주고 있습니다.`
+    description: `${name}을 프롬프트에 자연스럽게 반영하는 편입니다.`
   }));
 }
 
 function buildTemplateWeaknesses(weaknesses) {
   return weaknesses.map((name) => ({
     name,
-    description: `${name} 역량을 높이려면 매 프롬프트 작성 시 이 부분을 의식적으로 포함하는 연습이 필요합니다.`
+    description: `요청을 보내기 전 ${name}이 드러나는 문장을 한 줄 더 추가해보세요.`
   }));
 }
 
 function buildTemplateInsight(strengths) {
-  return `저는 AI를 활용할 때 ${strengths[0]}과 ${strengths[1]}에 특히 신경 쓰며, 명확한 목표와 구조를 갖춘 프롬프트로 실무 효율을 높이는 방식으로 AI를 활용하고 있습니다.`;
+  return `저는 AI를 활용할 때 ${strengths[0]}과 ${strengths[1]}을 먼저 정리해 결과의 방향을 잡는 편입니다. 필요한 결과를 빠르게 얻기보다, 원하는 기준에 맞게 좁혀가는 방식으로 AI를 씁니다.`;
 }
