@@ -617,7 +617,8 @@ Do not evaluate or judge — just observe and describe.</textarea>
       <textarea class="answer-box" data-field="t2-paste" placeholder="AI가 생성한 답변을 여기에 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
       ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
     </section>
-    <nav class="nav-buttons">
+    <nav class="nav-buttons stacked">
+      <button class="cta primary" type="button" data-copy-prompt>프롬프트 복사하기</button>
       ${button("이전", "t2-q-4", "secondary")}
       ${button("패턴 분석하기", "t2-result")}
     </nav>`,
@@ -748,6 +749,14 @@ document.addEventListener("input", (event) => {
   if (field.dataset.field === "t2-paste") state.t2FreeText = field.value;
 });
 
+document.addEventListener("pointerdown", (event) => {
+  const copyTarget = event.target.closest("[data-copy-prompt]");
+  if (!copyTarget) return;
+  const promptField = document.querySelector(".screen.active .prompt-box textarea");
+  if (!promptField) return;
+  copyTarget.dataset.copyPrepared = copyPromptFieldSync(promptField) ? "true" : "false";
+});
+
 document.addEventListener("click", async (event) => {
   const t1Answer = event.target.closest("[data-t1-answer]");
   if (t1Answer) {
@@ -767,11 +776,15 @@ document.addEventListener("click", async (event) => {
 
   const copyTarget = event.target.closest("[data-copy-prompt]");
   if (copyTarget) {
-    const prompt = document.querySelector(".screen.active .prompt-box textarea")?.value;
-    if (prompt && navigator.clipboard) await navigator.clipboard.writeText(prompt);
-    copyTarget.textContent = "복사 완료";
+    event.preventDefault();
+    const promptField = document.querySelector(".screen.active .prompt-box textarea");
+    const copied = copyTarget.dataset.copyPrepared === "true" || (promptField ? await copyPromptField(promptField) : false);
+    const originalText = copyTarget.dataset.copyLabel || copyTarget.textContent;
+    copyTarget.dataset.copyLabel = originalText;
+    copyTarget.textContent = copied ? "복사 완료" : "전체 선택됨 · ⌘C";
+    delete copyTarget.dataset.copyPrepared;
     setTimeout(() => {
-      copyTarget.textContent = "프롬프트 복사하기";
+      copyTarget.textContent = originalText;
     }, 1200);
     return;
   }
@@ -900,6 +913,56 @@ async function postJson(url, payload) {
     throw new Error(`${result.error?.message || "요청을 처리할 수 없습니다."}${details}`);
   }
   return result;
+}
+
+async function copyPromptField(promptField) {
+  const text = promptField.value;
+  if (copyPromptFieldSync(promptField)) return true;
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      promptField.blur();
+      return true;
+    }
+  } catch {
+    // Leave the selected text visible so the user can copy manually if needed.
+  }
+  return false;
+}
+
+function copyPromptFieldSync(promptField) {
+  const text = promptField.value;
+  let copiedFromEvent = false;
+  const handleCopy = (copyEvent) => {
+    copyEvent.clipboardData?.setData("text/plain", text);
+    copyEvent.preventDefault();
+    copiedFromEvent = true;
+  };
+
+  document.addEventListener("copy", handleCopy, { once: true });
+  try {
+    const commandResult = document.execCommand("copy");
+    if (copiedFromEvent || commandResult) return true;
+  } catch {
+    // Try visible field selection next.
+  } finally {
+    document.removeEventListener("copy", handleCopy);
+  }
+
+  promptField.focus();
+  promptField.select();
+  promptField.setSelectionRange(0, text.length);
+
+  try {
+    if (document.execCommand("copy")) {
+      promptField.blur();
+      return true;
+    }
+  } catch {
+    // Leave the selected text visible so the user can copy manually if needed.
+  }
+  return false;
 }
 
 function escapeHtml(value) {
