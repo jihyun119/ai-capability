@@ -170,6 +170,17 @@ function header() {
     </header>`;
 }
 
+function loadingHeader() {
+  return `
+    <header class="top-bar loading-top-bar">
+      <button class="brand" type="button" data-go="home" aria-label="홈">
+        <img class="logo-img" src="${logoDir}Logo.v2.png" alt="" aria-hidden="true" />
+        <span>푸키</span>
+      </button>
+      <button class="menu-button" type="button" data-go="map" aria-label="전체 화면"><span></span><span></span><span></span></button>
+    </header>`;
+}
+
 function footer() {
   return `
     <footer class="footer">
@@ -430,16 +441,18 @@ function pasteScreen(id, title, desc, placeholder, prev, next, cta) {
 }
 
 function loadingScreen(id, title, messages, next) {
-  if (id === "t1-loading") {
+  if (id === "t1-loading" || id === "t2-loading") {
     return screen(
       id,
       title.replace(/<br \/>/g, " "),
-      `${header()}
-      <section class="t1-loading-state">
+      `${loadingHeader()}
+      <section class="analysis-loading-state">
         <h1>${title}</h1>
-        <img class="loading-mascot-img" src="${logoDir}Logo.v1.png" alt="" aria-hidden="true" />
+        <div class="analysis-loading-mascot" aria-hidden="true">
+          <i></i><i></i>
+        </div>
       </section>`,
-      "compact-screen t1-loading-screen"
+      "compact-screen analysis-loading-screen"
     );
   }
 
@@ -694,6 +707,7 @@ function showScreen(name) {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
   });
   app.scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 
 render();

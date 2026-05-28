@@ -257,6 +257,12 @@ button {
   background: var(--black);
 }
 
+.loading-top-bar .brand {
+  font-family: Paperlogy, Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+
 h1,
 p,
 h3 {
@@ -1367,41 +1373,46 @@ input {
   border-radius: 10px;
 }
 
+.analysis-loading-screen,
 .t1-loading-screen {
   min-height: 852px;
   padding: 44px 20px 0;
   overflow: hidden;
 }
 
+.analysis-loading-state,
 .t1-loading-state {
   position: absolute;
   left: 20px;
-  top: 247px;
+  top: calc(50% - 149.5px - 29.5px);
   width: 353px;
-  height: 289px;
+  height: 299px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 25px;
+  justify-content: center;
+  gap: 24px;
   text-align: center;
 }
 
+.analysis-loading-state h1,
 .t1-loading-state h1 {
   width: 353px;
-  height: 74px;
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: Pretendard, sans-serif;
   font-size: 30px;
   font-weight: 700;
-  line-height: 37px;
+  line-height: 36px;
 }
 
+.analysis-loading-mascot,
 .loading-mascot {
   position: relative;
-  width: 208px;
-  height: 208px;
+  width: 203px;
+  height: 203px;
   overflow: hidden;
 }
 
@@ -1412,16 +1423,17 @@ input {
   object-fit: contain;
 }
 
+.analysis-loading-mascot::before,
 .loading-mascot::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 2px;
-  width: 205px;
-  height: 205px;
+  left: 5px;
+  top: 9px;
+  width: 202px;
+  height: 202px;
   background: var(--violet);
-  border: 1px solid var(--black);
-  border-radius: 4px 7px 10px 4px;
+  border: 1.1px solid var(--black);
+  border-radius: 5px 8px 13px 5px;
   clip-path: polygon(
     100% 0,
     100% 84%,
@@ -1451,44 +1463,95 @@ input {
   transform: rotate(4.5deg);
 }
 
+.analysis-loading-mascot i,
 .loading-mascot i {
   position: absolute;
-  top: 88px;
-  width: 48px;
-  height: 65px;
-  border: 1px solid var(--black);
+  top: 112px;
+  width: 52px;
+  height: 64px;
+  border: 1.1px solid var(--black);
   border-radius: 50%;
   background: var(--white);
 }
 
+.analysis-loading-mascot i:first-child,
 .loading-mascot i:first-child {
-  left: 81px;
+  left: 88px;
 }
 
+.analysis-loading-mascot i:last-child,
 .loading-mascot i:last-child {
-  left: 139px;
+  left: 145px;
 }
 
+.analysis-loading-mascot i::before,
 .loading-mascot i::before {
   content: "";
   position: absolute;
   left: 8px;
   top: 12px;
-  width: 29px;
-  height: 40px;
+  width: 30px;
+  height: 39px;
   border-radius: 50%;
   background: var(--black);
 }
 
+.analysis-loading-mascot i::after,
 .loading-mascot i::after {
   content: "";
   position: absolute;
-  left: 12px;
+  left: 13px;
   top: 25px;
   width: 9px;
-  height: 13px;
+  height: 12px;
   border-radius: 50%;
   background: var(--white);
+  animation: loading-eye-glint 1.2s steps(1, end) infinite;
+}
+
+.analysis-loading-mascot i:last-child::after,
+.loading-mascot i:last-child::after {
+  animation-name: loading-eye-glint-right;
+}
+
+@keyframes loading-eye-glint {
+  0%,
+  100% {
+    left: 13px;
+    top: 25px;
+  }
+  25% {
+    left: 17px;
+    top: 18px;
+  }
+  50% {
+    left: 26px;
+    top: 25px;
+  }
+  75% {
+    left: 17px;
+    top: 34px;
+  }
+}
+
+@keyframes loading-eye-glint-right {
+  0%,
+  100% {
+    left: 13px;
+    top: 25px;
+  }
+  25% {
+    left: 17px;
+    top: 18px;
+  }
+  50% {
+    left: 26px;
+    top: 25px;
+  }
+  75% {
+    left: 17px;
+    top: 34px;
+  }
 }
 
 .result-card,
