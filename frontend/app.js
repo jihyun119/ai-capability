@@ -501,7 +501,7 @@ function t1ResultScreen() {
       <article><strong>근거 안내</strong><span>${card.evidenceNotice}</span></article>
     </section>
     <nav class="nav-buttons">
-      ${button("공유하기", "t1-share", "secondary")}
+      <button class="cta secondary" type="button" data-share-result="track1">공유하기</button>
       ${button("다른 Track 도전", "track")}
     </nav>`,
     "compact-screen t1-result-screen"
@@ -654,7 +654,8 @@ function t2ResultScreen() {
       <article><strong>보완할 점</strong><span>${feedback.weaknesses.map((item) => `${item.name}: ${item.description}`).join("<br />")}</span></article>
       <article><strong>면접에서 이렇게 말할 수 있어요</strong><span>${feedback.insight}</span></article>
     </section>
-    <nav class="nav-buttons">
+    <nav class="nav-buttons stacked">
+      <button class="cta primary" type="button" data-share-result="track2">공유하기</button>
       ${button("Track 선택", "track", "secondary")}
       ${button("실전 평가", "t3-comingsoon")}
     </nav>`,
@@ -807,6 +808,28 @@ document.addEventListener("click", async (event) => {
     setTimeout(() => {
       copyTarget.textContent = originalText;
     }, 1200);
+    return;
+  }
+
+  const shareTarget = event.target.closest("[data-share-result]");
+  if (shareTarget) {
+    event.preventDefault();
+    const originalText = shareTarget.dataset.shareLabel || shareTarget.textContent;
+    shareTarget.dataset.shareLabel = originalText;
+    shareTarget.textContent = "공유 준비 중";
+    shareTarget.disabled = true;
+    try {
+      const outcome = await shareResult(shareTarget.dataset.shareResult);
+      shareTarget.textContent = outcome === "shared" ? "공유창 열림" : "PNG 저장됨";
+    } catch (error) {
+      shareTarget.textContent = "공유 실패";
+      console.error(error);
+    } finally {
+      setTimeout(() => {
+        shareTarget.textContent = originalText;
+        shareTarget.disabled = false;
+      }, 1400);
+    }
     return;
   }
 
@@ -999,6 +1022,266 @@ function copyPromptFieldSync(promptField) {
     // Leave the selected text visible so the user can copy manually if needed.
   }
   return false;
+}
+
+async function shareResult(track) {
+  const { blob, filename, title, text } = await createResultShareImage(track);
+  const file = new File([blob], filename, { type: "image/png" });
+  const shareData = {
+    title,
+    text,
+    url: window.location.href
+  };
+
+  if (navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ ...shareData, files: [file] });
+    return "shared";
+  }
+
+  if (navigator.share) {
+    await navigator.share(shareData);
+    downloadBlob(blob, filename);
+    return "shared";
+  }
+
+  downloadBlob(blob, filename);
+  return "downloaded";
+}
+
+async function createResultShareImage(track) {
+  if (track === "track2") return createTrack2ShareImage();
+  return createTrack1ShareImage();
+}
+
+async function createTrack1ShareImage() {
+  const result = state.t1Result;
+  const typeName = result?.type?.name || "AI 관계 유형";
+  const card = result?.resultCard || {};
+  const keywords = card.keywords || [];
+  const description = card.description || "AI 활용 진단 결과를 확인해보세요.";
+  const characterSrc = `${characterDir}${typeName}.png`;
+  const canvas = createShareCanvas();
+  const ctx = canvas.getContext("2d");
+  drawShareBackground(ctx, canvas);
+  drawShareHeader(ctx, "AI 관계 유형 테스트", "나, AI를 잘 쓰고 있는 걸까?");
+  drawCenteredText(ctx, "당신의 AI 관계 유형은", 172, 42, 400, "#000", "Pretendard");
+  drawCenteredText(ctx, typeName, 232, 58, 800, "#000", "Pretendard");
+  await drawCharacter(ctx, characterSrc, 300, 290, 480, 500);
+  drawMultilineText(ctx, description, 110, 850, 860, 34, 30, 300, "#111");
+  drawPills(ctx, keywords, 110, 1060, 860);
+  drawShareFooter(ctx);
+  return canvasToSharePayload(canvas, "pookie-track1-result.png", `내 AI 관계 유형은 ${typeName}`, "AI 활용 진단 테스트 결과를 공유합니다.");
+}
+
+async function createTrack2ShareImage() {
+  const result = state.t2Result?.result || {};
+  const total = result.total ?? "--";
+  const grade = result.grade || "AI 활용 역량";
+  const feedback = result.feedback || {};
+  const canvas = createShareCanvas();
+  const ctx = canvas.getContext("2d");
+  drawShareBackground(ctx, canvas);
+  drawShareHeader(ctx, "AI 역량 평가 Lv.1", "나, AI를 잘 쓰고 있는 걸까?");
+  drawCenteredText(ctx, "AI 활용 역량 점수", 180, 42, 400, "#000", "Pretendard");
+  drawCenteredText(ctx, `${total}점`, 285, 92, 800, "#000", "Pretendard");
+  drawCenteredText(ctx, grade, 385, 46, 800, "#7d39eb", "Pretendard");
+  drawMultilineText(ctx, feedback.summary || "AI 활용 진단 결과를 확인해보세요.", 120, 495, 840, 34, 30, 400, "#111");
+  drawTrack2Axes(ctx, result.axes || {}, 130, 690);
+  drawShareFooter(ctx);
+  return canvasToSharePayload(canvas, "pookie-track2-result.png", `내 AI 활용 역량은 ${grade}`, "AI 활용 진단 테스트 결과를 공유합니다.");
+}
+
+function createShareCanvas() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1440;
+  return canvas;
+}
+
+function drawShareBackground(ctx, canvas) {
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 6;
+  roundRect(ctx, 60, 60, canvas.width - 120, canvas.height - 120, 36);
+  ctx.stroke();
+}
+
+function drawShareHeader(ctx, label, tagline) {
+  ctx.fillStyle = "#7d39eb";
+  roundRect(ctx, 110, 110, 48, 48, 8);
+  ctx.fill();
+  drawLogoEyes(ctx, 110, 110, 48);
+  drawText(ctx, "푸키", 176, 146, 32, 800, "#000", "Paperlogy");
+  drawText(ctx, label, 110, 235, 36, 800, "#000", "Pretendard");
+  drawText(ctx, tagline, 110, 282, 28, 400, "#555", "Pretendard");
+}
+
+function drawShareFooter(ctx) {
+  ctx.fillStyle = "#c6ff33";
+  roundRect(ctx, 110, 1260, 860, 92, 46);
+  ctx.fill();
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  drawCenteredText(ctx, "AI 시대에서 살아남기 · AI 활용역량 진단 테스트", 1318, 30, 800, "#000", "Pretendard");
+}
+
+async function drawCharacter(ctx, src, x, y, width, height) {
+  try {
+    const image = await loadImage(src);
+    const ratio = Math.min(width / image.width, height / image.height);
+    const drawWidth = image.width * ratio;
+    const drawHeight = image.height * ratio;
+    ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  } catch {
+    drawCenteredText(ctx, "푸키", y + height / 2, 72, 800, "#7d39eb", "Paperlogy");
+  }
+}
+
+function drawTrack2Axes(ctx, axes, x, y) {
+  const values = Object.values(axes);
+  const list = values.length > 0 ? values : [
+    { label: "작업 명확성", rate: 0 },
+    { label: "배경·맥락", rate: 0 },
+    { label: "역할 지정", rate: 0 },
+    { label: "출력 형식", rate: 0 },
+    { label: "반복 개선", rate: 0 },
+    { label: "비판적 검토", rate: 0 }
+  ];
+  for (const [index, axis] of list.entries()) {
+    const top = y + index * 74;
+    const rate = Math.max(0, Math.min(1, Number(axis.rate) || 0));
+    drawText(ctx, axis.label, x, top + 28, 26, 700, "#000", "Pretendard");
+    ctx.fillStyle = "#d9d9d9";
+    roundRect(ctx, x + 250, top, 560, 28, 14);
+    ctx.fill();
+    ctx.fillStyle = "#7d39eb";
+    roundRect(ctx, x + 250, top, 560 * rate, 28, 14);
+    ctx.fill();
+  }
+}
+
+function drawPills(ctx, keywords, x, y, maxWidth) {
+  let currentX = x;
+  let currentY = y;
+  ctx.font = "800 30px Pretendard";
+  for (const keyword of keywords.slice(0, 3)) {
+    const label = String(keyword);
+    const width = ctx.measureText(label).width + 52;
+    if (currentX + width > x + maxWidth) {
+      currentX = x;
+      currentY += 68;
+    }
+    ctx.fillStyle = "#c6ff33";
+    roundRect(ctx, currentX, currentY, width, 54, 27);
+    ctx.fill();
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    drawText(ctx, label, currentX + 26, currentY + 37, 30, 800, "#000", "Pretendard");
+    currentX += width + 16;
+  }
+}
+
+function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight, fontSize, fontWeight, color) {
+  const lines = wrapText(ctx, String(text).replace(/\n+/g, " "), maxWidth, fontSize, fontWeight);
+  lines.slice(0, 8).forEach((line, index) => {
+    drawText(ctx, line, x, y + index * lineHeight, fontSize, fontWeight, color, "Pretendard");
+  });
+}
+
+function drawCenteredText(ctx, text, y, fontSize, fontWeight, color, fontFamily) {
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  ctx.fillStyle = color;
+  ctx.textAlign = "center";
+  ctx.fillText(text, 540, y);
+  ctx.textAlign = "left";
+}
+
+function drawText(ctx, text, x, y, fontSize, fontWeight, color, fontFamily) {
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  ctx.fillStyle = color;
+  ctx.textAlign = "left";
+  ctx.fillText(text, x, y);
+}
+
+function wrapText(ctx, text, maxWidth, fontSize, fontWeight) {
+  ctx.font = `${fontWeight} ${fontSize}px Pretendard`;
+  const words = text.split(/\s+/);
+  const lines = [];
+  let line = "";
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (ctx.measureText(next).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function drawLogoEyes(ctx, x, y, size) {
+  ctx.fillStyle = "#fff";
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 1.5;
+  for (const offset of [14, 28]) {
+    ctx.beginPath();
+    ctx.ellipse(x + offset, y + 29, 7, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(x + offset - 1, y + 29, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+  }
+}
+
+function roundRect(ctx, x, y, width, height, radius) {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + safeRadius, y);
+  ctx.arcTo(x + width, y, x + width, y + height, safeRadius);
+  ctx.arcTo(x + width, y + height, x, y + height, safeRadius);
+  ctx.arcTo(x, y + height, x, y, safeRadius);
+  ctx.arcTo(x, y, x + width, y, safeRadius);
+  ctx.closePath();
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+function canvasToSharePayload(canvas, filename, title, text) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("공유 이미지를 만들 수 없습니다."));
+        return;
+      }
+      resolve({ blob, filename, title, text });
+    }, "image/png");
+  });
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function escapeHtml(value) {
