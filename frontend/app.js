@@ -740,6 +740,27 @@ function showScreen(name) {
   window.scrollTo(0, 0);
 }
 
+function resetTrack1() {
+  state.t1Answers = {};
+  state.t1LlmText = "";
+  state.t1Result = null;
+  state.t1Error = "";
+}
+
+function resetTrack2() {
+  state.t2Answers = {};
+  state.t2FreeText = "";
+  state.t2Result = null;
+  state.t2Error = "";
+}
+
+function resetResults() {
+  state.t1Result = null;
+  state.t1Error = "";
+  state.t2Result = null;
+  state.t2Error = "";
+}
+
 render();
 
 document.addEventListener("input", (event) => {
@@ -801,6 +822,21 @@ document.addEventListener("click", async (event) => {
   if (target.dataset.go === "t2-result") {
     await submitTrack2();
     return;
+  }
+
+  if (target.dataset.go === "home" || target.dataset.go === "track") {
+    resetResults();
+    render();
+  }
+
+  if (target.dataset.go === "t1-intro") {
+    resetTrack1();
+    render();
+  }
+
+  if (target.dataset.go === "t2-intro") {
+    resetTrack2();
+    render();
   }
 
   showScreen(target.dataset.go);
