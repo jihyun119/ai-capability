@@ -414,6 +414,7 @@ function t1CopyScreen() {
     <nav class="nav-buttons stacked">
       <button class="cta primary" type="button" data-copy-prompt>프롬프트 복사하기</button>
       ${button("답변 붙여넣으러 가기", "t1-paste", "secondary")}
+      ${button("이전", "t1-q-12", "secondary")}
     </nav>`,
     "compact-screen"
   );

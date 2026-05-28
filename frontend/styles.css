@@ -1528,32 +1528,81 @@ input {
 }
 
 .analysis-loading-mascot i {
-  top: 121px;
-  width: 32px;
-  height: 43px;
-  border: 0;
-  background: #000;
+  top: 111px;
+  width: 45px;
+  height: 54px;
+  border: 3px solid var(--black);
+  background: var(--white);
   z-index: 1;
 }
 
 .analysis-loading-mascot i:first-child {
-  left: 91px;
+  left: 79px;
 }
 
 .analysis-loading-mascot i:last-child {
-  left: 151px;
+  left: 137px;
 }
 
 .analysis-loading-mascot i::before {
-  display: none;
+  display: block;
+  left: 10px;
+  top: 10px;
+  width: 25px;
+  height: 34px;
+  animation: loading-eye-pupil 1.2s steps(1, end) infinite;
 }
 
 .analysis-loading-mascot i::after {
-  left: 6px;
-  top: 17px;
+  left: 8px;
+  top: 22px;
   width: 9px;
   height: 12px;
   z-index: 2;
+}
+
+.analysis-loading-mascot i:last-child::before {
+  animation-name: loading-eye-pupil-right;
+}
+
+@keyframes loading-eye-pupil {
+  0%,
+  100% {
+    left: 10px;
+    top: 10px;
+  }
+  25% {
+    left: 15px;
+    top: 7px;
+  }
+  50% {
+    left: 18px;
+    top: 10px;
+  }
+  75% {
+    left: 12px;
+    top: 16px;
+  }
+}
+
+@keyframes loading-eye-pupil-right {
+  0%,
+  100% {
+    left: 10px;
+    top: 10px;
+  }
+  25% {
+    left: 15px;
+    top: 7px;
+  }
+  50% {
+    left: 18px;
+    top: 10px;
+  }
+  75% {
+    left: 12px;
+    top: 16px;
+  }
 }
 
 @keyframes loading-eye-glint {
