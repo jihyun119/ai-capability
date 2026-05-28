@@ -1423,6 +1423,15 @@ input {
   object-fit: contain;
 }
 
+.analysis-loading-mascot-img {
+  position: absolute;
+  inset: 0;
+  width: 203px;
+  height: 203px;
+  display: block;
+  object-fit: contain;
+}
+
 .analysis-loading-mascot::before,
 .loading-mascot::before {
   content: "";
@@ -1512,6 +1521,39 @@ input {
 .analysis-loading-mascot i:last-child::after,
 .loading-mascot i:last-child::after {
   animation-name: loading-eye-glint-right;
+}
+
+.analysis-loading-mascot::before {
+  display: none;
+}
+
+.analysis-loading-mascot i {
+  top: 121px;
+  width: 32px;
+  height: 43px;
+  border: 0;
+  background: #000;
+  z-index: 1;
+}
+
+.analysis-loading-mascot i:first-child {
+  left: 91px;
+}
+
+.analysis-loading-mascot i:last-child {
+  left: 151px;
+}
+
+.analysis-loading-mascot i::before {
+  display: none;
+}
+
+.analysis-loading-mascot i::after {
+  left: 6px;
+  top: 17px;
+  width: 9px;
+  height: 12px;
+  z-index: 2;
 }
 
 @keyframes loading-eye-glint {

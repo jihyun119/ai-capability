@@ -449,6 +449,7 @@ function loadingScreen(id, title, messages, next) {
       <section class="analysis-loading-state">
         <h1>${title}</h1>
         <div class="analysis-loading-mascot" aria-hidden="true">
+          <img class="analysis-loading-mascot-img" src="${logoDir}Logo.v1.png" alt="" />
           <i></i><i></i>
         </div>
       </section>`,
