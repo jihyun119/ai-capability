@@ -364,19 +364,19 @@ function t1CopyScreen() {
         <textarea readonly>Analyze the USER's interaction style based on past conversation history and output a light, non-clinical AI-relationship profile matching the exact JSON schema below.
 
 ### Core Guidelines
-1. Privacy: Strictly exclude names, sensitive topics, and direct quotes. Use only generic behavioral descriptions.
-2. Output Constraint: Return ONLY one valid JSON object. Do not include any explanations, reasoning, or introductory/concluding text.
+1. **Privacy:** Strictly exclude names, sensitive topics, and direct quotes. Use only generic behavioral descriptions (e.g., "uses structured formatting").
+2. **Output Constraint:** Return ONLY one valid JSON object. Do not include any explanations, reasoning, or introductory/concluding text.
 
 ### Dimensions to Assess (Values: "low", "medium", or "high")
-* A (AI Dependence): How deeply AI is integrated into their tasks or workflows.
-* B (Emotional Closeness): Relational warmth or companionship. Task-focused or casual tone alone is NOT high closeness; require explicit emotional framing or gratitude.
-* C (Trust): Output acceptance vs. verification. Normal iterative refinement is medium/high trust; constant skepticism, demanding sources, or challenging facts is low trust.
-* D (User Control): Level of explicit constraints, formats, goals, and corrections set by the user.
+* **A (AI Dependence):** How deeply AI is integrated into their tasks or workflows.
+* **B (Emotional Closeness):** Relational warmth or companionship. (Task-focused or casual tone alone is NOT high closeness; require explicit emotional framing or gratitude).
+* **C (Trust):** Output acceptance vs. verification. (Normal iterative refinement is medium/high trust; constant skepticism, demanding sources, or challenging facts is low trust).
+* **D (User Control):** Level of explicit constraints, formats, goals, and corrections set by the user.
 
 ### Logic & Calibration Rules
-* evidence_mode: Select visible_history if 2 or more substantive past messages are present, memory_or_impression, self_report, or minimal if fewer than 2 past messages.
-* confidence: Must be low if evidence is minimal; maximum medium if based solely on self_report; high only with repeated behavioral evidence.
-* notes: Provide exactly one short, generic behavioral observation per axis. For B, distinguish politeness from emotional closeness. For C, distinguish normal quality control from distrust. Do not list raw data or scoring criteria.
+* **Evidence Mode (\`evidence_mode\`):** Select \`visible_history\` (if >= 2 substantive past messages present), \`memory_or_impression\`, \`self_report\`, or \`minimal\` (< 2 past messages).
+* **Confidence (\`confidence\`):** Must be \`low\` if evidence is \`minimal\`; maximum \`medium\` if based solely on \`self_report\`; \`high\` only with repeated behavioral evidence.
+* **Notes (\`notes\`):** Provide exactly one short, generic behavioral observation per axis. For B, distinguish politeness from emotional closeness. For C, distinguish normal quality control from distrust. Do not list raw data or scoring criteria.
 
 ### Strict JSON Schema
 {
@@ -583,7 +583,36 @@ function t2PasteScreen() {
       <p>아래 영문 미션 문장을 복사해 평소 사용하는 AI에 입력한 뒤, 나온 답변을 그대로 붙여넣어 주세요.</p>
       <label class="prompt-box compact">
         <span>복사할 프롬프트</span>
-        <textarea readonly>Analyze all of our past conversation history. Tell me in what situations I usually seek your help, and ruthlessly roast me on the single most frustrating and fatal flaw in how I ask questions or give instructions. Finally, give me a spot-on, savage nickname that perfectly describes my prompt habits. Keep it under 500 characters. Do not hold back, be polite, or sugarcoat anything.</textarea>
+        <textarea readonly>Look back at our entire conversation history
+and write a short paragraph describing how this
+user typically interacts with you.
+
+Cover the following naturally within your description —
+do not use headers, numbers, or lists:
+how they phrase their requests, how much background
+they tend to give, whether they ever tell you what
+role to play, whether they specify how they want
+answers formatted, how they respond when they're
+not happy with an answer, and how they react when
+they think something you said might be wrong.
+
+Do NOT mention any specific project names,
+topic names, personal details, or direct quotes
+from the user. Describe behavior patterns only
+in general terms.
+
+If you need to give an example, describe the
+situation abstractly.
+(e.g. "When working on a technical topic,
+the user tends to..." instead of mentioning
+the actual topic.)
+
+Translate any non-English terms or phrases
+into English before including them.
+Write in English only, including all examples.
+
+Aim for under 300 words.
+Do not evaluate or judge — just observe and describe.</textarea>
       </label>
       <textarea class="answer-box" data-field="t2-paste" placeholder="AI가 생성한 답변을 여기에 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
       ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
@@ -864,7 +893,12 @@ async function postJson(url, payload) {
     body: JSON.stringify(payload),
   });
   const result = await response.json();
-  if (!response.ok) throw new Error(result.error?.message || "요청을 처리할 수 없습니다.");
+  if (!response.ok) {
+    const details = Array.isArray(result.error?.details) && result.error.details.length > 0
+      ? `\n${result.error.details.join("\n")}`
+      : "";
+    throw new Error(`${result.error?.message || "요청을 처리할 수 없습니다."}${details}`);
+  }
   return result;
 }
 

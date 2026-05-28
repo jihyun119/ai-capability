@@ -289,13 +289,15 @@ export function validateCanonicalResult(input) {
     errors.push("profile 숫자 점수는 허용하지 않습니다. 외부 LLM은 signals만 반환해야 합니다.");
   }
   for (const axis of AXES) {
+    const signal = normalizeLevel(parsed.signals?.[axis]);
+    const confidence = normalizeLevel(parsed.confidence?.[axis]);
     if (typeof parsed.profile?.[axis] === "number") {
       errors.push(`profile.${axis} 숫자 점수는 백엔드에서만 계산합니다.`);
     }
-    if (!SIGNALS.has(parsed.signals?.[axis])) {
+    if (!SIGNALS.has(signal)) {
       errors.push(`signals.${axis}는 low/medium/high 중 하나여야 합니다.`);
     }
-    if (!CONFIDENCE.has(parsed.confidence?.[axis])) {
+    if (!CONFIDENCE.has(confidence)) {
       errors.push(`confidence.${axis}는 low/medium/high 중 하나여야 합니다.`);
     }
     if (typeof parsed.notes?.[axis] !== "string" || parsed.notes[axis].trim().length === 0) {
@@ -322,12 +324,26 @@ export function validateCanonicalResult(input) {
     status: "success",
     evidence_mode: parsed.evidence_mode || null,
     evidence_notice: parsed.evidence_notice || null,
-    signals: pickAxes(parsed.signals),
-    confidence: pickAxes(parsed.confidence),
+    signals: normalizeAxisLevels(parsed.signals),
+    confidence: normalizeAxisLevels(parsed.confidence),
     notes: sanitizeNotes(pickAxes(parsed.notes)),
     tags: parsed.tags.slice(0, 3).map(String),
     verdict: stripPrivateLikeText(parsed.verdict)
   };
+}
+
+function normalizeAxisLevels(values) {
+  const normalized = {};
+  for (const axis of AXES) normalized[axis] = normalizeLevel(values?.[axis]);
+  return normalized;
+}
+
+function normalizeLevel(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (normalized === "low" || normalized === "낮음" || normalized === "저") return "low";
+  if (normalized === "medium" || normalized === "mid" || normalized === "중간" || normalized === "보통") return "medium";
+  if (normalized === "high" || normalized === "높음" || normalized === "고") return "high";
+  return normalized;
 }
 
 export function scoreQuestionnaire(input) {
