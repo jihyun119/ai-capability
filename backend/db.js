@@ -4,11 +4,15 @@ import { loadEnv } from "../src/shared/env.js";
 
 loadEnv();
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = normalizeEnvValue(process.env.SUPABASE_URL);
+const supabaseServiceRoleKey = normalizeEnvValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 if (!supabaseUrl || !supabaseServiceRoleKey) {
   throw new Error("SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았습니다.");
+}
+
+if (!/^https?:\/\/.+/i.test(supabaseUrl)) {
+  throw new Error("SUPABASE_URL 형식이 올바르지 않습니다. https://...supabase.co 형태로 설정해주세요.");
 }
 
 const supabase = createClient(
@@ -384,4 +388,16 @@ function buildFeedbackText(feedbackResult) {
     ...(feedbackResult.weaknesses || []).map((item) => `${item.name}: ${item.description}`),
     feedbackResult.insight
   ].filter(Boolean).join("\n");
+}
+
+function normalizeEnvValue(value) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
 }
