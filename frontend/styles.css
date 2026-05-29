@@ -160,6 +160,12 @@ button {
   padding-top: 44px;
 }
 
+.h01-screen-v2 {
+  min-height: 920px;
+  height: 920px;
+  overflow: hidden;
+}
+
 .h02-screen {
   min-height: 920px;
   padding-top: 44px;
@@ -373,6 +379,50 @@ mark {
   font-size: 35px;
   line-height: 44px;
   font-weight: 700;
+}
+
+.home-content-v2 {
+  margin-top: 58px;
+}
+
+.home-content-v2 h1 {
+  width: 338px;
+  margin: 0 auto;
+  font-family: Pretendard, sans-serif;
+  font-size: 35px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.home-content-v2 h1 span {
+  display: block;
+  font-family: Unbounded, Pretendard, sans-serif;
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 7px;
+}
+
+.home-content-v2 h1 mark {
+  display: inline-block;
+  padding: 0 2px;
+  line-height: 1.04;
+}
+
+.home-content-v2 p {
+  margin-top: 19px;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 300;
+}
+
+.home-content-v2 .character-cluster {
+  margin-top: 25px;
+}
+
+.home-start-v2 {
+  margin-top: 41px;
 }
 
 .track-hero h1 {
@@ -810,7 +860,15 @@ mark {
   gap: 10px;
 }
 
-.birth-selects input {
+.login-row-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.birth-selects input,
+.birth-year-field input,
+.gender-field select {
   height: 56px;
   border: 1px solid var(--black);
   border-radius: 10px;
@@ -823,11 +881,27 @@ mark {
   font-weight: 400;
 }
 
-.birth-selects input::placeholder {
+.gender-field select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #aaa 50%), linear-gradient(135deg, #aaa 50%, transparent 50%);
+  background-position: calc(100% - 27px) 25px, calc(100% - 18px) 25px;
+  background-size: 9px 9px, 9px 9px;
+  background-repeat: no-repeat;
   color: #aaa;
 }
 
-.birth-selects input:focus {
+.gender-field select:valid {
+  color: var(--black);
+}
+
+.birth-selects input::placeholder,
+.birth-year-field input::placeholder {
+  color: #aaa;
+}
+
+.birth-selects input:focus,
+.birth-year-field input:focus,
+.gender-field select:focus {
   outline: 2px solid var(--violet);
   outline-offset: 1px;
 }
@@ -1588,6 +1662,10 @@ input {
   overflow-y: visible;
 }
 
+.t1-paste-screen {
+  min-height: 1023px;
+}
+
 .t1-copy-mission,
 .t2-copy-mission,
 .t1-answer-submit {
@@ -1691,7 +1769,7 @@ input {
 .t1-answer-submit textarea {
   width: 353px;
   height: 318px;
-  margin-top: 41px;
+  margin-top: 35px;
   padding: 39px 22px;
   border-color: #c8c8c8;
   border-radius: 10px;
@@ -1723,6 +1801,28 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.answer-example-image {
+  display: block;
+  object-fit: contain;
+}
+
+.t1-example-image,
+.t2-example-image {
+  width: 313px;
+  height: auto;
+  margin: 22px auto 0;
+}
+
+.answer-example-caption {
+  display: block;
+  margin-top: 18px;
+  text-align: center;
+  font-family: PretendardRegular, Pretendard, sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--black);
 }
 
 .t2-paste-screen {
@@ -1805,24 +1905,6 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.t2-example-image {
-  width: 313px;
-  height: auto;
-  margin: 22px auto 0;
-  display: block;
-  object-fit: contain;
-}
-
-.t2-example-caption {
-  display: block;
-  margin-top: 18px;
-  text-align: center;
-  font-family: PretendardRegular, Pretendard, sans-serif;
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--black);
 }
 
 .nav-buttons.t2-answer-nav {
@@ -2468,6 +2550,15 @@ input {
   font-weight: 300;
   line-height: 1.35;
   color: var(--black);
+}
+
+.t1-evidence-note {
+  margin: 26px 0 0;
+  text-align: center;
+  font-family: PretendardRegular, Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.35;
 }
 
 .t1-result-screen .nav-buttons,
