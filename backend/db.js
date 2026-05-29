@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { loadEnv } from "../src/shared/env.js";
 
@@ -15,10 +14,8 @@ if (!/^https?:\/\/.+/i.test(supabaseUrl)) {
   throw new Error("SUPABASE_URL 형식이 올바르지 않습니다. https://...supabase.co 형태로 설정해주세요.");
 }
 
-const supabase = createClient(
-  supabaseUrl,
-  supabaseServiceRoleKey
-);
+const supabaseHost = new URL(supabaseUrl).host;
+const supabaseRestUrl = `${supabaseUrl.replace(/\/+$/, "").replace(/\/rest\/v1$/i, "")}/rest/v1`;
 
 // ── 응시자 생성 ───────────────────────────────────────────────────────────────
 
@@ -33,11 +30,11 @@ export async function createRespondent(nickname, birthYear = null) {
   const error = await insertWithSchemaFallback("respondents", payload);
   if (error) throw new Error(`응시자 생성 실패: ${error.message}`);
 
-  const { data, error: selectError } = await supabase
-    .from("respondents")
-    .select("id, nickname, access_token")
-    .eq("access_token", accessToken)
-    .single();
+  const { data, error: selectError } = await restSelectOne(
+    "respondents",
+    "id,nickname,access_token",
+    { access_token: accessToken }
+  );
 
   if (selectError || !data) throw new Error(`응시자 생성 실패: ${selectError?.message}`);
   return data;
@@ -46,18 +43,16 @@ export async function createRespondent(nickname, birthYear = null) {
 // ── 응시자 검증 ───────────────────────────────────────────────────────────────
 
 export async function validateRespondent(respondentId, accessToken) {
-  const { data, error } = await supabase
-    .from("respondents")
-    .select("id, nickname, access_token")
-    .eq("id", respondentId)
-    .single();
+  const { data, error } = await restSelectOne(
+    "respondents",
+    "id,nickname,access_token",
+    { id: respondentId }
+  );
 
   if (error || !data) throw new Error("응시자를 찾을 수 없습니다.");
   if (data.access_token !== accessToken) throw new Error("access_token이 일치하지 않습니다.");
 
-  await supabase.from("respondents")
-    .update({ last_seen_at: new Date().toISOString() })
-    .eq("id", respondentId);
+  await restUpdate("respondents", { last_seen_at: new Date().toISOString() }, { id: respondentId });
 
   return data;
 }
@@ -142,7 +137,7 @@ export async function saveTrack2Result({ respondentId, nicknameSnapshot, birthYe
     axis_key:             "multi"
   }));
 
-  const { error: diagError } = await supabase.from("diagnosis_answers").insert(diagnosisRows);
+  const diagError = await insertWithSchemaFallback("diagnosis_answers", diagnosisRows);
   if (diagError) console.error("diagnosis_answers 저장 실패:", diagError.message);
 
   return { resultId, shareSlug: resultId };
@@ -275,7 +270,7 @@ export async function saveTrack1Result({ respondentId, nicknameSnapshot, birthYe
     axis_key: track1AxisForQuestion(qKey)
   }));
 
-  const { error: diagError } = await supabase.from("diagnosis_answers").insert(diagnosisRows);
+  const diagError = await insertWithSchemaFallback("diagnosis_answers", diagnosisRows);
   if (diagError) console.error("diagnosis_answers 저장 실패:", diagError.message);
 
   return { resultId, shareSlug: resultId };
@@ -284,11 +279,7 @@ export async function saveTrack1Result({ respondentId, nicknameSnapshot, birthYe
 // ── Track 1 결과 조회 ─────────────────────────────────────────────────────────
 
 export async function getTrack1Result(resultId) {
-  const { data, error } = await supabase
-    .from("track1_results")
-    .select("*")
-    .eq("result_id", resultId)
-    .single();
+  const { data, error } = await restSelectOne("track1_results", "*", { result_id: resultId });
 
   if (error || !data) throw new Error("결과를 찾을 수 없습니다.");
   return data;
@@ -297,11 +288,7 @@ export async function getTrack1Result(resultId) {
 // ── Track 2 결과 조회 ─────────────────────────────────────────────────────────
 
 export async function getTrack2Result(resultId) {
-  const { data, error } = await supabase
-    .from("track2_results")
-    .select("*")
-    .eq("result_id", resultId)
-    .single();
+  const { data, error } = await restSelectOne("track2_results", "*", { result_id: resultId });
 
   if (error || !data) throw new Error("결과를 찾을 수 없습니다.");
   return data;
@@ -319,21 +306,119 @@ function track1AxisForQuestion(questionKey) {
 }
 
 async function insertWithSchemaFallback(table, payload) {
-  const mutablePayload = { ...payload };
-  const maxAttempts = Object.keys(mutablePayload).length + 1;
+  const mutablePayload = Array.isArray(payload)
+    ? payload.map((row) => ({ ...row }))
+    : { ...payload };
+  const initialKeys = Array.isArray(mutablePayload)
+    ? new Set(mutablePayload.flatMap((row) => Object.keys(row)))
+    : new Set(Object.keys(mutablePayload));
+  const maxAttempts = initialKeys.size + 1;
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const { error } = await supabase.from(table).insert(mutablePayload);
+    const error = await restInsert(table, mutablePayload);
     if (!error) return null;
 
     const missingColumn = extractMissingColumn(error.message);
-    if (!missingColumn || !(missingColumn in mutablePayload)) return error;
+    if (!missingColumn || !payloadHasColumn(mutablePayload, missingColumn)) return error;
 
     console.warn(`[${table}] Supabase schema cache missing column '${missingColumn}', retrying without it.`);
-    delete mutablePayload[missingColumn];
+    deletePayloadColumn(mutablePayload, missingColumn);
   }
 
   return new Error(`${table} 저장 실패: Supabase 스키마 불일치가 반복되었습니다.`);
+}
+
+async function restInsert(table, payload) {
+  const { error } = await supabaseRestFetch(table, {
+    method: "POST",
+    body: payload,
+    headers: { Prefer: "return=minimal" }
+  });
+  return error;
+}
+
+async function restSelectOne(table, columns, filters) {
+  const params = new URLSearchParams({ select: columns });
+  for (const [key, value] of Object.entries(filters)) {
+    params.set(key, `eq.${value}`);
+  }
+
+  const { data, error } = await supabaseRestFetch(`${table}?${params.toString()}`, {
+    method: "GET",
+    headers: { Accept: "application/vnd.pgrst.object+json" }
+  });
+  return { data, error };
+}
+
+async function restUpdate(table, patch, filters) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    params.set(key, `eq.${value}`);
+  }
+  const { error } = await supabaseRestFetch(`${table}?${params.toString()}`, {
+    method: "PATCH",
+    body: patch,
+    headers: { Prefer: "return=minimal" }
+  });
+  return error;
+}
+
+async function supabaseRestFetch(path, { method, body, headers = {} }) {
+  const url = `${supabaseRestUrl}/${path}`;
+  let response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers: {
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+        "Content-Type": "application/json",
+        ...headers
+      },
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+  } catch (error) {
+    return {
+      data: null,
+      error: new Error(`Supabase 네트워크 연결 실패(${supabaseHost}): ${error.message}`)
+    };
+  }
+
+  const text = await response.text();
+  const parsed = parseJsonOrText(text);
+  if (!response.ok) {
+    const message = typeof parsed === "object" && parsed?.message
+      ? parsed.message
+      : text || response.statusText;
+    return {
+      data: null,
+      error: new Error(`Supabase REST ${response.status}: ${message}`)
+    };
+  }
+
+  return { data: parsed, error: null };
+}
+
+function parseJsonOrText(text) {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+function payloadHasColumn(payload, column) {
+  if (Array.isArray(payload)) return payload.some((row) => column in row);
+  return column in payload;
+}
+
+function deletePayloadColumn(payload, column) {
+  if (Array.isArray(payload)) {
+    for (const row of payload) delete row[column];
+    return;
+  }
+  delete payload[column];
 }
 
 function extractMissingColumn(message = "") {
