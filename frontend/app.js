@@ -737,8 +737,8 @@ function t2LoadingScreen() {
     "T2-05 분석 로딩",
     `${header()}
     <section class="t2-loading-state">
-      <div class="loading-logo loading-logo-large" aria-hidden="true"><i></i><i></i></div>
       <h1>AI 활용 패턴을<br />분석하는 중</h1>
+      <div class="analysis-loading-mascot" aria-hidden="true"></div>
       <ul class="loading-steps">
         <li>객관식 응답을 지표로 환산하는 중</li>
         <li>프롬프트 습관을 분석하는 중</li>
@@ -1071,7 +1071,7 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  if (target.dataset.go === "t2-result") {
+  if (target.dataset.go === "t2-loading" || target.dataset.go === "t2-result") {
     await submitTrack2();
     return;
   }
