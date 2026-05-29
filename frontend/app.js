@@ -1,55 +1,55 @@
-const characterDir = "./캐릭터_최종/";
-const galleryCharacterDir = "./캐릭터/";
+const characterDir = "./characters-final/";
+const galleryCharacterDir = "./characters/";
 const logoDir = "./Logo/";
 
 const characters = {
-  unsure: ["AI 몰라형", "AI 몰라형.png"],
-  searcher: ["프로 검색러형", "프로 검색러형.png"],
-  friend: ["필찾하는 친구형", "필찾하는 친구형.png"],
-  boss: ["선긋는 상사형", "선긋는 상사형.png"],
-  anxious: ["불안한 상습의뢰인형", "불안한 상습의뢰인형.png"],
-  love: ["애정넘치는 경계형", "애정넘치는 경계형.png"],
-  partner: ["든든한 파트너형", "든든한 파트너형.png"],
-  result: ["시키는만큼만 해 형", "시키는만큼만 해 형.png"],
+  unsure: ["AI 몰라형", "ai-unknown.png"],
+  searcher: ["프로 검색러형", "searcher.png"],
+  friend: ["필찾하는 친구형", "friend.png"],
+  boss: ["선긋는 상사형", "boss.png"],
+  anxious: ["불안한 상습의뢰인형", "anxious-client.png"],
+  love: ["애정넘치는 경계형", "boundary-love.png"],
+  partner: ["든든한 파트너형", "partner.png"],
+  result: ["시키는만큼만 해 형", "minimal-request.png"],
 };
 
 const characterGallery = [
-  "AI 몰라형.png",
-  "필찾하는 친구형.png",
-  "애정넘치는 경계형.png",
-  "냉철한 조련사형.png",
-  "가벼운 수다쟁이형.png",
-  "프로 검색러형.png",
-  "불안한 상습의뢰인형.png",
-  "든든한 파트너형.png",
-  "집착하는 애인형.png",
-  "드라이한 비즈니스맨형.png",
-  "프로 트집러형.png",
-  "시키는만큼만 해 형.png",
-  "선긋는 상사형.png",
-  "감정 쓰레기통형.png",
-  "의심많은 단골형.png",
-  "따듯한 완벽주의자형.png",
+  "ai-unknown.png",
+  "friend.png",
+  "boundary-love.png",
+  "cold-trainer.png",
+  "chatty.png",
+  "searcher.png",
+  "anxious-client.png",
+  "partner.png",
+  "clingy-lover.png",
+  "business.png",
+  "nitpicker.png",
+  "minimal-request.png",
+  "boss.png",
+  "emotion-bin.png",
+  "skeptic-regular.png",
+  "warm-perfectionist.png",
 ];
 
 const characterFilesByType = {
-  "AI 몰라형": "AI 몰라형.png",
-  "프로 검색러형": "프로 검색러형.png",
-  "필찾하는 친구형": "필찾하는 친구형.png",
-  "선긋는 상사형": "선긋는 상사형.png",
-  "불안한 상습의뢰인형": "불안한 상습의뢰인형.png",
-  "애정 넘치는 경계형": "애정넘치는 경계형.png",
-  "애정넘치는 경계형": "애정넘치는 경계형.png",
-  "든든한 파트너형": "든든한 파트너형.png",
-  "시키는만큼만 해 형": "시키는만큼만 해 형.png",
-  "가벼운 수다쟁이형": "가벼운 수다쟁이형.png",
-  "감정 쓰레기통형": "감정 쓰레기통형.png",
-  "냉철한 조련사형": "냉철한 조련사형.png",
-  "드라이한 비즈니스맨형": "드라이한 비즈니스맨형.png",
-  "따듯한 완벽주의자형": "따듯한 완벽주의자형.png",
-  "의심많은 단골형": "의심많은 단골형.png",
-  "집착하는 애인형": "집착하는 애인형.png",
-  "프로 트집러형": "프로 트집러형.png",
+  "AI 몰라형": "ai-unknown.png",
+  "프로 검색러형": "searcher.png",
+  "필찾하는 친구형": "friend.png",
+  "선긋는 상사형": "boss.png",
+  "불안한 상습의뢰인형": "anxious-client.png",
+  "애정 넘치는 경계형": "boundary-love.png",
+  "애정넘치는 경계형": "boundary-love.png",
+  "든든한 파트너형": "partner.png",
+  "시키는만큼만 해 형": "minimal-request.png",
+  "가벼운 수다쟁이형": "chatty.png",
+  "감정 쓰레기통형": "emotion-bin.png",
+  "냉철한 조련사형": "cold-trainer.png",
+  "드라이한 비즈니스맨형": "business.png",
+  "따듯한 완벽주의자형": "warm-perfectionist.png",
+  "의심많은 단골형": "skeptic-regular.png",
+  "집착하는 애인형": "clingy-lover.png",
+  "프로 트집러형": "nitpicker.png",
 };
 
 const t1Questions = [
@@ -198,12 +198,12 @@ function char(key, className = "character") {
 
 function charByType(typeName, className = "character") {
   const safeTypeName = typeName || "AI 몰라형";
-  const file = characterFilesByType[safeTypeName] || "AI 몰라형.png";
+  const file = characterFilesByType[safeTypeName] || "ai-unknown.png";
   return `<img class="${className}" src="${characterDir}${file}" alt="${safeTypeName}" />`;
 }
 
 function characterSrcByType(typeName) {
-  return `${characterDir}${characterFilesByType[typeName] || "AI 몰라형.png"}`;
+  return `${characterDir}${characterFilesByType[typeName] || "ai-unknown.png"}`;
 }
 
 function header(showMenu = true) {

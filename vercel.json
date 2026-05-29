@@ -7,6 +7,8 @@
     { "source": "/assets/:path*", "destination": "/frontend/assets/:path*" },
     { "source": "/fonts/:path*", "destination": "/frontend/fonts/:path*" },
     { "source": "/Logo/:path*", "destination": "/frontend/Logo/:path*" },
+    { "source": "/characters/:path*", "destination": "/frontend/characters/:path*" },
+    { "source": "/characters-final/:path*", "destination": "/frontend/characters-final/:path*" },
     { "source": "/캐릭터/:path*", "destination": "/frontend/캐릭터/:path*" },
     { "source": "/캐릭터_최종/:path*", "destination": "/frontend/캐릭터_최종/:path*" }
   ]
