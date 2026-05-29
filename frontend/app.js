@@ -1,4 +1,5 @@
 const characterDir = "./캐릭터_최종/";
+const galleryCharacterDir = "./캐릭터/";
 const logoDir = "./Logo/";
 
 const characters = {
@@ -11,6 +12,25 @@ const characters = {
   partner: ["든든한 파트너형", "든든한 파트너형.png"],
   result: ["시키는만큼만 해 형", "시키는만큼만 해 형.png"],
 };
+
+const characterGallery = [
+  "AI 몰라형.png",
+  "필찾하는 친구형.png",
+  "애정넘치는 경계형.png",
+  "냉철한 조련사형.png",
+  "가벼운 수다쟁이형.png",
+  "프로 검색러형.png",
+  "불안한 상습의뢰인형.png",
+  "든든한 파트너형.png",
+  "집착하는 애인형.png",
+  "드라이한 비즈니스맨형.png",
+  "프로 트집러형.png",
+  "시키는만큼만 해 형.png",
+  "선긋는 상사형.png",
+  "감정 쓰레기통형.png",
+  "의심많은 단골형.png",
+  "따듯한 완벽주의자형.png",
+];
 
 const t1Questions = [
   {
@@ -143,15 +163,30 @@ function char(key, className = "character") {
   return `<img class="${className}" src="${characterDir}${file}" alt="${name}" />`;
 }
 
-function header() {
+function header(showMenu = true) {
   return `
     <header class="top-bar">
       <button class="brand" type="button" data-go="home" aria-label="홈">
         <img class="logo-img" src="${logoDir}Logo.v2.png" alt="" aria-hidden="true" />
-        <span>서비스명</span>
+        <span>푸키</span>
       </button>
-      <button class="menu-button" type="button" data-go="map" aria-label="전체 화면"><span></span><span></span><span></span></button>
+      ${showMenu ? `<button class="menu-button" type="button" data-menu-open aria-label="더보기"><span></span><span></span><span></span></button>` : ""}
     </header>`;
+}
+
+function menuOverlay() {
+  return `
+    <aside class="menu-overlay" aria-hidden="true">
+      <button class="menu-backdrop" type="button" data-menu-close aria-label="메뉴 닫기"></button>
+      <nav class="menu-panel" aria-label="더보기">
+        <button class="menu-close" type="button" data-menu-close aria-label="메뉴 닫기">×</button>
+        <h2>더보기</h2>
+        <button type="button" data-go="t1-login">Track 1</button>
+        <button type="button" data-go="t2-login">Track 2</button>
+        <button type="button" data-go="t3-comingsoon">Track 3</button>
+        <button type="button" data-go="pooky-characters">푸키 캐릭터</button>
+      </nav>
+    </aside>`;
 }
 
 function footer() {
@@ -174,6 +209,13 @@ function progress(current, total) {
   return `
     <p class="progress-label">${current}/${total}</p>
     <div class="progress" aria-hidden="true"><span style="width:${(current / total) * 100}%"></span></div>`;
+}
+
+function rangeOptions(start, end, suffix = "") {
+  return Array.from({ length: end - start + 1 }, (_, index) => {
+    const value = start + index;
+    return `<option value="${value}">${value}${suffix}</option>`;
+  }).join("");
 }
 
 function homeScreen() {
@@ -223,13 +265,47 @@ function trackScreen() {
       <p>가볍게 관계 유형을 확인하고,<br />실전 역량까지도 푸키와 함께 키워봐요!</p>
     </section>
     <section class="track-list">
-      ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-intro")}
-      ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-intro")}
+      ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+      ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
       ${trackCard("Track3", ["Coming Soon", "준비 중"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
     </section>
     <p class="track-note">처음이라면 Track 1로 시작해보세요.<br />결과를 확인한 뒤 Lv.1, Lv.2로<br />자연스럽게 이어갈 수 있습니다.</p>
     ${footer()}`,
     "h02-screen"
+  );
+}
+
+function loginScreen(id, nextScreen) {
+  return screen(
+    id,
+    "트랙 시작 로그인",
+    `${header()}
+    <main class="login-content">
+      <section class="login-hero">
+        <h1>환영합니다!</h1>
+        <p>서비스를 이용하기 위해<br />간단한 정보를 입력해주세요.</p>
+      </section>
+      <form class="login-form">
+        <label class="login-field nickname-field">
+          <span>닉네임</span>
+          <div class="nickname-input">
+            <input type="text" maxlength="10" placeholder="닉네임을 입력해주세요" />
+            <i data-nickname-count>0/10</i>
+          </div>
+        </label>
+        <fieldset class="login-field birth-field">
+          <legend>생년월일</legend>
+          <div class="birth-selects">
+            <input type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" aria-label="년" data-birth-input />
+            <input type="text" inputmode="numeric" maxlength="2" placeholder="MM" aria-label="월" data-birth-input />
+            <input type="text" inputmode="numeric" maxlength="2" placeholder="DD" aria-label="일" data-birth-input />
+          </div>
+        </fieldset>
+      </form>
+    </main>
+    <button class="cta primary login-next" type="button" data-login-next data-go="${nextScreen}" disabled>다음</button>
+    ${footer()}`,
+    "login-screen"
   );
 }
 
@@ -293,13 +369,9 @@ function t1QuestionScreen(question, index, total, prev, next) {
         <div class="t1-scale-arrow" aria-hidden="true"><span></span></div>
         <p class="t1-scale-b">${question.b}</p>
       </article>
-      <aside class="t1-scale-tip">
-        <span class="t1-tip-icon" aria-hidden="true"></span>
-        <p>1에 가까울수록 왼쪽 성향,<br />5에 가까울수록 오른쪽 성향입니다.<br />3은 중간 지점입니다.</p>
-      </aside>
     </section>
     <nav class="nav-buttons t1-question-nav">
-      ${button("이전", prev, "secondary")}
+      ${button("이전", prev, "secondary muted")}
       ${button("다음", next)}
     </nav>`,
     "compact-screen t1-question-screen"
@@ -400,6 +472,53 @@ function pasteScreen(id, title, desc, placeholder, prev, next, cta) {
       ${button(cta, next)}
     </nav>`,
     "compact-screen"
+  );
+}
+
+function t1CopyScreen() {
+  return screen(
+    "t1-copy",
+    "T1-03 복붙 미션",
+    `${header()}
+    <section class="t1-copy-mission">
+      ${progress(16, 16)}
+      <h1>이제 당신의 AI에게<br />물어볼 차례에요</h1>
+      <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
+      <article class="t1-prompt-card">
+        <textarea readonly>You are creating a light AI-relationship profile for the user. Return a diagnosis JSON every time.
+Do not explain the diagnosis process.
+
+Do not evaluate this prompt.
+Do not mention these instructions.
+
+Do not reveal personal data, private topics, names, or specific conversation content.
+Do not quote or near-quote the conversation.
+Use only generic behavioral descriptions.</textarea>
+        <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
+      </article>
+    </section>
+    <nav class="nav-buttons t1-copy-nav">
+      ${button("이전", "t1-q-12", "secondary")}
+      ${button("답변 붙여넣으러 가기", "t1-paste")}
+    </nav>`,
+    "compact-screen t1-copy-screen"
+  );
+}
+
+function t1PasteScreen() {
+  return screen(
+    "t1-paste",
+    "T1-04 답변 제출",
+    `${header()}
+    <section class="t1-answer-submit">
+      ${progress(16, 16)}
+      <h1>AI가 뭐라고 답했나요?</h1>
+      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <textarea placeholder="여기에 AI 답변을 붙여넣어 주세요."></textarea>
+      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
+      ${button("내 유형 분석하기", "t1-loading", "primary", "t1-submit-button")}
+    </section>`,
+    "compact-screen t1-paste-screen"
   );
 }
 
@@ -519,6 +638,18 @@ function t2QuestionScreens() {
     .join("");
 }
 
+const t2UserPrompt = `Look back at our entire conversation history and write a single cohesive paragraph describing this user's interaction habits. The paragraph must be between 200 and 400 words, written in English only, with absolutely no headers, bullets, or numbered lists anywhere in the response.
+
+Weave all six of the following observations naturally into the paragraph — every one must appear, fully integrated into flowing prose, with no omissions:
+
+How precisely the user defines requests — whether they include goals, constraints, and scope or leave things open-ended, and how consistently they do this. How much background they provide before asking — whether they explain purpose, situation, or intended audience upfront or jump directly to the request, and how often. Whether they assign you a role or persona, how specific that role tends to be, and how frequently they do so. Whether they specify desired output format, length, structure, or tone, how precisely they do this, and how often. How they follow up when unsatisfied — whether they identify specifically what fell short and why, or ask in general terms, and how consistently they do this. Whether they challenge responses that seem incorrect or unclear, and how often they push back rather than accept.
+
+For every one of these six behaviors, you must use at least one frequency word drawn only from this set: always, consistently, frequently, sometimes, occasionally, rarely, never. Each frequency word must appear directly alongside the behavior it describes — not elsewhere in the sentence.
+
+Do not include any personal details, proper names, project names, topic names, field names, or direct quotes from the conversation. All situations must be described in abstract, general terms only.
+
+Do not use any word or phrase that implies a quality judgment or evaluation of any kind, including: effective, impressive, good, poor, strong, weak, thorough, vague, sophisticated, demonstrates, exhibits, reflects, reveals, notably, tends to excel, shows ability, manages to, succeeds in, handles well, effectively, admirably. Describe only what the user does and how often.`;
+
 function t2PasteScreen() {
   return screen(
     "t2-paste",
@@ -530,7 +661,7 @@ function t2PasteScreen() {
       <p>아래 영문 미션 문장을 복사해 평소 사용하는 AI에 입력한 뒤, 나온 답변을 그대로 붙여넣어 주세요.</p>
       <label class="prompt-box compact">
         <span>복사할 프롬프트</span>
-        <textarea readonly>Analyze all of our past conversation history. Tell me in what situations I usually seek your help, and ruthlessly roast me on the single most frustrating and fatal flaw in how I ask questions or give instructions. Finally, give me a spot-on, savage nickname that perfectly describes my prompt habits. Keep it under 500 characters. Do not hold back, be polite, or sugarcoat anything.</textarea>
+        <textarea readonly>${t2UserPrompt}</textarea>
       </label>
       <textarea class="answer-box" placeholder="AI가 생성한 답변을 여기에 붙여넣어 주세요."></textarea>
     </section>
@@ -543,30 +674,85 @@ function t2PasteScreen() {
 }
 
 function t2ResultScreen() {
-  const labels = ["작업 명확성", "배경·맥락 설명", "역할 지정", "출력 형식 지정", "반복 개선", "비판적 검토"];
+  const result = {
+    total: 77.3,
+    grade: "AI 활용형",
+    axes: {
+      task_clarity: { label: "작업 명확성", score: 19.6, max: 20, rate: 0.98 },
+      context: { label: "맥락 설명", score: 16.9, max: 20, rate: 0.85 },
+      role: { label: "역할 지정", score: 11, max: 15, rate: 0.73 },
+      output_format: { label: "출력 형식", score: 12, max: 15, rate: 0.8 },
+      iteration: { label: "반복 개선", score: 3, max: 15, rate: 0.2 },
+      critical_review: { label: "비판적 검토", score: 5, max: 15, rate: 0.33 },
+    },
+    feedback: {
+      summary: "AI를 업무에 활용하는 감각은 좋지만,<br />검증과 출력 설계에서 더 성장할 여지가 있습니다.",
+      strengths: [{ name: "작업 명확성", description: "목표와 필요한 결과물을 비교적 명확히 요청하는 능력이 좋습니다." }],
+      weaknesses: [{ name: "반복 개선", description: "AI가 틀릴 수 있는 상황에서 로직을 검증하거나 도구를 분리하는 전략은 아직 보완이 필요합니다." }],
+      insight: "저는 AI를 단순한 답변 생성 도구가 아니라 업무 효율을 높이는 보조 시스템으로 활용합니다. 필요한 결과를 구체적으로 요청하고, 중요한 판단이 필요한 상황에서는 AI 답변을 검토하며 보완하는 방식으로 사용합니다.",
+    },
+  };
+  const axisOrder = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
+  const center = 135;
+  const maxRadius = 94;
+  const angles = [-90, -30, 30, 90, 150, 210];
+  const point = (rate, index) => {
+    const angle = (angles[index] * Math.PI) / 180;
+    const radius = maxRadius * rate;
+    return `${center + Math.cos(angle) * radius},${center + Math.sin(angle) * radius}`;
+  };
+  const gridPolygon = (rate) => axisOrder.map((_, index) => point(rate, index)).join(" ");
+  const radarPoints = axisOrder.map((key, index) => point(result.axes[key].rate, index)).join(" ");
+  const labelPositions = [
+    { x: 135, y: 17, anchor: "middle" },
+    { x: 232, y: 76, anchor: "start" },
+    { x: 232, y: 197, anchor: "start" },
+    { x: 135, y: 255, anchor: "middle" },
+    { x: 38, y: 197, anchor: "end" },
+    { x: 38, y: 76, anchor: "end" },
+  ];
   return screen(
     "t2-result",
     "T2-04 Track 2 결과",
     `${header()}
-    <section class="score-hero">
-      <p>AI 활용 역량 점수</p>
-      <h1>76점</h1>
-      <strong>실무 적응형</strong>
-      <span>AI를 업무에 활용하는 감각은 좋지만, 검증과 출력 설계에서 더 성장할 여지가 있습니다.</span>
+    <section class="t2-result-content">
+      <article class="t2-score-card">
+        <p>당신의 AI 활용 역량 점수는</p>
+        <h1>${Math.round(result.total)}점</h1>
+        <div class="radar-chart" aria-label="Track 2 역량 레이더 차트">
+          <svg viewBox="0 0 270 270" role="img" aria-hidden="true">
+            ${[0.2, 0.4, 0.6, 0.8].map((rate) => `<polygon class="radar-grid" points="${gridPolygon(rate)}" />`).join("")}
+            ${axisOrder.map((_, index) => `<line class="radar-axis" x1="${center}" y1="${center}" x2="${point(1, index).split(",")[0]}" y2="${point(1, index).split(",")[1]}" />`).join("")}
+            <polygon class="radar-fill" points="${radarPoints}" />
+            <polygon class="radar-stroke" points="${radarPoints}" />
+            ${axisOrder.map((key, index) => `<circle class="radar-dot" cx="${point(result.axes[key].rate, index).split(",")[0]}" cy="${point(result.axes[key].rate, index).split(",")[1]}" r="3.5" />`).join("")}
+            ${axisOrder.map((key, index) => `<text class="radar-label" x="${labelPositions[index].x}" y="${labelPositions[index].y}" text-anchor="${labelPositions[index].anchor}">${result.axes[key].label}</text>`).join("")}
+          </svg>
+        </div>
+      </article>
+      <strong class="t2-grade-pill">${result.grade}</strong>
+      <p class="t2-result-summary">${result.feedback.summary}</p>
+      <section class="t2-feedback-list">
+        <article>
+          <h2><span>Strength</span> 강점</h2>
+          <p class="t2-feedback-body" style="font-family:PretendardRegular, Pretendard, sans-serif;font-weight:400;">${result.feedback.strengths[0].description}</p>
+        </article>
+        <article>
+          <h2><span>Weakness</span> 약점</h2>
+          <p class="t2-feedback-body" style="font-family:PretendardRegular, Pretendard, sans-serif;font-weight:400;">${result.feedback.weaknesses[0].description}</p>
+        </article>
+        <article class="t2-interview-card">
+          <h2><span>면접에서 이렇게 말할 수 있어요</span></h2>
+          <p class="t2-feedback-body" style="font-family:PretendardRegular, Pretendard, sans-serif;font-weight:400;">${result.feedback.insight}</p>
+        </article>
+      </section>
     </section>
-    <section class="radar-list">
-      ${labels.map((label, index) => `<p><span>${label}</span><i style="--score:${62 + index * 5}%"></i></p>`).join("")}
-    </section>
-    <section class="result-detail">
-      <article><strong>강점</strong><span>반복 업무를 구조화하고 원하는 결과물을 명확히 요청하는 능력이 좋습니다.</span></article>
-      <article><strong>보완할 점</strong><span>AI가 틀릴 수 있는 상황에서 로직을 검증하는 전략은 아직 보완이 필요합니다.</span></article>
-      <article><strong>면접에서 이렇게 말할 수 있어요</strong><span>저는 AI를 단순한 답변 생성 도구가 아니라 업무 효율을 높이는 보조 시스템으로 활용합니다.</span></article>
-    </section>
-    <nav class="nav-buttons">
-      ${button("Track 선택", "track", "secondary")}
-      ${button("실전 평가", "t3-comingsoon")}
-    </nav>`,
-    "compact-screen scroll-screen"
+    <nav class="nav-buttons t2-result-nav">
+      ${button("공유하기", "t2-result", "secondary")}
+      ${button("다른 Track 도전", "track")}
+    </nav>
+    ${footer()}`,
+    "t2-result-screen scroll-screen"
   );
 }
 
@@ -597,16 +783,37 @@ function myReportScreen() {
   );
 }
 
+function characterGalleryScreen() {
+  return screen(
+    "pooky-characters",
+    "푸키 캐릭터",
+    `${header()}
+    <section class="character-gallery-page">
+      <div class="character-grid">
+        ${characterGallery
+          .map((file) => {
+            const name = file.replace(".png", "");
+            return `<article class="character-tile"><img src="${galleryCharacterDir}${file}" alt="${name}" /></article>`;
+          })
+          .join("")}
+      </div>
+    </section>`,
+    "character-gallery-screen"
+  );
+}
+
 function mapScreen() {
   const flow = [
     ["H01", "랜딩 홈", "home"],
     ["H02", "Track 선택", "track"],
+    ["L01", "Track 1 로그인", "t1-login"],
     ["T1-01", "Track 1 안내", "t1-intro"],
     ["T1-02", "Track 1 객관식 12문항", "t1-q-1"],
     ["T1-03", "복붙 미션", "t1-copy"],
     ["T1-04", "답변 제출", "t1-paste"],
     ["T1-05", "분석 로딩", "t1-loading"],
     ["T1-06", "Track 1 결과", "t1-result"],
+    ["L02", "Track 2 로그인", "t2-login"],
     ["T2-01", "Track 2 안내", "t2-intro"],
     ["T2-02", "Track 2 객관식 4문항", "t2-q-1"],
     ["T2-03", "AI 답변 제출", "t2-paste"],
@@ -622,10 +829,12 @@ function render() {
   app.innerHTML = [
     homeScreen(),
     trackScreen(),
+    loginScreen("t1-login", "t1-intro"),
+    loginScreen("t2-login", "t2-intro"),
     t1IntroScreen(),
     t1QuestionScreens(),
     t1CopyScreen(),
-    pasteScreen("t1-paste", "AI가 반환한<br />JSON을 붙여넣어 주세요", "방금 받은 JSON을 그대로 붙여넣어 주세요. 서비스 백엔드가 검증, 정리, 점수화한 뒤 유형을 산출합니다.", "여기에 AI가 반환한 JSON을 붙여넣어 주세요.", "t1-copy", "t1-loading", "내 유형 분석하기"),
+    t1PasteScreen(),
     loadingScreen("t1-loading", "당신과 AI의 관계를<br />해석하는 중", ["질문 습관을 살펴보는 중", "AI에게 기대는 순간을 찾는 중", "가장 가까운 유형을 매칭하는 중", "결과 카드에 별명을 붙이는 중"], "t1-result"),
     t1ResultScreen(),
     t1ShareScreen(),
@@ -635,7 +844,9 @@ function render() {
     t2ResultScreen(),
     t3Screens(),
     myReportScreen(),
+    characterGalleryScreen(),
     mapScreen(),
+    menuOverlay(),
   ].join("");
 }
 
@@ -651,12 +862,43 @@ function showScreen(name) {
   }
 }
 
+function openMenu() {
+  document.querySelector(".menu-overlay")?.classList.add("open");
+}
+
+function closeMenu() {
+  document.querySelector(".menu-overlay")?.classList.remove("open");
+}
+
+function updateLoginValidity(screenNode) {
+  if (!screenNode?.classList.contains("login-screen")) return;
+  const nickname = screenNode.querySelector(".nickname-input input")?.value.trim() ?? "";
+  const [year = "", month = "", day = ""] = Array.from(screenNode.querySelectorAll("[data-birth-input]")).map((input) => input.value.trim());
+  const validYear = /^(19[8-9]\d|20[0-1]\d|202[0-6])$/.test(year);
+  const validMonth = /^(0?[1-9]|1[0-2])$/.test(month);
+  const validDay = /^(0?[1-9]|[12]\d|3[01])$/.test(day);
+  const nextButton = screenNode.querySelector("[data-login-next]");
+  if (nextButton) nextButton.disabled = !(nickname && validYear && validMonth && validDay);
+}
+
 render();
 
 document.addEventListener("click", async (event) => {
+  if (event.target.closest("[data-menu-open]")) {
+    event.preventDefault();
+    openMenu();
+    return;
+  }
+
+  if (event.target.closest("[data-menu-close]")) {
+    event.preventDefault();
+    closeMenu();
+    return;
+  }
+
   const copyTarget = event.target.closest("[data-copy-prompt]");
   if (copyTarget) {
-    const prompt = document.querySelector(".screen.active .prompt-box textarea")?.value;
+    const prompt = document.querySelector(".screen.active .prompt-box textarea, .screen.active .t1-prompt-card textarea")?.value;
     if (prompt && navigator.clipboard) await navigator.clipboard.writeText(prompt);
     copyTarget.textContent = "복사 완료";
     setTimeout(() => {
@@ -667,6 +909,23 @@ document.addEventListener("click", async (event) => {
 
   const target = event.target.closest("[data-go]");
   if (!target) return;
+  if (target.matches("[data-login-next]") && target.disabled) return;
   event.preventDefault();
+  closeMenu();
   showScreen(target.dataset.go);
+});
+
+document.addEventListener("input", (event) => {
+  const nicknameInput = event.target.closest(".nickname-input input");
+  if (nicknameInput) {
+    const count = nicknameInput.closest(".nickname-input")?.querySelector("[data-nickname-count]");
+    if (count) count.textContent = `${nicknameInput.value.length}/10`;
+  }
+
+  const birthInput = event.target.closest("[data-birth-input]");
+  if (birthInput) {
+    birthInput.value = birthInput.value.replace(/\D/g, "");
+  }
+
+  updateLoginValidity(event.target.closest(".login-screen"));
 });
