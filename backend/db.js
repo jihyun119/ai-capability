@@ -3,7 +3,7 @@ import { loadEnv } from "../src/shared/env.js";
 
 loadEnv();
 
-const supabaseUrl = normalizeEnvValue(process.env.SUPABASE_URL);
+const supabaseUrl = normalizeSupabaseUrl(process.env.SUPABASE_URL);
 const supabaseServiceRoleKey = normalizeEnvValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 if (!supabaseUrl || !supabaseServiceRoleKey) {
@@ -485,4 +485,12 @@ function normalizeEnvValue(value) {
     return trimmed.slice(1, -1).trim();
   }
   return trimmed;
+}
+
+function normalizeSupabaseUrl(value) {
+  const normalized = normalizeEnvValue(value);
+  if (typeof normalized !== "string") return normalized;
+  const match = normalized.match(/https?:\/\/[a-z0-9-]+\.supabase\.co/i);
+  if (match) return match[0];
+  return normalized.replace(/\/rest\/v1$/i, "");
 }
