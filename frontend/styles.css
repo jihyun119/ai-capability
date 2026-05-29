@@ -2686,11 +2686,6 @@ input {
   background: var(--white);
 }
 
-.t1-result-info.compact {
-  min-height: 85px;
-  margin-top: 25px;
-}
-
 .t1-result-info h2 {
   margin: 0 0 13px;
   color: var(--violet);

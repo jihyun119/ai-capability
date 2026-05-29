@@ -106,19 +106,9 @@ async function handleTrack1Submit(payload) {
   });
 
   if (shouldPersist && body.status === "success") {
-    const { validateRespondent, saveTrack1Result } = await import("../backend/db.js");
-    const respondent = await validateRespondent(payload.respondentId, payload.accessToken);
-    const { resultId, shareSlug } = await saveTrack1Result({
-      respondentId: payload.respondentId,
-      nicknameSnapshot: respondent.nickname,
-      birthYear: payload.birthYear,
-      questionnaireVersion: payload.questionnaireVersion || "track1-12",
-      questionnaire: payload.questionnaire,
-      llmResult: payload.llmResult,
-      evaluationResult: body,
-    });
-    body.resultId = resultId;
-    body.shareSlug = shareSlug;
+    body.resultId = body.resultId || `demo_track1_${Date.now()}`;
+    body.shareSlug = body.shareSlug || body.resultId;
+    persistTrack1Result(payload, body);
   }
 
   return {
@@ -133,9 +123,38 @@ async function handleTrack2Submit(payload) {
   const body = buildTrack2DemoResponse(scoringResult);
 
   if (payload.respondentId && payload.accessToken) {
+    persistTrack2Result(payload, scoringResult, body);
+  }
+
+  return {
+    statusCode: 200,
+    body,
+  };
+}
+
+async function persistTrack1Result(payload, evaluationResult) {
+  try {
+    const { validateRespondent, saveTrack1Result } = await import("../backend/db.js");
+    const respondent = await validateRespondent(payload.respondentId, payload.accessToken);
+    await saveTrack1Result({
+      respondentId: payload.respondentId,
+      nicknameSnapshot: respondent.nickname,
+      birthYear: payload.birthYear,
+      questionnaireVersion: payload.questionnaireVersion || "track1-12",
+      questionnaire: payload.questionnaire,
+      llmResult: payload.llmResult,
+      evaluationResult,
+    });
+  } catch (error) {
+    console.error("[preview track1 persist]", error.message || error);
+  }
+}
+
+async function persistTrack2Result(payload, scoringResult, body) {
+  try {
     const { validateRespondent, saveTrack2Result } = await import("../backend/db.js");
     const respondent = await validateRespondent(payload.respondentId, payload.accessToken);
-    const { resultId, shareSlug } = await saveTrack2Result({
+    await saveTrack2Result({
       respondentId: payload.respondentId,
       nicknameSnapshot: respondent.nickname,
       birthYear: payload.birthYear,
@@ -144,14 +163,9 @@ async function handleTrack2Submit(payload) {
       scoringResult,
       feedbackResult: body.result.feedback,
     });
-    body.resultId = resultId;
-    body.shareSlug = shareSlug;
+  } catch (error) {
+    console.error("[preview track2 persist]", error.message || error);
   }
-
-  return {
-    statusCode: 200,
-    body,
-  };
 }
 
 async function handleRespondentCreate(payload) {

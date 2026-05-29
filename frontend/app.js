@@ -521,7 +521,9 @@ function t1ResultScreen() {
     ["C", axes.C || { label: "신뢰도", score: 0, level: "-" }],
     ["D", axes.D || { label: "통제욕구", score: 0, level: "-" }],
   ];
+  const axisDisplayLabels = { A: "의존도", B: "친밀도", C: "신뢰도", D: "통제력" };
   const reasonStory = Array.isArray(card.reasonStory) ? card.reasonStory : [];
+  const evidenceNotice = card.evidenceNotice || result?.inputSummary?.evidenceNotice || "확인된 응답 기반 결과입니다.";
 
   return screen(
     "t1-result",
@@ -536,19 +538,16 @@ function t1ResultScreen() {
         <span>${subDescription}</span>
       </article>
       <section class="scores t1-score-bars">
-        ${axisEntries.map(([, axis]) => {
+        ${axisEntries.map(([key, axis]) => {
           const score = Math.round(Number(axis.score) || 0);
-          return `<p><span><b>${axis.label}</b> <strong>${score}점 ${axis.level}</strong></span><i style="--score:${score}%"></i></p>`;
+          return `<p><span><b>${axisDisplayLabels[key]}</b> <strong>${score}점 ${axis.level}</strong></span><i style="--score:${score}%"></i></p>`;
         }).join("")}
       </section>
       <article class="t1-result-info">
         <h2>왜 이 유형이 나왔나요?</h2>
         <p>${reasonStory.length ? reasonStory.map(escapeHtml).join("<br />") : "AI 사용 패턴과 답변 근거를 종합해 유형을 분류했습니다."}</p>
       </article>
-      <article class="t1-result-info compact">
-        <h2>근거 안내</h2>
-        <p>${escapeHtml(card.evidenceNotice || result?.inputSummary?.evidenceNotice || "확인된 응답 기반 결과입니다.")}</p>
-      </article>
+      <p class="t1-evidence-note">${escapeHtml(evidenceNotice)}</p>
     </section>
     <nav class="nav-buttons t1-result-nav">
       <button class="cta secondary" type="button" data-share-result="track1">공유하기</button>
