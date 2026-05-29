@@ -122,7 +122,7 @@ export async function saveTrack2Result({ respondentId, nicknameSnapshot, birthYe
     created_at:           new Date().toISOString()
   };
 
-  const error = await insertWithSchemaFallback("track2_results", payload);
+  const error = await insertWithSchemaFallback("track2_results", compactTrack2Payload(payload));
 
   if (error) throw new Error(`track2_results 저장 실패: ${error.message}`);
 
@@ -256,7 +256,7 @@ export async function saveTrack1Result({ respondentId, nicknameSnapshot, birthYe
     created_at: new Date().toISOString()
   };
 
-  const error = await insertWithSchemaFallback("track1_results", payload);
+  const error = await insertWithSchemaFallback("track1_results", compactTrack1Payload(payload));
 
   if (error) throw new Error(`track1_results 저장 실패: ${error.message}`);
 
@@ -433,6 +433,94 @@ const TRACK2_AXIS_FIELD_MAP = {
   iteration: "iteration",
   critical: "critical_review"
 };
+
+const TRACK1_COMPACT_COLUMNS = [
+  "result_id",
+  "respondent_id",
+  "track",
+  "version",
+  "status",
+  "nickname",
+  "nickname_snapshot",
+  "birth_year",
+  "questionnaire_version",
+  "q1_answer",
+  "q2_answer",
+  "q3_answer",
+  "q4_answer",
+  "q5_answer",
+  "q6_answer",
+  "q7_answer",
+  "q8_answer",
+  "q9_answer",
+  "q10_answer",
+  "q11_answer",
+  "q12_answer",
+  "raw_pasted_llm_result",
+  "parsed_llm_result",
+  "type_code",
+  "type_name",
+  "reason_story",
+  "llm_evidence_mode",
+  "llm_verdict",
+  "llm_tags",
+  "mc_raw_answers",
+  "mc_scores",
+  "prompt_scores",
+  "final_scores",
+  "binary_profile",
+  "result_card",
+  "share_slug",
+  "created_at"
+];
+
+const TRACK2_COMPACT_COLUMNS = [
+  "result_id",
+  "respondent_id",
+  "track",
+  "version",
+  "status",
+  "nickname",
+  "nickname_snapshot",
+  "birth_year",
+  "questionnaire_version",
+  "q1_answer",
+  "q2_answer",
+  "q3_answer",
+  "q4_answer",
+  "free_text",
+  "total_score",
+  "grade",
+  "strength_1",
+  "strength_2",
+  "weakness_1",
+  "weakness_2",
+  "feedback_text",
+  "mc_raw_answers",
+  "mc_scores",
+  "extracted_features",
+  "prompt_scores",
+  "final_scores",
+  "feedback",
+  "share_slug",
+  "created_at"
+];
+
+function compactTrack1Payload(payload) {
+  return pickPayload(payload, TRACK1_COMPACT_COLUMNS);
+}
+
+function compactTrack2Payload(payload) {
+  return pickPayload(payload, TRACK2_COMPACT_COLUMNS);
+}
+
+function pickPayload(payload, columns) {
+  const picked = {};
+  for (const column of columns) {
+    if (column in payload) picked[column] = payload[column];
+  }
+  return picked;
+}
 
 function toNumber(value) {
   const number = Number(value);
