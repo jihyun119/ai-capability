@@ -6,6 +6,10 @@ import OpenAI from "openai";
  * API 실패 시 규칙 기반 템플릿으로 자동 fallback
  */
 export async function generateFeedback({ grade, total, strengths, weaknesses, axes }) {
+  if (process.env.ENABLE_OPENAI_FEEDBACK !== "true") {
+    return buildTemplateFeedback({ grade, strengths, weaknesses });
+  }
+
   const topAxes    = strengths.map((name) => {
     const ax = axes.find((a) => a.name === name);
     return `${name}(${ax?.finalScore ?? "?"}/${ax?.maxScore ?? "?"}점)`;
