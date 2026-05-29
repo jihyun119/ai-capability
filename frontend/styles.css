@@ -1416,232 +1416,27 @@ input {
   overflow: hidden;
 }
 
-.loading-mascot-img {
-  width: 208px;
-  height: 208px;
-  display: block;
-  object-fit: contain;
+.analysis-loading-mascot {
+  background-image: url("./Logo/loading-mascot-1.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 203px 203px;
+  animation: loading-mascot-frame 1s steps(1, end) infinite;
 }
 
-.analysis-loading-mascot-img {
-  position: absolute;
-  inset: 0;
-  width: 203px;
-  height: 203px;
-  display: block;
-  object-fit: contain;
-}
-
-.analysis-loading-mascot::before,
-.loading-mascot::before {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 9px;
-  width: 202px;
-  height: 202px;
-  background: var(--violet);
-  border: 1.1px solid var(--black);
-  border-radius: 5px 8px 13px 5px;
-  clip-path: polygon(
-    100% 0,
-    100% 84%,
-    96% 89%,
-    72% 89%,
-    61% 89%,
-    50% 89%,
-    40% 89%,
-    28% 89%,
-    39% 80%,
-    0 80%,
-    33% 73%,
-    0 60%,
-    32% 61%,
-    7% 45%,
-    38% 54%,
-    17% 31%,
-    45% 45%,
-    37% 17%,
-    55% 39%,
-    62% 10%,
-    70% 38%,
-    86% 0,
-    85% 39%
-  );
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.25);
-  transform: rotate(4.5deg);
-}
-
-.analysis-loading-mascot i,
-.loading-mascot i {
-  position: absolute;
-  top: 112px;
-  width: 52px;
-  height: 64px;
-  border: 1.1px solid var(--black);
-  border-radius: 50%;
-  background: var(--white);
-}
-
-.analysis-loading-mascot i:first-child,
-.loading-mascot i:first-child {
-  left: 88px;
-}
-
-.analysis-loading-mascot i:last-child,
-.loading-mascot i:last-child {
-  left: 145px;
-}
-
-.analysis-loading-mascot i::before,
-.loading-mascot i::before {
-  content: "";
-  position: absolute;
-  left: 8px;
-  top: 12px;
-  width: 30px;
-  height: 39px;
-  border-radius: 50%;
-  background: var(--black);
-}
-
-.analysis-loading-mascot i::after,
-.loading-mascot i::after {
-  content: "";
-  position: absolute;
-  left: 13px;
-  top: 25px;
-  width: 9px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--white);
-  animation: loading-eye-glint 1.2s steps(1, end) infinite;
-}
-
-.analysis-loading-mascot i:last-child::after,
-.loading-mascot i:last-child::after {
-  animation-name: loading-eye-glint-right;
-}
-
-.analysis-loading-mascot::before {
-  display: none;
-}
-
-.analysis-loading-mascot i {
-  top: 111px;
-  width: 45px;
-  height: 54px;
-  border: 3px solid var(--black);
-  background: var(--white);
-  z-index: 1;
-}
-
-.analysis-loading-mascot i:first-child {
-  left: 79px;
-}
-
-.analysis-loading-mascot i:last-child {
-  left: 137px;
-}
-
-.analysis-loading-mascot i::before {
-  display: block;
-  left: 10px;
-  top: 10px;
-  width: 25px;
-  height: 34px;
-  animation: loading-eye-pupil 1.2s steps(1, end) infinite;
-}
-
-.analysis-loading-mascot i::after {
-  left: 8px;
-  top: 22px;
-  width: 9px;
-  height: 12px;
-  z-index: 2;
-}
-
-.analysis-loading-mascot i:last-child::before {
-  animation-name: loading-eye-pupil-right;
-}
-
-@keyframes loading-eye-pupil {
+@keyframes loading-mascot-frame {
   0%,
   100% {
-    left: 10px;
-    top: 10px;
+    background-image: url("./Logo/loading-mascot-1.png");
   }
   25% {
-    left: 15px;
-    top: 7px;
+    background-image: url("./Logo/loading-mascot-2.png");
   }
   50% {
-    left: 18px;
-    top: 10px;
+    background-image: url("./Logo/loading-mascot-3.png");
   }
   75% {
-    left: 12px;
-    top: 16px;
-  }
-}
-
-@keyframes loading-eye-pupil-right {
-  0%,
-  100% {
-    left: 10px;
-    top: 10px;
-  }
-  25% {
-    left: 15px;
-    top: 7px;
-  }
-  50% {
-    left: 18px;
-    top: 10px;
-  }
-  75% {
-    left: 12px;
-    top: 16px;
-  }
-}
-
-@keyframes loading-eye-glint {
-  0%,
-  100% {
-    left: 13px;
-    top: 25px;
-  }
-  25% {
-    left: 17px;
-    top: 18px;
-  }
-  50% {
-    left: 26px;
-    top: 25px;
-  }
-  75% {
-    left: 17px;
-    top: 34px;
-  }
-}
-
-@keyframes loading-eye-glint-right {
-  0%,
-  100% {
-    left: 13px;
-    top: 25px;
-  }
-  25% {
-    left: 17px;
-    top: 18px;
-  }
-  50% {
-    left: 26px;
-    top: 25px;
-  }
-  75% {
-    left: 17px;
-    top: 34px;
+    background-image: url("./Logo/loading-mascot-4.png");
   }
 }
 
