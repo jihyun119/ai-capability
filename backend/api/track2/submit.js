@@ -1,6 +1,7 @@
 import { validateSubmitInput } from "../../validate.js";
 import { score } from "../../../src/track2/scorer.js";
 import { generateFeedback } from "../../feedback.js";
+import { randomUUID } from "node:crypto";
 
 /**
  * POST /api/track2/submit
@@ -77,7 +78,10 @@ export default async function handler(req, res) {
     const feedbackResult = await generateFeedback(scoringResult);
 
     // DB 저장
-    const { resultId, shareSlug } = await saveTrack2Result({
+    const resultId = randomUUID();
+    const shareSlug = resultId;
+    runAfterResponse(saveTrack2Result({
+      resultId,
       respondentId,
       nicknameSnapshot: respondent.nickname,
       birthYear: req.body.birthYear,
@@ -85,7 +89,7 @@ export default async function handler(req, res) {
       freeText,
       scoringResult,
       feedbackResult
-    });
+    }));
 
     // 축별 응답 구성 (레이더 차트용)
     const axesResponse = buildAxesResponse(scoringResult);
@@ -116,6 +120,14 @@ export default async function handler(req, res) {
       }
     });
   }
+}
+
+function runAfterResponse(promise) {
+  if (typeof globalThis.waitUntil === "function") {
+    globalThis.waitUntil(promise);
+    return;
+  }
+  promise.catch((error) => console.error("[track2/background-save]", error));
 }
 
 function buildAxesResponse(scoringResult) {

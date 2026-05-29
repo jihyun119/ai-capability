@@ -59,9 +59,8 @@ export async function validateRespondent(respondentId, accessToken) {
 
 // ── Track 2 결과 저장 ─────────────────────────────────────────────────────────
 
-export async function saveTrack2Result({ respondentId, nicknameSnapshot, birthYear = null, answers, freeText, scoringResult, feedbackResult }) {
+export async function saveTrack2Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, answers, freeText, scoringResult, feedbackResult }) {
   const { axes, total, grade } = scoringResult;
-  const resultId = randomUUID();
   const byKey = Object.fromEntries(axes.map((ax) => [ax.key, ax]));
   const field = (schemaKey) => byKey[TRACK2_AXIS_FIELD_MAP[schemaKey]];
 
@@ -145,8 +144,7 @@ export async function saveTrack2Result({ respondentId, nicknameSnapshot, birthYe
 
 // ── Track 1 결과 저장 ─────────────────────────────────────────────────────────
 
-export async function saveTrack1Result({ respondentId, nicknameSnapshot, birthYear = null, questionnaireVersion = "track1-12", questionnaire, llmResult, evaluationResult }) {
-  const resultId = randomUUID();
+export async function saveTrack1Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, questionnaireVersion = "track1-12", questionnaire, llmResult, evaluationResult }) {
   const answers = questionnaire?.answers || {};
   const canonicalLlm = parseMaybeJson(llmResult);
   const scoreBreakdown = evaluationResult.scoreBreakdown || {};

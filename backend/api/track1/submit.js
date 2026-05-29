@@ -1,4 +1,5 @@
 import { evaluateTrack1 } from "../../../src/track1/evaluate.js";
+import { randomUUID } from "node:crypto";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -32,7 +33,10 @@ export default async function handler(req, res) {
 
     if (shouldPersist && result.status === "success") {
       const { saveTrack1Result } = await import("../../db.js");
-      const { resultId, shareSlug } = await saveTrack1Result({
+      const resultId = randomUUID();
+      const shareSlug = resultId;
+      runAfterResponse(saveTrack1Result({
+        resultId,
         respondentId: req.body.respondentId,
         nicknameSnapshot: respondent.nickname,
         birthYear: req.body.birthYear,
@@ -40,7 +44,7 @@ export default async function handler(req, res) {
         questionnaire: req.body.questionnaire,
         llmResult: req.body.llmResult,
         evaluationResult: result
-      });
+      }));
       result.resultId = resultId;
       result.shareSlug = shareSlug;
     }
@@ -59,4 +63,12 @@ export default async function handler(req, res) {
       }
     });
   }
+}
+
+function runAfterResponse(promise) {
+  if (typeof globalThis.waitUntil === "function") {
+    globalThis.waitUntil(promise);
+    return;
+  }
+  promise.catch((error) => console.error("[track1/background-save]", error));
 }
