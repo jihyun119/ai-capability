@@ -1281,6 +1281,7 @@ function respondentPayload() {
   return {
     respondentId: state.respondent.respondentId,
     accessToken: state.respondent.accessToken,
+    nickname: state.respondent.nickname || state.user?.nickname || null,
     birthYear: state.respondent.birthYear || state.user?.birthYear || null,
   };
 }

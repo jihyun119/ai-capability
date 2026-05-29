@@ -17,12 +17,7 @@ export default async function handler(req, res) {
 
   try {
     const shouldPersist = Boolean(req.body?.respondentId && req.body?.accessToken);
-    let respondent = null;
-
-    if (shouldPersist) {
-      const { validateRespondent } = await import("../../db.js");
-      respondent = await validateRespondent(req.body.respondentId, req.body.accessToken);
-    }
+    const respondent = { nickname: req.body?.nickname || "익명" };
 
     const result = evaluateTrack1({
       llmResult: req.body?.llmResult,

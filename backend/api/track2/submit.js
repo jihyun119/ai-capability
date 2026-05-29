@@ -67,9 +67,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // 응시자 검증
-    const { validateRespondent, saveTrack2Result } = await import("../../db.js");
-    const respondent = await validateRespondent(respondentId, accessToken);
+    const { saveTrack2Result } = await import("../../db.js");
+    const respondent = { nickname: req.body?.nickname || "익명" };
 
     // 채점 (LLM 없이 규칙 기반)
     const scoringResult = score(freeText, answers);
