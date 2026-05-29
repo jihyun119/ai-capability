@@ -232,14 +232,6 @@ function menuOverlay() {
     </aside>`;
 }
 
-function footer() {
-  return `
-    <footer class="footer">
-      <p><strong>CONTACT</strong> 4minutes@gmail.com</p>
-      <p>© 2026 4minutes. All rights reserved</p>
-    </footer>`;
-}
-
 function button(label, go, variant = "primary", extra = "") {
   return `<button class="cta ${variant} ${extra}" type="button" data-go="${go}">${label}</button>`;
 }
@@ -259,30 +251,6 @@ function rangeOptions(start, end, suffix = "") {
     const value = start + index;
     return `<option value="${value}">${value}${suffix}</option>`;
   }).join("");
-}
-
-function homeScreen() {
-  return screen(
-    "home",
-    "H01 랜딩 홈",
-    `${header()}
-    <main class="home-content">
-      <h1>나, <mark>AI</mark>를<br />잘 쓰고 있는 걸까?</h1>
-      <p>AI를 얼마나 자주 쓰는지가 아니라,<br /><strong>어떤 방식으로 활용</strong>하는지 진단해보세요.<br /><strong>가벼운 유형 테스트</strong>부터 <strong>실전 프롬프트 역량 평가</strong>까지<br />확인할 수 있습니다.</p>
-      <div class="character-cluster">
-        ${char("friend", "char c1")}
-        ${char("boss", "char c2")}
-        ${char("searcher", "char c3")}
-        ${char("unsure", "char c4")}
-      </div>
-    </main>
-    <div class="cta-stack">
-      ${button("내 AI 유형 알아보기", "track")}
-      ${button("실전 역량 평가하기", "track", "secondary")}
-    </div>
-    ${footer()}`,
-    "active h01-screen"
-  );
 }
 
 function trackCard(track, meta, title, desc, go) {
@@ -315,40 +283,6 @@ function trackScreen() {
     <p class="track-note">처음이라면 Track 1로 시작해보세요.<br />결과를 확인한 뒤 Lv.1, Lv.2로<br />자연스럽게 이어갈 수 있습니다.</p>
     ${footer()}`,
     "h02-screen"
-  );
-}
-
-function loginScreen(id, nextScreen) {
-  return screen(
-    id,
-    "트랙 시작 로그인",
-    `${header()}
-    <main class="login-content">
-      <section class="login-hero">
-        <h1>환영합니다!</h1>
-        <p>서비스를 이용하기 위해<br />간단한 정보를 입력해주세요.</p>
-      </section>
-      <form class="login-form">
-        <label class="login-field nickname-field">
-          <span>닉네임</span>
-          <div class="nickname-input">
-            <input type="text" maxlength="10" placeholder="닉네임을 입력해주세요" />
-            <i data-nickname-count>0/10</i>
-          </div>
-        </label>
-        <fieldset class="login-field birth-field">
-          <legend>생년월일</legend>
-          <div class="birth-selects">
-            <input type="text" inputmode="numeric" maxlength="4" placeholder="YYYY" aria-label="년" data-birth-input />
-            <input type="text" inputmode="numeric" maxlength="2" placeholder="MM" aria-label="월" data-birth-input />
-            <input type="text" inputmode="numeric" maxlength="2" placeholder="DD" aria-label="일" data-birth-input />
-          </div>
-        </fieldset>
-      </form>
-    </main>
-    <button class="cta primary login-next" type="button" data-login-next data-go="${nextScreen}" disabled>다음</button>
-    ${footer()}`,
-    "login-screen"
   );
 }
 
@@ -501,24 +435,6 @@ function t1CopyScreen() {
       ${button("답변 붙여넣으러 가기", "t1-paste")}
     </nav>`,
     "compact-screen t1-copy-screen"
-  );
-}
-
-function t1PasteScreen() {
-  return screen(
-    "t1-paste",
-    "T1-04 답변 제출",
-    `${header()}
-    <section class="t1-answer-submit">
-      ${progress(16, 16)}
-      <h1>AI가 뭐라고 답했나요?</h1>
-      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
-      <textarea data-field="t1-paste" placeholder="여기에 AI 답변을 붙여넣어 주세요.">${escapeHtml(state.t1LlmText)}</textarea>
-      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
-      ${state.t1Error ? `<em class="form-error">${state.t1Error}</em>` : ""}
-      ${button("내 유형 분석하기", "t1-loading", "primary", "t1-submit-button")}
-    </section>`,
-    "compact-screen t1-paste-screen"
   );
 }
 
@@ -750,29 +666,6 @@ function t2LoadingScreen() {
   );
 }
 
-function t2PasteScreen() {
-  return screen(
-    "t2-paste",
-    "T2-04 답변 제출",
-    `${header()}
-    <section class="t2-answer-submit">
-      ${progress(4, 4)}
-      <h1>AI가 뭐라고 답했나요?</h1>
-      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
-      <img class="t2-example-image" src="./assets/example-response.png" alt="AI 답변 예시" />
-      <span class="t2-example-caption">(예시 화면)</span>
-      <textarea data-field="t2-paste" placeholder="여기에 AI 답변을 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
-      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
-      ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
-    </section>
-    <nav class="nav-buttons t2-answer-nav">
-      ${button("이전", "t2-prompt", "secondary")}
-      ${button("내 패턴 분석하기", "t2-loading")}
-    </nav>`,
-    "compact-screen t2-paste-screen"
-  );
-}
-
 function t2ResultScreen() {
   const result = state.t2Result?.result || {
     total: 0,
@@ -932,6 +825,123 @@ function mapScreen() {
   return screen("map", "전체 플로우", `${header()}<section class="map-page"><h1>전체 플로우</h1><p>IA_유저플로우_와이어프레임_카피.md 기준 화면 흐름입니다.</p><div class="flow-list">${flow.map(([id, title, go]) => `<button type="button" data-go="${go}"><b>${id}</b><span>${title}</span></button>`).join("")}</div></section>`, "compact-screen scroll-screen");
 }
 
+function footer() {
+  return `
+    <footer class="footer">
+      <p><strong>CONTACT</strong> pookie@gmail.com</p>
+      <p>© 2026 pookie. All rights reserved</p>
+    </footer>`;
+}
+
+function homeScreen() {
+  return screen(
+    "home",
+    "H01 랜딩 홈",
+    `${header()}
+    <main class="home-content home-content-v2">
+      <h1><span>POOKIE</span><mark>AI 시대에서</mark> 살아남기</h1>
+      <p>AI를 얼마나 자주 쓰는지가 아니라,<br /><strong>어떤 방식으로 활용</strong>하는지 진단해보세요.<br /><strong>가벼운 유형 테스트</strong>부터 <strong>실전 프롬프트 역량 평가</strong>까지<br />확인할 수 있습니다.</p>
+      <div class="character-cluster">
+        ${char("friend", "char c1")}
+        ${char("boss", "char c2")}
+        ${char("searcher", "char c3")}
+        ${char("unsure", "char c4")}
+      </div>
+    </main>
+    <div class="cta-stack home-start-v2">
+      ${button("테스트 시작하기", "track")}
+    </div>
+    ${footer()}`,
+    "active h01-screen h01-screen-v2"
+  );
+}
+
+function t1PasteScreen() {
+  return screen(
+    "t1-paste",
+    "T1-04 답변 제출",
+    `${header()}
+    <section class="t1-answer-submit">
+      ${progress(16, 16)}
+      <h1>AI가 뭐라고 답했나요?</h1>
+      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <img class="answer-example-image t1-example-image" src="./assets/track1-example.png" alt="Track 1 AI 답변 예시" />
+      <span class="answer-example-caption">(예시 화면)</span>
+      <textarea data-field="t1-paste" placeholder="여기에 AI 답변을 붙여넣어 주세요.">${escapeHtml(state.t1LlmText)}</textarea>
+      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
+      ${state.t1Error ? `<em class="form-error">${state.t1Error}</em>` : ""}
+    </section>
+    <nav class="nav-buttons t1-answer-nav">
+      ${button("이전", "t1-copy", "secondary")}
+      ${button("내 유형 분석하기", "t1-loading")}
+    </nav>`,
+    "compact-screen t1-paste-screen"
+  );
+}
+
+function t2PasteScreen() {
+  return screen(
+    "t2-paste",
+    "T2-04 답변 제출",
+    `${header()}
+    <section class="t2-answer-submit">
+      ${progress(4, 4)}
+      <h1>AI가 뭐라고 답했나요?</h1>
+      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <img class="answer-example-image t2-example-image" src="./assets/track2-example.png" alt="Track 2 AI 답변 예시" />
+      <span class="answer-example-caption">(예시 화면)</span>
+      <textarea data-field="t2-paste" placeholder="여기에 AI 답변을 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
+      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
+      ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
+    </section>
+    <nav class="nav-buttons t2-answer-nav">
+      ${button("이전", "t2-prompt", "secondary")}
+      ${button("내 패턴 분석하기", "t2-loading")}
+    </nav>`,
+    "compact-screen t2-paste-screen"
+  );
+}
+
+function loginScreen(id, nextScreen) {
+  return screen(
+    id,
+    "로그인",
+    `${header()}
+    <main class="login-content">
+      <section class="login-hero">
+        <h1>환영합니다!</h1>
+        <p>서비스를 이용하기 위해<br />간단한 정보를 입력해주세요.</p>
+      </section>
+      <form class="login-form">
+        <label class="login-field nickname-field">
+          <span>닉네임</span>
+          <div class="nickname-input">
+            <input type="text" maxlength="10" placeholder="닉네임을 입력해주세요" />
+            <i data-nickname-count>0/10</i>
+          </div>
+        </label>
+        <div class="login-row-fields">
+          <label class="login-field birth-year-field">
+            <span>출생년도</span>
+            <input type="text" inputmode="numeric" maxlength="4" placeholder="입력" data-birth-year />
+          </label>
+          <label class="login-field gender-field">
+            <span>성별</span>
+            <select data-gender-select>
+              <option value="">선택</option>
+              <option value="male">남</option>
+              <option value="female">여</option>
+            </select>
+          </label>
+        </div>
+      </form>
+    </main>
+    <button class="cta primary login-next" type="button" data-login-next data-go="${nextScreen}" disabled>다음</button>
+    ${footer()}`,
+    "login-screen"
+  );
+}
+
 function render() {
   app.innerHTML = [
     homeScreen(),
@@ -977,12 +987,11 @@ function closeMenu() {
 function updateLoginValidity(screenNode) {
   if (!screenNode?.classList.contains("login-screen")) return;
   const nickname = screenNode.querySelector(".nickname-input input")?.value.trim() ?? "";
-  const [year = "", month = "", day = ""] = Array.from(screenNode.querySelectorAll("[data-birth-input]")).map((input) => input.value.trim());
-  const validYear = /^(19[8-9]\d|20[0-1]\d|202[0-6])$/.test(year);
-  const validMonth = /^(0?[1-9]|1[0-2])$/.test(month);
-  const validDay = /^(0?[1-9]|[12]\d|3[01])$/.test(day);
+  const birthYear = screenNode.querySelector("[data-birth-year]")?.value.trim() ?? "";
+  const gender = screenNode.querySelector("[data-gender-select]")?.value ?? "";
+  const validYear = /^(19[8-9]\d|20[0-1]\d|202[0-6])$/.test(birthYear);
   const nextButton = screenNode.querySelector("[data-login-next]");
-  if (nextButton) nextButton.disabled = !(nickname && validYear && validMonth && validDay);
+  if (nextButton) nextButton.disabled = !(nickname && validYear && gender);
 }
 
 render();
@@ -1106,7 +1115,7 @@ document.addEventListener("input", (event) => {
     if (count) count.textContent = `${nicknameInput.value.length}/10`;
   }
 
-  const birthInput = event.target.closest("[data-birth-input]");
+  const birthInput = event.target.closest("[data-birth-input], [data-birth-year]");
   if (birthInput) {
     birthInput.value = birthInput.value.replace(/\D/g, "");
   }
@@ -1253,9 +1262,11 @@ async function prepareRespondent(screenNode) {
   const nickname = screenNode?.querySelector(".nickname-input input")?.value.trim();
   if (!nickname) throw new Error("닉네임을 입력해 주세요.");
 
-  const [birthYear = "", birthMonth = "", birthDay = ""] = Array.from(screenNode.querySelectorAll("[data-birth-input]"))
-    .map((input) => input.value.trim());
-  const birth = [birthYear, birthMonth, birthDay].join("-");
+  const birthYear =
+    screenNode.querySelector("[data-birth-year]")?.value.trim()
+    || Array.from(screenNode.querySelectorAll("[data-birth-input]")).map((input) => input.value.trim())[0]
+    || "";
+  const birth = birthYear;
 
   state.user = { nickname, birth, birthYear: Number(birthYear) || null };
 
