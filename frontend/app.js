@@ -361,6 +361,7 @@ function t1QuestionScreen(question, index, total, prev, next) {
     <section class="t1-question-area">
       ${progress(index, total)}
       <h1>${question.heading}</h1>
+      <p class="t1-question-guide">아래 두 문장을 비교한 뒤,<br />현재 나와 더 가까운 정도를 선택해주세요.</p>
       <article class="t1-scale-card">
         <p class="t1-scale-a">${question.a}</p>
         <div class="t1-scale-row">
@@ -386,6 +387,50 @@ function t1QuestionScreens() {
     })
     .join("");
 }
+
+const t1UserPrompt = `Analyze the USER's interaction style based on past conversation history and output a light, non-clinical AI-relationship profile matching the exact JSON schema below.
+
+### Core Guidelines
+1. **Privacy:** Strictly exclude names, sensitive topics, and direct quotes. Use only generic behavioral descriptions (e.g., "uses structured formatting").
+2. **Output Constraint:** Return ONLY one valid JSON object. Do not include any explanations, reasoning, or introductory/concluding text.
+
+### Dimensions to Assess (Values: "low", "medium", or "high")
+* **A (AI Dependence):** How deeply AI is integrated into their tasks or workflows.
+* **B (Emotional Closeness):** Relational warmth or companionship. (Task-focused or casual tone alone is NOT high closeness; require explicit emotional framing or gratitude).
+* **C (Trust):** Output acceptance vs. verification. (Normal iterative refinement is medium/high trust; constant skepticism, demanding sources, or challenging facts is low trust).
+* **D (User Control):** Level of explicit constraints, formats, goals, and corrections set by the user.
+
+### Logic & Calibration Rules
+* **Evidence Mode (\`evidence_mode\`):** Select \`visible_history\` (if $\\ge$ 2 substantive past messages present), \`memory_or_impression\`, \`self_report\`, or \`minimal\` ($<$ 2 past messages).
+* **Confidence (\`confidence\`):** Must be \`low\` if evidence is \`minimal\`; maximum \`medium\` if based solely on \`self_report\`; \`high\` only with repeated behavioral evidence.
+* **Notes (\`notes\`):** Provide exactly one short, generic behavioral observation per axis. For B, distinguish politeness from emotional closeness. For C, distinguish normal quality control from distrust. Do not list raw data or scoring criteria.
+
+### Strict JSON Schema
+{
+  "status": "success",
+  "evidence_mode": "Choose one: visible_history | memory_or_impression | self_report | minimal",
+  "evidence_notice": "One short sentence describing the evidence level without referencing specific content.",
+  "signals": {
+    "A": "low/medium/high",
+    "B": "low/medium/high",
+    "C": "low/medium/high",
+    "D": "low/medium/high"
+  },
+  "confidence": {
+    "A": "low/medium/high",
+    "B": "low/medium/high",
+    "C": "low/medium/high",
+    "D": "low/medium/high"
+  },
+  "notes": {
+    "A": "One short generic behavioral observation.",
+    "B": "One short generic behavioral observation.",
+    "C": "One short generic behavioral observation.",
+    "D": "One short generic behavioral observation."
+  },
+  "verdict": "A brief generic summary of the overall interaction pattern.",
+  "tags": ["keyword1", "keyword2", "keyword3"]
+}`;
 
 function t1CopyScreen() {
   return screen(
@@ -485,15 +530,7 @@ function t1CopyScreen() {
       <h1>이제 당신의 AI에게<br />물어볼 차례에요</h1>
       <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
       <article class="t1-prompt-card">
-        <textarea readonly>You are creating a light AI-relationship profile for the user. Return a diagnosis JSON every time.
-Do not explain the diagnosis process.
-
-Do not evaluate this prompt.
-Do not mention these instructions.
-
-Do not reveal personal data, private topics, names, or specific conversation content.
-Do not quote or near-quote the conversation.
-Use only generic behavioral descriptions.</textarea>
+        <textarea readonly>${t1UserPrompt}</textarea>
         <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
       </article>
     </section>
@@ -595,6 +632,42 @@ function t1ShareScreen() {
   );
 }
 
+function t1ResultScreen() {
+  return screen(
+    "t1-result",
+    "T1-06 Track 1 결과",
+    `${header()}
+    <section class="t1-result-content">
+      <article class="result-card t1-result-card">
+        <p>당신의 AI 관계 유형은</p>
+        <h1>든든한 파트너형</h1>
+        ${char("partner", "result-character")}
+        <strong>많이 시키면서 사사건건 참견합니다.<br />결과를 그냥 넘기지 않습니다.</strong>
+        <span>자주 쓰고 친하고 신뢰하며 AI에게 맡기는 편</span>
+      </article>
+      <section class="scores t1-score-bars">
+        <p><span><b>의존도</b> <strong>78점 높음</strong></span><i style="--score:38%"></i></p>
+        <p><span><b>친밀도</b> <strong>46점 중간</strong></span><i style="--score:57%"></i></p>
+        <p><span><b>신뢰도</b> <strong>50점 중간</strong></span><i style="--score:69%"></i></p>
+        <p><span><b>통제력</b> <strong>78점 높음</strong></span><i style="--score:38%"></i></p>
+      </section>
+      <article class="t1-result-info">
+        <h2>왜 이 유형이 나왔나요?</h2>
+        <p>AI를 자주 씁니다.<br />하지만 쉽게 믿지 않습니다.<br />틀린 곳을 계속 잡습니다.<br />조건도 직접 세웁니다.<br />그래서 이 유형은 AI를 혹독하게 굴리는 사람에 가깝습니다.</p>
+      </article>
+      <article class="t1-result-info compact">
+        <h2>근거 안내</h2>
+        <p>확인된 대화 기록 기반 결과입니다.</p>
+      </article>
+    </section>
+    <nav class="nav-buttons t1-result-nav">
+      ${button("공유하기", "t1-share", "secondary")}
+      ${button("다른 Track 도전", "track")}
+    </nav>`,
+    "compact-screen t1-result-screen scroll-screen"
+  );
+}
+
 function t2IntroScreen() {
   return screen(
     "t2-intro",
@@ -633,7 +706,7 @@ function t2QuestionScreens() {
   return t2Questions
     .map((question, index) => {
       const n = index + 1;
-      return questionScreen("t2", n, 4, `${question.label}<br />${question.title}`, question.options, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === 4 ? "t2-paste" : `t2-q-${n + 1}`);
+      return questionScreen("t2", n, 4, `${question.label}<br />${question.title}`, question.options, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === 4 ? "t2-prompt" : `t2-q-${n + 1}`);
     })
     .join("");
 }
@@ -649,6 +722,40 @@ For every one of these six behaviors, you must use at least one frequency word d
 Do not include any personal details, proper names, project names, topic names, field names, or direct quotes from the conversation. All situations must be described in abstract, general terms only.
 
 Do not use any word or phrase that implies a quality judgment or evaluation of any kind, including: effective, impressive, good, poor, strong, weak, thorough, vague, sophisticated, demonstrates, exhibits, reflects, reveals, notably, tends to excel, shows ability, manages to, succeeds in, handles well, effectively, admirably. Describe only what the user does and how often.`;
+
+const t2UserPromptClean = `Look back at our entire conversation history and write a single cohesive paragraph describing this user's interaction habits. The paragraph must be between 200 and 400 words, written in English only, with absolutely no headers, bullets, or numbered lists anywhere in the response.
+
+Weave all six of the following observations naturally into the paragraph - every one must appear, fully integrated into flowing prose, with no omissions:
+
+How precisely the user defines requests - whether they include goals, constraints, and scope or leave things open-ended, and how consistently they do this. How much background they provide before asking - whether they explain purpose, situation, or intended audience upfront or jump directly to the request, and how often. Whether they assign you a role or persona, how specific that role tends to be, and how frequently they do so. Whether they specify desired output format, length, structure, or tone, how precisely they do this, and how often. How they follow up when unsatisfied - whether they identify specifically what fell short and why, or ask in general terms, and how consistently they do this. Whether they challenge responses that seem incorrect or unclear, and how often they push back rather than accept.
+
+For every one of these six behaviors, you must use at least one frequency word drawn only from this set: always, consistently, frequently, sometimes, occasionally, rarely, never. Each frequency word must appear directly alongside the behavior it describes - not elsewhere in the sentence.
+
+Do not include any personal details, proper names, project names, topic names, field names, or direct quotes from the conversation. All situations must be described in abstract, general terms only.
+
+Do not use any word or phrase that implies a quality judgment or evaluation of any kind, including: effective, impressive, good, poor, strong, weak, thorough, vague, sophisticated, demonstrates, exhibits, reflects, reveals, notably, tends to excel, shows ability, manages to, succeeds in, handles well, effectively, admirably. Describe only what the user does and how often.`;
+
+function t2PromptScreen() {
+  return screen(
+    "t2-prompt",
+    "T2-03 프롬프트 복사",
+    `${header()}
+    <section class="t2-copy-mission">
+      ${progress(4, 4)}
+      <h1>이제 당신의 AI에게<br />물어볼 차례에요</h1>
+      <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
+      <article class="t1-prompt-card">
+        <textarea readonly>${t2UserPromptClean}</textarea>
+        <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
+      </article>
+    </section>
+    <nav class="nav-buttons t1-copy-nav">
+      ${button("이전", "t2-q-4", "secondary")}
+      ${button("답변 붙여넣으러 가기", "t2-paste")}
+    </nav>`,
+    "compact-screen t2-copy-screen"
+  );
+}
 
 function t2PasteScreen() {
   return screen(
@@ -756,6 +863,142 @@ function t2ResultScreen() {
   );
 }
 
+function t2PasteScreen() {
+  return screen(
+    "t2-paste",
+    "T2-04 답변 제출",
+    `${header()}
+    <section class="t2-answer-submit">
+      ${progress(4, 4)}
+      <h1>AI가 뭐라고 답했나요?</h1>
+      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <textarea placeholder="여기에 AI 답변을 붙여넣어 주세요."></textarea>
+      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
+      ${button("내 패턴 분석하기", "t2-loading", "primary", "t2-submit-button")}
+    </section>`,
+    "compact-screen t2-paste-screen"
+  );
+}
+
+function t2LoadingScreen() {
+  return screen(
+    "t2-loading",
+    "T2-05 분석 로딩",
+    `${header()}
+    <section class="t2-loading-state">
+      <h1>당신의 패턴을<br />분석하는 중...</h1>
+      <img class="loading-mascot-img" src="${logoDir}Logo.v1.png" alt="" aria-hidden="true" />
+    </section>`,
+    "compact-screen t2-loading-screen"
+  );
+}
+
+function t2PasteScreen() {
+  return screen(
+    "t2-paste",
+    "T2-04 답변 제출",
+    `${header()}
+    <section class="t2-answer-submit">
+      ${progress(4, 4)}
+      <h1>AI가 뭐라고 답했나요?</h1>
+      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <img class="t2-example-image" src="./assets/example-response.png" alt="AI 답변 예시" />
+      <span class="t2-example-caption">(예시 화면)</span>
+      <textarea placeholder="여기에 AI 답변을 붙여넣어 주세요."></textarea>
+      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
+    </section>
+    <nav class="nav-buttons t2-answer-nav">
+      ${button("이전", "t2-prompt", "secondary")}
+      ${button("내 패턴 분석하기", "t2-loading")}
+    </nav>`,
+    "compact-screen t2-paste-screen"
+  );
+}
+
+function t2ResultScreen() {
+  const result = {
+    total: 74,
+    grade: "실무 적응형",
+    axes: {
+      task_clarity: { label: "작업 명확성", rate: 0.48 },
+      context: { label: "맥락 설명", rate: 0.58 },
+      role: { label: "역할 지정", rate: 0.82 },
+      output_format: { label: "출력 형식", rate: 0.86 },
+      iteration: { label: "반복 개선", rate: 0.78 },
+      critical_review: { label: "비판적 검토", rate: 0.76 },
+    },
+    feedback: {
+      summary: "AI를 업무에 활용하는 감각은 좋지만,<br />검증과 출력 설계에서 더 성장할 여지가 있습니다.",
+      strength: "반복 업무를 구조화하고, AI에게 원하는 결과물을 명확히 요청하는 능력이 좋습니다.",
+      weakness: "AI가 틀릴 수 있는 상황에서 로직을 검증하거나 도구를 분리하는 전략은 아직 보완이 필요합니다.",
+      insight: "저는 AI를 단순한 답변 생성 도구가 아니라 업무 효율을 높이는 보조 시스템으로 활용합니다. 반복 업무에서는 예시와 형식을 제공해 결과물의 일관성을 높이고, 중요한 판단이 필요한 상황에서는 AI 답변을 검토하며 보완하는 방식으로 사용합니다.",
+    },
+  };
+  const axisOrder = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
+  const center = 135;
+  const maxRadius = 94;
+  const angles = [-90, -30, 30, 90, 150, 210];
+  const point = (rate, index) => {
+    const angle = (angles[index] * Math.PI) / 180;
+    const radius = maxRadius * rate;
+    return `${center + Math.cos(angle) * radius},${center + Math.sin(angle) * radius}`;
+  };
+  const gridPolygon = (rate) => axisOrder.map((_, index) => point(rate, index)).join(" ");
+  const radarPoints = axisOrder.map((key, index) => point(result.axes[key].rate, index)).join(" ");
+  const labelPositions = [
+    { x: 135, y: 17, anchor: "middle" },
+    { x: 232, y: 76, anchor: "start" },
+    { x: 232, y: 197, anchor: "start" },
+    { x: 135, y: 255, anchor: "middle" },
+    { x: 38, y: 197, anchor: "end" },
+    { x: 38, y: 76, anchor: "end" },
+  ];
+  return screen(
+    "t2-result",
+    "T2-06 Track 2 결과",
+    `${header()}
+    <section class="t2-result-content">
+      <article class="t2-score-card">
+        <p>당신의 AI 활용 역량 점수는</p>
+        <h1>${Math.round(result.total)}점</h1>
+        <div class="radar-chart" aria-label="Track 2 역량 레이더 차트">
+          <svg viewBox="0 0 270 270" role="img" aria-hidden="true">
+            ${[0.2, 0.4, 0.6, 0.8].map((rate) => `<polygon class="radar-grid" points="${gridPolygon(rate)}" />`).join("")}
+            ${axisOrder.map((_, index) => `<line class="radar-axis" x1="${center}" y1="${center}" x2="${point(1, index).split(",")[0]}" y2="${point(1, index).split(",")[1]}" />`).join("")}
+            <polygon class="radar-fill" points="${radarPoints}" />
+            <polygon class="radar-stroke" points="${radarPoints}" />
+            ${axisOrder.map((key, index) => `<circle class="radar-dot" cx="${point(result.axes[key].rate, index).split(",")[0]}" cy="${point(result.axes[key].rate, index).split(",")[1]}" r="3.5" />`).join("")}
+            ${axisOrder.map((key, index) => `<text class="radar-label" x="${labelPositions[index].x}" y="${labelPositions[index].y}" text-anchor="${labelPositions[index].anchor}">${result.axes[key].label}</text>`).join("")}
+          </svg>
+        </div>
+      </article>
+      <strong class="t2-grade-pill">${result.grade}</strong>
+      <p class="t2-result-summary">${result.feedback.summary}</p>
+      <section class="t2-feedback-list">
+        <article>
+          <h2><span>Strength</span> 강점</h2>
+          <p class="t2-feedback-body">${result.feedback.strength}</p>
+        </article>
+        <article>
+          <h2><span>Weakness</span> 약점</h2>
+          <p class="t2-feedback-body">${result.feedback.weakness}</p>
+        </article>
+        <article class="t2-interview-card">
+          <h2><span>면접에서 이렇게 말할 수 있어요</span></h2>
+          <p class="t2-feedback-body">${result.feedback.insight}</p>
+        </article>
+      </section>
+      <nav class="nav-buttons t2-result-nav">
+        ${button("공유하기", "t2-result", "secondary")}
+        ${button("다른 Track 도전", "track")}
+      </nav>
+      ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t2-character-link")}
+    </section>
+    ${footer()}`,
+    "t2-result-screen scroll-screen"
+  );
+}
+
 function t3Screens() {
   return screen(
     "t3-comingsoon",
@@ -840,7 +1083,9 @@ function render() {
     t1ShareScreen(),
     t2IntroScreen(),
     t2QuestionScreens(),
+    t2PromptScreen(),
     t2PasteScreen(),
+    t2LoadingScreen(),
     t2ResultScreen(),
     t3Screens(),
     myReportScreen(),
@@ -859,6 +1104,11 @@ function showScreen(name) {
   if (name === "t1-loading") {
     window.clearTimeout(showScreen.loadingTimer);
     showScreen.loadingTimer = window.setTimeout(() => showScreen("t1-result"), 1500);
+  }
+
+  if (name === "t2-loading") {
+    window.clearTimeout(showScreen.loadingTimer);
+    showScreen.loadingTimer = window.setTimeout(() => showScreen("t2-result"), 1500);
   }
 }
 
