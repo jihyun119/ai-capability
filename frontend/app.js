@@ -563,41 +563,6 @@ function loadingScreen(id, title, messages, next) {
   );
 }
 
-function t1ResultScreen() {
-  const result = state.t1Result;
-  const typeName = result?.type?.name || "분석 대기 중";
-  const card = result?.resultCard || {
-    description: "결과 분석을 완료하면 유형 설명이 표시됩니다.",
-    keywords: ["분석전", "대기중", "테스트"],
-  };
-  const axes = result?.axisScores || {};
-  const axisEntries = [
-    ["A", axes.A || { label: "의존도", score: 0, level: "-" }],
-    ["B", axes.B || { label: "친밀도", score: 0, level: "-" }],
-    ["C", axes.C || { label: "신뢰도", score: 0, level: "-" }],
-    ["D", axes.D || { label: "통제욕구", score: 0, level: "-" }],
-  ];
-  return screen(
-    "t1-result",
-    "T1-06 Track 1 결과",
-    `${header()}
-    <section class="result-card t1-result-card">
-      <p>당신의 AI 관계 유형은</p>
-      <h1>${typeName}</h1>
-      ${charByType(typeName === "분석 대기 중" ? "AI 몰라형" : typeName, "result-character")}
-      <strong>${(card.description || "").split("\n").filter(Boolean).slice(-1)[0] || typeName}</strong>
-    </section>
-    <section class="scores">
-      ${axisEntries.map(([key, axis]) => `<p><span>${key}.${axis.label}</span><i style="--score:${Math.round(Number(axis.score) || 0)}%"></i></p>`).join("")}
-    </section>
-    <nav class="nav-buttons">
-      <button class="cta secondary" type="button" data-share-result="track1">공유하기</button>
-      ${button("다른 Track 도전", "track")}
-    </nav>`,
-    "compact-screen t1-result-screen"
-  );
-}
-
 function t1ShareScreen() {
   return screen(
     "t1-share",
@@ -620,6 +585,28 @@ function t1ShareScreen() {
 }
 
 function t1ResultScreen() {
+  const result = state.t1Result;
+  const typeName = result?.type?.name || "분석 대기 중";
+  const card = result?.resultCard || {
+    description: "결과 분석을 완료하면 유형 설명이 표시됩니다.",
+    keywords: ["분석전", "대기중", "테스트"],
+    reasonStory: ["답변을 제출하면 유형 분류 이유가 표시됩니다."],
+    evidenceNotice: "답변 제출 후 근거 안내가 표시됩니다.",
+  };
+  const descriptionLines = String(card.description || "")
+    .split("\n")
+    .filter(Boolean);
+  const mainDescription = descriptionLines.slice(0, 2).join("<br />") || typeName;
+  const subDescription = descriptionLines.slice(2).join("<br />") || (card.keywords || []).join(" · ");
+  const axes = result?.axisScores || {};
+  const axisEntries = [
+    ["A", axes.A || { label: "의존도", score: 0, level: "-" }],
+    ["B", axes.B || { label: "친밀도", score: 0, level: "-" }],
+    ["C", axes.C || { label: "신뢰도", score: 0, level: "-" }],
+    ["D", axes.D || { label: "통제욕구", score: 0, level: "-" }],
+  ];
+  const reasonStory = Array.isArray(card.reasonStory) ? card.reasonStory : [];
+
   return screen(
     "t1-result",
     "T1-06 Track 1 결과",
@@ -627,28 +614,28 @@ function t1ResultScreen() {
     <section class="t1-result-content">
       <article class="result-card t1-result-card">
         <p>당신의 AI 관계 유형은</p>
-        <h1>든든한 파트너형</h1>
-        ${char("partner", "result-character")}
-        <strong>많이 시키면서 사사건건 참견합니다.<br />결과를 그냥 넘기지 않습니다.</strong>
-        <span>자주 쓰고 친하고 신뢰하며 AI에게 맡기는 편</span>
+        <h1>${typeName}</h1>
+        ${charByType(typeName === "분석 대기 중" ? "AI 몰라형" : typeName, "result-character")}
+        <strong>${mainDescription}</strong>
+        <span>${subDescription}</span>
       </article>
       <section class="scores t1-score-bars">
-        <p><span><b>의존도</b> <strong>78점 높음</strong></span><i style="--score:38%"></i></p>
-        <p><span><b>친밀도</b> <strong>46점 중간</strong></span><i style="--score:57%"></i></p>
-        <p><span><b>신뢰도</b> <strong>50점 중간</strong></span><i style="--score:69%"></i></p>
-        <p><span><b>통제력</b> <strong>78점 높음</strong></span><i style="--score:38%"></i></p>
+        ${axisEntries.map(([, axis]) => {
+          const score = Math.round(Number(axis.score) || 0);
+          return `<p><span><b>${axis.label}</b> <strong>${score}점 ${axis.level}</strong></span><i style="--score:${score}%"></i></p>`;
+        }).join("")}
       </section>
       <article class="t1-result-info">
         <h2>왜 이 유형이 나왔나요?</h2>
-        <p>AI를 자주 씁니다.<br />하지만 쉽게 믿지 않습니다.<br />틀린 곳을 계속 잡습니다.<br />조건도 직접 세웁니다.<br />그래서 이 유형은 AI를 혹독하게 굴리는 사람에 가깝습니다.</p>
+        <p>${reasonStory.length ? reasonStory.map(escapeHtml).join("<br />") : "AI 사용 패턴과 답변 근거를 종합해 유형을 분류했습니다."}</p>
       </article>
       <article class="t1-result-info compact">
         <h2>근거 안내</h2>
-        <p>확인된 대화 기록 기반 결과입니다.</p>
+        <p>${escapeHtml(card.evidenceNotice || result?.inputSummary?.evidenceNotice || "확인된 응답 기반 결과입니다.")}</p>
       </article>
     </section>
     <nav class="nav-buttons t1-result-nav">
-      ${button("공유하기", "t1-share", "secondary")}
+      <button class="cta secondary" type="button" data-share-result="track1">공유하기</button>
       ${button("다른 Track 도전", "track")}
     </nav>`,
     "compact-screen t1-result-screen scroll-screen"
@@ -744,28 +731,45 @@ function t2PromptScreen() {
   );
 }
 
+function t2LoadingScreen() {
+  return screen(
+    "t2-loading",
+    "T2-05 분석 로딩",
+    `${header()}
+    <section class="t2-loading-state">
+      <div class="analysis-loading-mascot" aria-hidden="true"></div>
+      <h1>AI 활용 패턴을<br />분석하는 중</h1>
+      <ul class="loading-steps">
+        <li>객관식 응답을 지표로 환산하는 중</li>
+        <li>프롬프트 습관을 분석하는 중</li>
+        <li>6가지 역량 점수를 계산하는 중</li>
+        <li>맞춤 피드백을 생성하는 중</li>
+      </ul>
+    </section>`,
+    "compact-screen t2-loading-screen"
+  );
+}
+
 function t2PasteScreen() {
   return screen(
     "t2-paste",
-    "T2-03 AI 답변 제출",
+    "T2-04 답변 제출",
     `${header()}
-    <section class="mission t2-mission">
-      <p class="eyebrow">T2-03</p>
-      <h1>당신의 AI에게<br />프롬프트 습관을 물어보세요</h1>
-      <p>아래 영문 미션 문장을 복사해 평소 사용하는 AI에 입력한 뒤, 나온 답변을 그대로 붙여넣어 주세요.</p>
-      <label class="prompt-box compact">
-        <span>복사할 프롬프트</span>
-        <textarea readonly>${t2UserPrompt}</textarea>
-      </label>
-      <textarea class="answer-box" data-field="t2-paste" placeholder="AI가 생성한 답변을 여기에 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
+    <section class="t2-answer-submit">
+      ${progress(4, 4)}
+      <h1>AI가 뭐라고 답했나요?</h1>
+      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <img class="t2-example-image" src="./assets/example-response.png" alt="AI 답변 예시" />
+      <span class="t2-example-caption">(예시 화면)</span>
+      <textarea data-field="t2-paste" placeholder="여기에 AI 답변을 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
+      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
       ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
     </section>
-    <nav class="nav-buttons stacked">
-      <button class="cta primary" type="button" data-copy-prompt>프롬프트 복사하기</button>
-      ${button("이전", "t2-q-4", "secondary")}
-      ${button("패턴 분석하기", "t2-result")}
+    <nav class="nav-buttons t2-answer-nav">
+      ${button("이전", "t2-prompt", "secondary")}
+      ${button("내 패턴 분석하기", "t2-loading")}
     </nav>`,
-    "compact-screen scroll-screen"
+    "compact-screen t2-paste-screen"
   );
 }
 
@@ -774,12 +778,12 @@ function t2ResultScreen() {
     total: 0,
     grade: "분석 대기 중",
     axes: {
-      task_clarity: { label: "작업 명확성", score: 0, max: 20, rate: 0 },
-      context: { label: "맥락 설명", score: 0, max: 20, rate: 0 },
-      role: { label: "역할 지정", score: 0, max: 15, rate: 0 },
-      output_format: { label: "출력 형식", score: 0, max: 15, rate: 0 },
-      iteration: { label: "반복 개선", score: 0, max: 15, rate: 0 },
-      critical_review: { label: "비판적 검토", score: 0, max: 15, rate: 0 },
+      task_clarity: { label: "작업 명확성", rate: 0 },
+      context: { label: "맥락 설명", rate: 0 },
+      role: { label: "역할 지정", rate: 0 },
+      output_format: { label: "출력 형식", rate: 0 },
+      iteration: { label: "반복 개선", rate: 0 },
+      critical_review: { label: "비판적 검토", rate: 0 },
     },
     feedback: {
       summary: "답변을 제출하면 AI 활용 역량 분석이 표시됩니다.",
@@ -787,6 +791,12 @@ function t2ResultScreen() {
       weaknesses: [{ name: "분석전", description: "답변 제출 후 표시됩니다." }],
       insight: "답변을 제출하면 면접용 요약 문장이 표시됩니다.",
     },
+  };
+  const feedback = {
+    summary: result.feedback?.summary || "AI 활용 진단 결과를 확인해보세요.",
+    strength: result.feedback?.strength || result.feedback?.strengths?.[0]?.description || "강점 분석이 표시됩니다.",
+    weakness: result.feedback?.weakness || result.feedback?.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.",
+    insight: result.feedback?.insight || "면접용 요약 문장이 표시됩니다.",
   };
   const axisOrder = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
   const center = 135;
@@ -809,7 +819,7 @@ function t2ResultScreen() {
   ];
   return screen(
     "t2-result",
-    "T2-04 Track 2 결과",
+    "T2-06 Track 2 결과",
     `${header()}
     <section class="t2-result-content">
       <article class="t2-score-card">
@@ -827,158 +837,23 @@ function t2ResultScreen() {
         </div>
       </article>
       <strong class="t2-grade-pill">${result.grade}</strong>
-      <p class="t2-result-summary">${result.feedback.summary}</p>
+      <p class="t2-result-summary">${feedback.summary}</p>
       <section class="t2-feedback-list">
         <article>
           <h2><span>Strength</span> 강점</h2>
-          <p class="t2-feedback-body" style="font-family:PretendardRegular, Pretendard, sans-serif;font-weight:400;">${result.feedback.strengths[0].description}</p>
+          <p class="t2-feedback-body">${feedback.strength}</p>
         </article>
         <article>
           <h2><span>Weakness</span> 약점</h2>
-          <p class="t2-feedback-body" style="font-family:PretendardRegular, Pretendard, sans-serif;font-weight:400;">${result.feedback.weaknesses[0].description}</p>
+          <p class="t2-feedback-body">${feedback.weakness}</p>
         </article>
         <article class="t2-interview-card">
           <h2><span>면접에서 이렇게 말할 수 있어요</span></h2>
-          <p class="t2-feedback-body" style="font-family:PretendardRegular, Pretendard, sans-serif;font-weight:400;">${result.feedback.insight}</p>
-        </article>
-      </section>
-    </section>
-    <nav class="nav-buttons t2-result-nav">
-      <button class="cta secondary" type="button" data-share-result="track2">공유하기</button>
-      ${button("다른 Track 도전", "track")}
-    </nav>
-    ${footer()}`,
-    "t2-result-screen scroll-screen"
-  );
-}
-
-function t2PasteScreen() {
-  return screen(
-    "t2-paste",
-    "T2-04 답변 제출",
-    `${header()}
-    <section class="t2-answer-submit">
-      ${progress(4, 4)}
-      <h1>AI가 뭐라고 답했나요?</h1>
-      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
-      <textarea placeholder="여기에 AI 답변을 붙여넣어 주세요."></textarea>
-      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
-      ${button("내 패턴 분석하기", "t2-loading", "primary", "t2-submit-button")}
-    </section>`,
-    "compact-screen t2-paste-screen"
-  );
-}
-
-function t2LoadingScreen() {
-  return screen(
-    "t2-loading",
-    "T2-05 분석 로딩",
-    `${header()}
-    <section class="t2-loading-state">
-      <h1>당신의 패턴을<br />분석하는 중...</h1>
-      <img class="loading-mascot-img" src="${logoDir}Logo.v1.png" alt="" aria-hidden="true" />
-    </section>`,
-    "compact-screen t2-loading-screen"
-  );
-}
-
-function t2PasteScreen() {
-  return screen(
-    "t2-paste",
-    "T2-04 답변 제출",
-    `${header()}
-    <section class="t2-answer-submit">
-      ${progress(4, 4)}
-      <h1>AI가 뭐라고 답했나요?</h1>
-      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
-      <img class="t2-example-image" src="./assets/example-response.png" alt="AI 답변 예시" />
-      <span class="t2-example-caption">(예시 화면)</span>
-      <textarea placeholder="여기에 AI 답변을 붙여넣어 주세요."></textarea>
-      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
-    </section>
-    <nav class="nav-buttons t2-answer-nav">
-      ${button("이전", "t2-prompt", "secondary")}
-      ${button("내 패턴 분석하기", "t2-loading")}
-    </nav>`,
-    "compact-screen t2-paste-screen"
-  );
-}
-
-function t2ResultScreen() {
-  const result = {
-    total: 74,
-    grade: "실무 적응형",
-    axes: {
-      task_clarity: { label: "작업 명확성", rate: 0.48 },
-      context: { label: "맥락 설명", rate: 0.58 },
-      role: { label: "역할 지정", rate: 0.82 },
-      output_format: { label: "출력 형식", rate: 0.86 },
-      iteration: { label: "반복 개선", rate: 0.78 },
-      critical_review: { label: "비판적 검토", rate: 0.76 },
-    },
-    feedback: {
-      summary: "AI를 업무에 활용하는 감각은 좋지만,<br />검증과 출력 설계에서 더 성장할 여지가 있습니다.",
-      strength: "반복 업무를 구조화하고, AI에게 원하는 결과물을 명확히 요청하는 능력이 좋습니다.",
-      weakness: "AI가 틀릴 수 있는 상황에서 로직을 검증하거나 도구를 분리하는 전략은 아직 보완이 필요합니다.",
-      insight: "저는 AI를 단순한 답변 생성 도구가 아니라 업무 효율을 높이는 보조 시스템으로 활용합니다. 반복 업무에서는 예시와 형식을 제공해 결과물의 일관성을 높이고, 중요한 판단이 필요한 상황에서는 AI 답변을 검토하며 보완하는 방식으로 사용합니다.",
-    },
-  };
-  const axisOrder = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
-  const center = 135;
-  const maxRadius = 94;
-  const angles = [-90, -30, 30, 90, 150, 210];
-  const point = (rate, index) => {
-    const angle = (angles[index] * Math.PI) / 180;
-    const radius = maxRadius * rate;
-    return `${center + Math.cos(angle) * radius},${center + Math.sin(angle) * radius}`;
-  };
-  const gridPolygon = (rate) => axisOrder.map((_, index) => point(rate, index)).join(" ");
-  const radarPoints = axisOrder.map((key, index) => point(result.axes[key].rate, index)).join(" ");
-  const labelPositions = [
-    { x: 135, y: 17, anchor: "middle" },
-    { x: 232, y: 76, anchor: "start" },
-    { x: 232, y: 197, anchor: "start" },
-    { x: 135, y: 255, anchor: "middle" },
-    { x: 38, y: 197, anchor: "end" },
-    { x: 38, y: 76, anchor: "end" },
-  ];
-  return screen(
-    "t2-result",
-    "T2-06 Track 2 결과",
-    `${header()}
-    <section class="t2-result-content">
-      <article class="t2-score-card">
-        <p>당신의 AI 활용 역량 점수는</p>
-        <h1>${Math.round(result.total)}점</h1>
-        <div class="radar-chart" aria-label="Track 2 역량 레이더 차트">
-          <svg viewBox="0 0 270 270" role="img" aria-hidden="true">
-            ${[0.2, 0.4, 0.6, 0.8].map((rate) => `<polygon class="radar-grid" points="${gridPolygon(rate)}" />`).join("")}
-            ${axisOrder.map((_, index) => `<line class="radar-axis" x1="${center}" y1="${center}" x2="${point(1, index).split(",")[0]}" y2="${point(1, index).split(",")[1]}" />`).join("")}
-            <polygon class="radar-fill" points="${radarPoints}" />
-            <polygon class="radar-stroke" points="${radarPoints}" />
-            ${axisOrder.map((key, index) => `<circle class="radar-dot" cx="${point(result.axes[key].rate, index).split(",")[0]}" cy="${point(result.axes[key].rate, index).split(",")[1]}" r="3.5" />`).join("")}
-            ${axisOrder.map((key, index) => `<text class="radar-label" x="${labelPositions[index].x}" y="${labelPositions[index].y}" text-anchor="${labelPositions[index].anchor}">${result.axes[key].label}</text>`).join("")}
-          </svg>
-        </div>
-      </article>
-      <strong class="t2-grade-pill">${result.grade}</strong>
-      <p class="t2-result-summary">${result.feedback.summary}</p>
-      <section class="t2-feedback-list">
-        <article>
-          <h2><span>Strength</span> 강점</h2>
-          <p class="t2-feedback-body">${result.feedback.strength}</p>
-        </article>
-        <article>
-          <h2><span>Weakness</span> 약점</h2>
-          <p class="t2-feedback-body">${result.feedback.weakness}</p>
-        </article>
-        <article class="t2-interview-card">
-          <h2><span>면접에서 이렇게 말할 수 있어요</span></h2>
-          <p class="t2-feedback-body">${result.feedback.insight}</p>
+          <p class="t2-feedback-body">${feedback.insight}</p>
         </article>
       </section>
       <nav class="nav-buttons t2-result-nav">
-        ${button("공유하기", "t2-result", "secondary")}
+        <button class="cta secondary" type="button" data-share-result="track2">공유하기</button>
         ${button("다른 Track 도전", "track")}
       </nav>
       ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t2-character-link")}
@@ -1089,16 +964,6 @@ function showScreen(name) {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
   });
   app.scrollTop = 0;
-
-  if (name === "t1-loading") {
-    window.clearTimeout(showScreen.loadingTimer);
-    showScreen.loadingTimer = window.setTimeout(() => showScreen("t1-result"), 1500);
-  }
-
-  if (name === "t2-loading") {
-    window.clearTimeout(showScreen.loadingTimer);
-    showScreen.loadingTimer = window.setTimeout(() => showScreen("t2-result"), 1500);
-  }
 }
 
 function openMenu() {
