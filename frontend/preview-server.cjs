@@ -4,6 +4,11 @@ const path = require("path");
 
 const root = __dirname;
 const port = Number(process.env.PORT || 4173);
+const hostArgIndex = process.argv.indexOf("--host");
+const host =
+  hostArgIndex >= 0 && process.argv[hostArgIndex + 1]
+    ? process.argv[hostArgIndex + 1]
+    : process.env.HOST || "127.0.0.1";
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -58,8 +63,8 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(port, "127.0.0.1", () => {
-  console.log(`Preview server running at http://127.0.0.1:${port}/`);
+server.listen(port, host, () => {
+  console.log(`Preview server running at http://${host}:${port}/`);
 });
 
 function handleJson(req, res, handler) {
