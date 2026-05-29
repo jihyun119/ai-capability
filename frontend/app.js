@@ -1143,7 +1143,6 @@ function resetResults() {
 
 async function submitTrack1() {
   state.t1Error = "";
-  const minLoadingMs = 2500;
   const missing = t1Questions
     .map((_, index) => `Q${index + 1}`)
     .filter((key) => !state.t1Answers[key]);
@@ -1162,7 +1161,6 @@ async function submitTrack1() {
     return;
   }
 
-  const loadingStartedAt = Date.now();
   showScreen("t1-loading");
 
   try {
@@ -1178,7 +1176,6 @@ async function submitTrack1() {
     }
 
     state.t1Result = result;
-    await waitForMinimumLoading(loadingStartedAt, minLoadingMs);
     render();
     showScreen("t1-result");
   } catch (error) {
@@ -1190,7 +1187,6 @@ async function submitTrack1() {
 
 async function submitTrack2() {
   state.t2Error = "";
-  const minLoadingMs = 2000;
   const missing = t2Questions
     .map((_, index) => `Q${index + 1}`)
     .filter((key) => !state.t2Answers[key]);
@@ -1209,7 +1205,6 @@ async function submitTrack2() {
     return;
   }
 
-  const loadingStartedAt = Date.now();
   showScreen("t2-loading");
 
   try {
@@ -1224,20 +1219,12 @@ async function submitTrack2() {
     }
 
     state.t2Result = result;
-    await waitForMinimumLoading(loadingStartedAt, minLoadingMs);
     render();
     showScreen("t2-result");
   } catch (error) {
     state.t2Error = error.message;
     render();
     showScreen("t2-paste");
-  }
-}
-
-async function waitForMinimumLoading(startedAt, minimumMs) {
-  const remainingMs = minimumMs - (Date.now() - startedAt);
-  if (remainingMs > 0) {
-    await new Promise((resolve) => setTimeout(resolve, remainingMs));
   }
 }
 
@@ -1349,17 +1336,38 @@ function copyPromptFieldSync(promptField) {
 }
 
 async function shareResult(track) {
-  const { blob, filename } = await createResultShareImage(track);
   const shareData = createNativeShareData(track);
+  if (isMobileSafari() && navigator.share) {
+    await navigator.share(shareData);
+    return "shared";
+  }
+
+  const { blob, filename } = await createResultShareImage(track);
   const file = new File([blob], filename, { type: "image/png" });
 
   if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
-    await navigator.share({ ...shareData, files: [file] });
+    try {
+      await navigator.share({ ...shareData, files: [file] });
+      return "shared";
+    } catch (error) {
+      if (error?.name === "AbortError") throw error;
+      await navigator.share(shareData);
+      return "shared";
+    }
+  }
+
+  if (navigator.share) {
+    await navigator.share(shareData);
     return "shared";
   }
 
   downloadBlob(blob, filename);
   return "downloaded";
+}
+
+function isMobileSafari() {
+  const userAgent = navigator.userAgent || "";
+  return /iP(ad|hone|od)/.test(userAgent) && /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS/i.test(userAgent);
 }
 
 function createNativeShareData(track) {

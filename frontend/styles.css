@@ -2734,6 +2734,37 @@ input {
   font-weight: 600;
 }
 
+@media (max-width: 480px) {
+  body {
+    display: block;
+    min-height: 100dvh;
+    background: var(--white);
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 393px;
+    height: auto;
+    min-height: 100dvh;
+    margin: 0 auto;
+    overflow-y: visible;
+    box-shadow: none;
+  }
+
+  .screen {
+    min-height: 100dvh;
+  }
+
+  .nav-buttons {
+    width: calc(100% + 40px);
+  }
+
+  .t1-result-screen {
+    min-height: auto;
+    padding-bottom: 44px;
+  }
+}
+
 .share-card {
   background: var(--lime);
 }

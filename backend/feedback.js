@@ -46,13 +46,13 @@ ${axisLines}
     if (!apiKey) throw new Error("OPENAI_API_KEY is not configured.");
 
     const openai = new OpenAI({ apiKey });
-    const response = await openai.chat.completions.create({
+    const response = await withTimeout(openai.chat.completions.create({
       model:           "gpt-4o-mini",
       messages:        [{ role: "user", content: prompt }],
       max_tokens:      500,
       temperature:     0.7,
       response_format: { type: "json_object" }
-    });
+    }), 3500);
 
     const parsed = JSON.parse(response.choices[0].message.content.trim());
     return {
@@ -97,4 +97,13 @@ function buildTemplateWeaknesses(weaknesses) {
 
 function buildTemplateInsight(strengths) {
   return `저는 AI를 활용할 때 ${strengths[0]}과 ${strengths[1]}을 먼저 정리해 결과의 방향을 잡는 편입니다. 필요한 결과를 빠르게 얻기보다, 원하는 기준에 맞게 좁혀가는 방식으로 AI를 씁니다.`;
+}
+
+function withTimeout(promise, timeoutMs) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`OpenAI feedback timeout after ${timeoutMs}ms.`)), timeoutMs);
+    })
+  ]);
 }
