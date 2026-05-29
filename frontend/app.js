@@ -1271,20 +1271,30 @@ async function prepareRespondent(screenNode) {
 
   if (state.respondent?.nickname === nickname) return state.respondent;
 
-  const respondent = await postJson("/api/respondents", {
-    nickname,
-    birthYear: state.user.birthYear,
-  });
-  if (respondent.status !== "success") {
-    throw new Error(respondent.error?.message || "응시자 정보를 생성하지 못했습니다.");
-  }
+  try {
+    const respondent = await postJson("/api/respondents", {
+      nickname,
+      birthYear: state.user.birthYear,
+    });
+    if (respondent.status !== "success") {
+      throw new Error(respondent.error?.message || "응시자 정보를 생성하지 못했습니다.");
+    }
 
-  state.respondent = {
-    respondentId: respondent.respondentId,
-    accessToken: respondent.accessToken,
-    nickname: respondent.nickname || nickname,
-    birthYear: respondent.birthYear || state.user.birthYear,
-  };
+    state.respondent = {
+      respondentId: respondent.respondentId,
+      accessToken: respondent.accessToken,
+      nickname: respondent.nickname || nickname,
+      birthYear: respondent.birthYear || state.user.birthYear,
+    };
+  } catch (error) {
+    console.warn("[respondent] Supabase respondent creation failed; continuing in demo mode.", error);
+    state.respondent = {
+      respondentId: null,
+      accessToken: null,
+      nickname,
+      birthYear: state.user.birthYear,
+    };
+  }
 
   return state.respondent;
 }
