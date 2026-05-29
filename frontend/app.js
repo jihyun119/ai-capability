@@ -737,7 +737,7 @@ function t2LoadingScreen() {
     "T2-05 분석 로딩",
     `${header()}
     <section class="t2-loading-state">
-      <div class="analysis-loading-mascot" aria-hidden="true"></div>
+      <div class="loading-logo loading-logo-large" aria-hidden="true"><i></i><i></i></div>
       <h1>AI 활용 패턴을<br />분석하는 중</h1>
       <ul class="loading-steps">
         <li>객관식 응답을 지표로 환산하는 중</li>
@@ -1135,6 +1135,7 @@ function resetResults() {
 
 async function submitTrack1() {
   state.t1Error = "";
+  const minLoadingMs = 2500;
   const missing = t1Questions
     .map((_, index) => `Q${index + 1}`)
     .filter((key) => !state.t1Answers[key]);
@@ -1153,6 +1154,7 @@ async function submitTrack1() {
     return;
   }
 
+  const loadingStartedAt = Date.now();
   showScreen("t1-loading");
 
   try {
@@ -1168,7 +1170,7 @@ async function submitTrack1() {
     }
 
     state.t1Result = result;
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await waitForMinimumLoading(loadingStartedAt, minLoadingMs);
     render();
     showScreen("t1-result");
   } catch (error) {
@@ -1180,6 +1182,7 @@ async function submitTrack1() {
 
 async function submitTrack2() {
   state.t2Error = "";
+  const minLoadingMs = 2000;
   const missing = t2Questions
     .map((_, index) => `Q${index + 1}`)
     .filter((key) => !state.t2Answers[key]);
@@ -1198,6 +1201,7 @@ async function submitTrack2() {
     return;
   }
 
+  const loadingStartedAt = Date.now();
   showScreen("t2-loading");
 
   try {
@@ -1212,13 +1216,20 @@ async function submitTrack2() {
     }
 
     state.t2Result = result;
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await waitForMinimumLoading(loadingStartedAt, minLoadingMs);
     render();
     showScreen("t2-result");
   } catch (error) {
     state.t2Error = error.message;
     render();
     showScreen("t2-paste");
+  }
+}
+
+async function waitForMinimumLoading(startedAt, minimumMs) {
+  const remainingMs = minimumMs - (Date.now() - startedAt);
+  if (remainingMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, remainingMs));
   }
 }
 
