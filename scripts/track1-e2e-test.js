@@ -46,7 +46,7 @@ async function main() {
   console.log("\n[4] 결과 조회 확인...");
   const record = await getTrack1Result(shareSlug);
   console.log("  ✅ type_name:", record.type_name);
-  console.log("  ✅ share_slug:", record.share_slug);
+  console.log("  ✅ result_id:", record.result_id);
 
   console.log("\n=== ✅ 모든 단계 통과 ===\n");
 }

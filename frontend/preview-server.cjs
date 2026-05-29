@@ -38,6 +38,11 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/respondents") {
+    handleJson(req, res, handleRespondentCreate);
+    return;
+  }
+
   const pathname = decodeURIComponent(url.pathname);
   const safePath = pathname === "/" ? "/index.html" : pathname;
   const filePath = path.normalize(path.join(root, safePath));
@@ -92,11 +97,30 @@ function handleJson(req, res, handler) {
 
 async function handleTrack1Submit(payload) {
   const { evaluateTrack1 } = await import("../src/track1/evaluate.js");
+  const shouldPersist = Boolean(payload.respondentId && payload.accessToken);
   const body = evaluateTrack1({
     llmResult: payload.llmResult,
     questionnaire: payload.questionnaire,
     tieBreaks: payload.tieBreaks,
+    includeInternal: shouldPersist,
   });
+
+  if (shouldPersist && body.status === "success") {
+    const { validateRespondent, saveTrack1Result } = await import("../backend/db.js");
+    const respondent = await validateRespondent(payload.respondentId, payload.accessToken);
+    const { resultId, shareSlug } = await saveTrack1Result({
+      respondentId: payload.respondentId,
+      nicknameSnapshot: respondent.nickname,
+      birthYear: payload.birthYear,
+      questionnaireVersion: payload.questionnaireVersion || "track1-12",
+      questionnaire: payload.questionnaire,
+      llmResult: payload.llmResult,
+      evaluationResult: body,
+    });
+    body.resultId = resultId;
+    body.shareSlug = shareSlug;
+  }
+
   return {
     statusCode: body.status === "success" ? 200 : 400,
     body,
@@ -105,10 +129,54 @@ async function handleTrack1Submit(payload) {
 
 async function handleTrack2Submit(payload) {
   const { score } = await import("../src/track2/scorer.js");
-  const body = buildTrack2DemoResponse(score(payload.freeText, payload.answers));
+  const scoringResult = score(payload.freeText, payload.answers);
+  const body = buildTrack2DemoResponse(scoringResult);
+
+  if (payload.respondentId && payload.accessToken) {
+    const { validateRespondent, saveTrack2Result } = await import("../backend/db.js");
+    const respondent = await validateRespondent(payload.respondentId, payload.accessToken);
+    const { resultId, shareSlug } = await saveTrack2Result({
+      respondentId: payload.respondentId,
+      nicknameSnapshot: respondent.nickname,
+      birthYear: payload.birthYear,
+      answers: payload.answers,
+      freeText: payload.freeText,
+      scoringResult,
+      feedbackResult: body.result.feedback,
+    });
+    body.resultId = resultId;
+    body.shareSlug = shareSlug;
+  }
+
   return {
     statusCode: 200,
     body,
+  };
+}
+
+async function handleRespondentCreate(payload) {
+  const nickname = String(payload.nickname || "").trim();
+  if (!nickname) {
+    return {
+      statusCode: 400,
+      body: {
+        status: "error",
+        error: { code: "INVALID_INPUT", message: "nickname이 필요합니다.", retryable: true },
+      },
+    };
+  }
+
+  const { createRespondent } = await import("../backend/db.js");
+  const respondent = await createRespondent(nickname, payload.birthYear);
+  return {
+    statusCode: 201,
+    body: {
+      status: "success",
+      respondentId: respondent.id,
+      accessToken: respondent.access_token,
+      nickname: respondent.nickname,
+      birthYear: Number(payload.birthYear) || null,
+    },
   };
 }
 

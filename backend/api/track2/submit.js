@@ -80,7 +80,9 @@ export default async function handler(req, res) {
     const { resultId, shareSlug } = await saveTrack2Result({
       respondentId,
       nicknameSnapshot: respondent.nickname,
+      birthYear: req.body.birthYear,
       answers,
+      freeText,
       scoringResult,
       feedbackResult
     });

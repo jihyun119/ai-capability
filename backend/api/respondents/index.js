@@ -4,7 +4,7 @@ import { createRespondent } from "../../db.js";
  * POST /api/respondents
  *
  * Request body:
- * { "nickname": "홍길동" }
+ * { "nickname": "홍길동", "birthYear": 2000 }
  *
  * Response:
  * { "status": "success", "respondentId": "uuid", "accessToken": "token", "nickname": "홍길동" }
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const { nickname } = req.body ?? {};
+  const { nickname, birthYear } = req.body ?? {};
 
   if (!nickname || typeof nickname !== "string" || nickname.trim().length < 1) {
     return res.status(400).json({
@@ -27,12 +27,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const respondent = await createRespondent(nickname.trim());
+    const respondent = await createRespondent(nickname.trim(), birthYear);
     return res.status(201).json({
       status:      "success",
       respondentId: respondent.id,
       accessToken:  respondent.access_token,
-      nickname:     respondent.nickname
+      nickname:     respondent.nickname,
+      birthYear:    Number(birthYear) || null
     });
   } catch (err) {
     console.error("[respondents]", err);

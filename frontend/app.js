@@ -177,6 +177,8 @@ const t2Questions = [
 ];
 
 const state = {
+  user: null,
+  respondent: null,
   t1Answers: {},
   t1LlmText: "",
   t1Result: null,
@@ -494,6 +496,20 @@ function loadingScreen(id, title, messages, next) {
         <div class="analysis-loading-mascot" aria-hidden="true"></div>
       </section>`,
       "compact-screen t1-loading-screen"
+    );
+  }
+
+  if (id === "t2-loading") {
+    return screen(
+      id,
+      title.replace(/<br \/>/g, " "),
+      `${header()}
+      <section class="t2-loading-state">
+        <div class="analysis-loading-mascot" aria-hidden="true"></div>
+        <h1>${title}</h1>
+        <ul class="loading-steps">${messages.map((message) => `<li>${message}</li>`).join("")}</ul>
+      </section>`,
+      "compact-screen t2-loading-screen"
     );
   }
 
@@ -923,6 +939,15 @@ document.addEventListener("click", async (event) => {
   if (target.matches("[data-login-next]") && target.disabled) return;
   event.preventDefault();
 
+  if (target.matches("[data-login-next]")) {
+    try {
+      await prepareRespondent(target.closest(".login-screen"));
+    } catch (error) {
+      alert(error.message || "사용자 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+  }
+
   if (target.dataset.go === "t1-loading") {
     await submitTrack1();
     return;
@@ -1014,6 +1039,7 @@ async function submitTrack1() {
 
   try {
     const result = await postJson("/api/track1/submit", {
+      ...respondentPayload(),
       questionnaireVersion: "track1-12",
       questionnaire: { answers: state.t1Answers },
       llmResult: state.t1LlmText,
@@ -1058,6 +1084,7 @@ async function submitTrack2() {
 
   try {
     const result = await postJson("/api/track2/submit", {
+      ...respondentPayload(),
       answers: state.t2Answers,
       freeText: state.t2FreeText,
     });
@@ -1091,6 +1118,45 @@ async function postJson(url, payload) {
     throw new Error(`${result.error?.message || "요청을 처리할 수 없습니다."}${details}`);
   }
   return result;
+}
+
+async function prepareRespondent(screenNode) {
+  const nickname = screenNode?.querySelector(".nickname-input input")?.value.trim();
+  if (!nickname) throw new Error("닉네임을 입력해 주세요.");
+
+  const [birthYear = "", birthMonth = "", birthDay = ""] = Array.from(screenNode.querySelectorAll("[data-birth-input]"))
+    .map((input) => input.value.trim());
+  const birth = [birthYear, birthMonth, birthDay].join("-");
+
+  state.user = { nickname, birth, birthYear: Number(birthYear) || null };
+
+  if (state.respondent?.nickname === nickname) return state.respondent;
+
+  const respondent = await postJson("/api/respondents", {
+    nickname,
+    birthYear: state.user.birthYear,
+  });
+  if (respondent.status !== "success") {
+    throw new Error(respondent.error?.message || "응시자 정보를 생성하지 못했습니다.");
+  }
+
+  state.respondent = {
+    respondentId: respondent.respondentId,
+    accessToken: respondent.accessToken,
+    nickname: respondent.nickname || nickname,
+    birthYear: respondent.birthYear || state.user.birthYear,
+  };
+
+  return state.respondent;
+}
+
+function respondentPayload() {
+  if (!state.respondent?.respondentId || !state.respondent?.accessToken) return {};
+  return {
+    respondentId: state.respondent.respondentId,
+    accessToken: state.respondent.accessToken,
+    birthYear: state.respondent.birthYear || state.user?.birthYear || null,
+  };
 }
 
 async function copyPromptField(promptField) {
@@ -1144,13 +1210,15 @@ function copyPromptFieldSync(promptField) {
 }
 
 async function shareResult(track) {
+  const { blob, filename } = await createResultShareImage(track);
   const shareData = createNativeShareData(track);
-  if (navigator.share) {
-    await navigator.share(shareData);
+  const file = new File([blob], filename, { type: "image/png" });
+
+  if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+    await navigator.share({ ...shareData, files: [file] });
     return "shared";
   }
 
-  const { blob, filename } = await createResultShareImage(track);
   downloadBlob(blob, filename);
   return "downloaded";
 }
@@ -1176,6 +1244,17 @@ function createNativeShareData(track) {
 }
 
 async function createResultShareImage(track) {
+  const screenId = track === "track2" ? "t2-result" : "t1-result";
+  const screenNode = document.querySelector(`.screen[data-screen="${screenId}"]`);
+  const filename = track === "track2" ? "pookie-track2-result.png" : "pookie-track1-result.png";
+  const title = createNativeShareData(track).title;
+  const text = "AI 활용 진단 테스트 결과를 공유합니다.";
+
+  if (screenNode) {
+    const blob = await captureScreenAsPng(screenNode);
+    return { blob, filename, title, text };
+  }
+
   if (track === "track2") return createTrack2ShareImage();
   return createTrack1ShareImage();
 }
@@ -1224,6 +1303,99 @@ function createShareCanvas() {
   canvas.width = 1080;
   canvas.height = 1440;
   return canvas;
+}
+
+async function captureScreenAsPng(screenNode) {
+  const width = Math.ceil(screenNode.getBoundingClientRect().width || 393);
+  const height = Math.ceil(Math.max(screenNode.scrollHeight, screenNode.getBoundingClientRect().height, 920));
+  const clone = screenNode.cloneNode(true);
+
+  clone.classList.add("active");
+  clone.style.position = "relative";
+  clone.style.left = "0";
+  clone.style.top = "0";
+  clone.style.width = `${width}px`;
+  clone.style.height = `${height}px`;
+  clone.style.minHeight = `${height}px`;
+  clone.style.margin = "0";
+  clone.style.transform = "none";
+  clone.style.boxShadow = "none";
+  clone.style.overflow = "hidden";
+
+  await inlineImages(clone);
+  inlineComputedStyles(screenNode, clone);
+
+  const serialized = new XMLSerializer().serializeToString(clone);
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">${serialized}</div>
+      </foreignObject>
+    </svg>`;
+  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+
+  try {
+    const image = await loadImage(url);
+    const scale = Math.min(3, Math.max(2, window.devicePixelRatio || 2));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.drawImage(image, 0, 0, width, height);
+    return await canvasToBlob(canvas);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function inlineComputedStyles(source, target) {
+  const computed = window.getComputedStyle(source);
+  const computedText = computed.cssText || Array.from(computed)
+    .map((property) => `${property}:${computed.getPropertyValue(property)};`)
+    .join("");
+  target.setAttribute("style", `${target.getAttribute("style") || ""};${computedText}`);
+
+  const sourceChildren = Array.from(source.children);
+  const targetChildren = Array.from(target.children);
+  for (let index = 0; index < sourceChildren.length; index += 1) {
+    inlineComputedStyles(sourceChildren[index], targetChildren[index]);
+  }
+}
+
+async function inlineImages(root) {
+  const images = Array.from(root.querySelectorAll("img"));
+  await Promise.all(images.map(async (image) => {
+    try {
+      const absoluteUrl = new URL(image.getAttribute("src"), window.location.href).href;
+      const response = await fetch(absoluteUrl);
+      const blob = await response.blob();
+      image.src = await blobToDataUrl(blob);
+    } catch {
+      // If a decorative image cannot be inlined, the capture can still proceed.
+    }
+  }));
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function canvasToBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("공유 이미지를 만들 수 없습니다."));
+        return;
+      }
+      resolve(blob);
+    }, "image/png");
+  });
 }
 
 function drawShareBackground(ctx, canvas) {

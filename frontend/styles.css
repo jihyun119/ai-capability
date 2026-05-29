@@ -117,6 +117,7 @@ textarea {
 
 button {
   cursor: pointer;
+  color: var(--black);
 }
 
 .app-shell {
@@ -614,15 +615,17 @@ mark {
   border: 1px solid var(--black);
   border-radius: 12px;
   background: var(--white);
+  color: var(--black);
   text-align: left;
   overflow: hidden;
   transition: border-color 120ms ease, background-color 120ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .track-card:hover,
 .track-card:focus-visible {
-  border-color: var(--violet);
-  background: #f4edff;
+  border-color: var(--black);
+  background: var(--white);
 }
 
 .chips {
@@ -671,6 +674,7 @@ mark {
   height: 45px;
   border-radius: 50%;
   background: var(--lime);
+  color: var(--black);
   display: grid;
   place-items: center;
   font-size: 32px;
@@ -1168,6 +1172,7 @@ mark {
   border: 1px solid var(--black);
   border-radius: 12px;
   background: var(--white);
+  color: var(--black);
   text-align: left;
   font-size: 14px;
   line-height: 1.25;
@@ -1770,6 +1775,94 @@ input {
   padding: 12px 14px;
   border: 1px solid var(--black);
   border-radius: 10px;
+}
+
+.t2-loading-screen {
+  min-height: 852px;
+  padding: 44px 20px 0;
+  overflow: hidden;
+}
+
+.t2-loading-screen.active {
+  display: block;
+}
+
+.t2-loading-state {
+  position: absolute;
+  left: 20px;
+  top: 214px;
+  width: 353px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.t2-loading-state .analysis-loading-mascot {
+  order: 0;
+  width: 203px;
+  height: 203px;
+}
+
+.t2-loading-state h1 {
+  order: 1;
+  width: 353px;
+  margin-top: 28px;
+  font-family: Pretendard, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 37px;
+}
+
+.loading-steps {
+  order: 2;
+  width: 100%;
+  display: grid;
+  gap: 13px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loading-steps li {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  opacity: 0;
+  font-family: Pretendard, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+  animation: loading-step-fade 1.8s ease-in-out infinite;
+}
+
+.loading-steps li:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.loading-steps li:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+.loading-steps li:nth-child(4) {
+  animation-delay: 0.75s;
+}
+
+@keyframes loading-step-fade {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  35%,
+  76% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0.35;
+  }
 }
 
 .t1-loading-screen {

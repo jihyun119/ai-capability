@@ -35,6 +35,7 @@ export default async function handler(req, res) {
       const { resultId, shareSlug } = await saveTrack1Result({
         respondentId: req.body.respondentId,
         nicknameSnapshot: respondent.nickname,
+        birthYear: req.body.birthYear,
         questionnaireVersion: req.body.questionnaireVersion || "track1-12",
         questionnaire: req.body.questionnaire,
         llmResult: req.body.llmResult,

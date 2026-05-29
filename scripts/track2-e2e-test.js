@@ -82,6 +82,7 @@ async function step4_save(respondent, scoringResult, feedbackResult) {
     respondentId:     respondent.id,
     nicknameSnapshot: respondent.nickname,
     answers:          TEST_ANSWERS,
+    freeText:         TEST_FREE_TEXT,
     scoringResult,
     feedbackResult
   });
@@ -97,7 +98,7 @@ async function step5_read(shareSlug) {
   const record = await getTrack2Result(shareSlug);
   console.log("  ✅ total_score:", record.total_score);
   console.log("  ✅ grade:", record.grade);
-  console.log("  ✅ share_slug:", record.share_slug);
+  console.log("  ✅ result_id:", record.result_id);
 }
 
 // ── 실행 ─────────────────────────────────────────────────────────────────────
