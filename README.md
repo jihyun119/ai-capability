@@ -1,6 +1,6 @@
 # README
 
-상태: 진행 중
+상태: 진행 중.
 
 ## Frontend prototype
 
