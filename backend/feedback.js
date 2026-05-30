@@ -1,5 +1,3 @@
-import OpenAI from "openai";
-
 /**
  * OpenAI로 한국어 피드백 생성
  * 반환: { summary, strengths: [{name, description}], weaknesses: [{name, description}], insight }
@@ -49,6 +47,7 @@ ${axisLines}
     const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_API_KEY;
     if (!apiKey) throw new Error("OPENAI_API_KEY is not configured.");
 
+    const { default: OpenAI } = await import("openai");
     const openai = new OpenAI({ apiKey });
     const response = await withTimeout(openai.chat.completions.create({
       model:           "gpt-4o-mini",

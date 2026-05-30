@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const { respondentId, accessToken, answers, freeText } = req.body;
+  const { answers, freeText } = req.body;
 
   try {
     if (isDemoMode) {
@@ -67,28 +67,14 @@ export default async function handler(req, res) {
       });
     }
 
-    const { saveTrack2Result } = await import("../../db.js");
-    const respondent = { nickname: req.body?.nickname || "익명" };
-
     // 채점 (LLM 없이 규칙 기반)
     const scoringResult = score(freeText, answers);
 
     // 피드백 생성 (OpenAI → fallback 템플릿)
     const feedbackResult = await generateFeedback(scoringResult);
 
-    // DB 저장
     const resultId = randomUUID();
     const shareSlug = resultId;
-    runAfterResponse(saveTrack2Result({
-      resultId,
-      respondentId,
-      nicknameSnapshot: respondent.nickname,
-      birthYear: req.body.birthYear,
-      answers,
-      freeText,
-      scoringResult,
-      feedbackResult
-    }));
 
     // 축별 응답 구성 (레이더 차트용)
     const axesResponse = buildAxesResponse(scoringResult);
@@ -119,14 +105,6 @@ export default async function handler(req, res) {
       }
     });
   }
-}
-
-function runAfterResponse(promise) {
-  if (typeof globalThis.waitUntil === "function") {
-    globalThis.waitUntil(promise);
-    return;
-  }
-  promise.catch((error) => console.error("[track2/background-save]", error));
 }
 
 function buildAxesResponse(scoringResult) {

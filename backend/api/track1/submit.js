@@ -16,32 +16,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const shouldPersist = Boolean(req.body?.respondentId && req.body?.accessToken);
-    const respondent = { nickname: req.body?.nickname || "익명" };
-
     const result = evaluateTrack1({
       llmResult: req.body?.llmResult,
       questionnaire: req.body?.questionnaire,
       tieBreaks: req.body?.tieBreaks,
-      includeInternal: shouldPersist
+      includeInternal: false
     });
 
-    if (shouldPersist && result.status === "success") {
-      const { saveTrack1Result } = await import("../../db.js");
+    if (result.status === "success") {
       const resultId = randomUUID();
-      const shareSlug = resultId;
-      runAfterResponse(saveTrack1Result({
-        resultId,
-        respondentId: req.body.respondentId,
-        nicknameSnapshot: respondent.nickname,
-        birthYear: req.body.birthYear,
-        questionnaireVersion: req.body.questionnaireVersion || "track1-12",
-        questionnaire: req.body.questionnaire,
-        llmResult: req.body.llmResult,
-        evaluationResult: result
-      }));
       result.resultId = resultId;
-      result.shareSlug = shareSlug;
+      result.shareSlug = resultId;
     }
 
     const statusCode = result.status === "success" ? 200 : 400;
@@ -58,12 +43,4 @@ export default async function handler(req, res) {
       }
     });
   }
-}
-
-function runAfterResponse(promise) {
-  if (typeof globalThis.waitUntil === "function") {
-    globalThis.waitUntil(promise);
-    return;
-  }
-  promise.catch((error) => console.error("[track1/background-save]", error));
 }

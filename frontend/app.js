@@ -1178,6 +1178,7 @@ async function submitTrack1() {
     state.t1Result = result;
     render();
     showScreen("t1-result");
+    persistTrack1Result(result);
   } catch (error) {
     state.t1Error = error.message;
     render();
@@ -1221,6 +1222,7 @@ async function submitTrack2() {
     state.t2Result = result;
     render();
     showScreen("t2-result");
+    persistTrack2Result(result);
   } catch (error) {
     state.t2Error = error.message;
     render();
@@ -1242,6 +1244,44 @@ async function postJson(url, payload) {
     throw new Error(`${result.error?.message || "요청을 처리할 수 없습니다."}${details}`);
   }
   return result;
+}
+
+function persistTrack1Result(result) {
+  const respondent = respondentPayload();
+  if (!respondent.respondentId || !result?.resultId) return;
+
+  fireAndForgetPostJson("/api/track1/save", {
+    ...respondent,
+    resultId: result.resultId,
+    questionnaireVersion: "track1-12",
+    questionnaire: { answers: state.t1Answers },
+    llmResult: state.t1LlmText,
+  });
+}
+
+function persistTrack2Result(result) {
+  const respondent = respondentPayload();
+  if (!respondent.respondentId || !result?.resultId) return;
+
+  fireAndForgetPostJson("/api/track2/save", {
+    ...respondent,
+    resultId: result.resultId,
+    answers: state.t2Answers,
+    freeText: state.t2FreeText,
+    feedbackResult: result.result?.feedback || null,
+  });
+}
+
+function fireAndForgetPostJson(url, payload) {
+  const body = JSON.stringify(payload);
+  fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    keepalive: body.length < 60000,
+  }).catch((error) => {
+    console.error("[background-save]", error);
+  });
 }
 
 async function prepareRespondent(screenNode) {
