@@ -867,10 +867,10 @@ function t1PasteScreen() {
     <section class="t1-answer-submit">
       ${progress(16, 16)}
       <h1>AI가 뭐라고 답했나요?</h1>
-      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <p>프롬프트 원문이 아니라,<br />AI가 반환한 답변을 그대로 붙여넣어 주세요.</p>
       <img class="answer-example-image t1-example-image" src="./assets/track1-example.png" alt="Track 1 AI 답변 예시" />
       <span class="answer-example-caption">(예시 화면)</span>
-      <textarea data-field="t1-paste" placeholder="여기에 AI 답변을 붙여넣어 주세요.">${escapeHtml(state.t1LlmText)}</textarea>
+      <textarea data-field="t1-paste" placeholder="여기에 AI가 답변한 JSON 또는 텍스트를 붙여넣어 주세요.">${escapeHtml(state.t1LlmText)}</textarea>
       <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
       ${state.t1Error ? `<em class="form-error">${state.t1Error}</em>` : ""}
     </section>

@@ -1,4 +1,5 @@
 import { evaluateTrack1 } from "../../../src/track1/evaluate.js";
+import { repairTrack1LlmResult } from "../../../src/track1/repair.js";
 import { randomUUID } from "node:crypto";
 
 export default async function handler(req, res) {
@@ -16,8 +17,13 @@ export default async function handler(req, res) {
   }
 
   try {
+    const repaired = await repairTrack1LlmResult(req.body?.llmResult);
+    if (repaired.status === "invalid_prompt_pasted") {
+      return res.status(400).json(track1InputError("PROMPT_PASTED", repaired.reason));
+    }
+
     const result = evaluateTrack1({
-      llmResult: req.body?.llmResult,
+      llmResult: repaired.result ?? req.body?.llmResult,
       questionnaire: req.body?.questionnaire,
       tieBreaks: req.body?.tieBreaks,
       includeInternal: false
@@ -43,4 +49,17 @@ export default async function handler(req, res) {
       }
     });
   }
+}
+
+function track1InputError(code, message) {
+  return {
+    status: "error",
+    track: "track1",
+    version: "track1-v1",
+    error: {
+      code,
+      message,
+      retryable: true
+    }
+  };
 }

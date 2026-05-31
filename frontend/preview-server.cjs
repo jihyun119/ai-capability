@@ -97,9 +97,27 @@ function handleJson(req, res, handler) {
 
 async function handleTrack1Submit(payload) {
   const { evaluateTrack1 } = await import("../src/track1/evaluate.js");
+  const { repairTrack1LlmResult } = await import("../src/track1/repair.js");
+  const repaired = await repairTrack1LlmResult(payload.llmResult);
+  if (repaired.status === "invalid_prompt_pasted") {
+    return {
+      statusCode: 400,
+      body: {
+        status: "error",
+        track: "track1",
+        version: "track1-v1",
+        error: {
+          code: "PROMPT_PASTED",
+          message: repaired.reason,
+          retryable: true,
+        },
+      },
+    };
+  }
+
   const shouldPersist = Boolean(payload.respondentId && payload.accessToken);
   const body = evaluateTrack1({
-    llmResult: payload.llmResult,
+    llmResult: repaired.result ?? payload.llmResult,
     questionnaire: payload.questionnaire,
     tieBreaks: payload.tieBreaks,
     includeInternal: shouldPersist,
