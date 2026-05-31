@@ -1,7 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/frontend/index.html" },
+    { "source": "/", "destination": "/frontend/maintenance.html" },
     { "source": "/app.js", "destination": "/frontend/app.js" },
     { "source": "/styles.css", "destination": "/frontend/styles.css" },
     { "source": "/assets/:path*", "destination": "/frontend/assets/:path*" },
