@@ -376,18 +376,20 @@ const t1UserPrompt = `Analyze the USER's interaction style based on past convers
 
 ### Core Guidelines
 1. **Privacy:** Strictly exclude names, sensitive topics, and direct quotes. Use only generic behavioral descriptions (e.g., "uses structured formatting").
-2. **Output Constraint:** Return ONLY one valid JSON object. Do not include any explanations, reasoning, or introductory/concluding text.
+2. **Output Constraint:** Return ONLY one valid JSON object. Do not explain this prompt, the schema, or your reasoning.
 
 ### Dimensions to Assess (Values: "low", "medium", or "high")
 * **A (AI Dependence):** How deeply AI is integrated into their tasks or workflows.
 * **B (Emotional Closeness):** Relational warmth or companionship. (Task-focused or casual tone alone is NOT high closeness; require explicit emotional framing or gratitude).
-* **C (Trust):** Output acceptance vs. verification. (Normal iterative refinement is medium/high trust; constant skepticism, demanding sources, or challenging facts is low trust).
+* **C (Trust):** Output acceptance vs. verification. (Normal checking, refinement, or quality control is usually medium/high trust; only persistent skepticism, source-demanding, or factual challenging is low trust).
 * **D (User Control):** Level of explicit constraints, formats, goals, and corrections set by the user.
 
 ### Logic & Calibration Rules
+* **Status:** Always use \`"success"\`. If history is limited, set \`evidence_mode\` to \`minimal\` and confidence to \`low\`.
 * **Evidence Mode (\`evidence_mode\`):** Select \`visible_history\` (if $\\ge$ 2 substantive past messages present), \`memory_or_impression\`, \`self_report\`, or \`minimal\` ($<$ 2 past messages).
 * **Confidence (\`confidence\`):** Must be \`low\` if evidence is \`minimal\`; maximum \`medium\` if based solely on \`self_report\`; \`high\` only with repeated behavioral evidence.
 * **Notes (\`notes\`):** Provide exactly one short, generic behavioral observation per axis. For B, distinguish politeness from emotional closeness. For C, distinguish normal quality control from distrust. Do not list raw data or scoring criteria.
+* **Tags (\`tags\`):** Return exactly 3 short English behavior tags. No more, no fewer.
 
 ### Strict JSON Schema
 {
@@ -415,6 +417,8 @@ const t1UserPrompt = `Analyze the USER's interaction style based on past convers
   "verdict": "A brief generic summary of the overall interaction pattern.",
   "tags": ["keyword1", "keyword2", "keyword3"]
 }`;
+
+const MIN_RESULT_LOADING_MS = 4500;
 
 function t1CopyScreen() {
   return screen(
@@ -1161,6 +1165,7 @@ async function submitTrack1() {
     return;
   }
 
+  const loadingStartedAt = Date.now();
   showScreen("t1-loading");
 
   try {
@@ -1176,6 +1181,7 @@ async function submitTrack1() {
     }
 
     state.t1Result = result;
+    await waitForMinimumLoading(loadingStartedAt);
     render();
     showScreen("t1-result");
     persistTrack1Result(result);
@@ -1206,6 +1212,7 @@ async function submitTrack2() {
     return;
   }
 
+  const loadingStartedAt = Date.now();
   showScreen("t2-loading");
 
   try {
@@ -1220,6 +1227,7 @@ async function submitTrack2() {
     }
 
     state.t2Result = result;
+    await waitForMinimumLoading(loadingStartedAt);
     render();
     showScreen("t2-result");
     persistTrack2Result(result);
@@ -1228,6 +1236,14 @@ async function submitTrack2() {
     render();
     showScreen("t2-paste");
   }
+}
+
+function waitForMinimumLoading(startedAt, minMs = MIN_RESULT_LOADING_MS) {
+  const remaining = minMs - (Date.now() - startedAt);
+  if (remaining <= 0) return Promise.resolve();
+  return new Promise((resolve) => {
+    setTimeout(resolve, remaining);
+  });
 }
 
 async function postJson(url, payload) {
@@ -1378,7 +1394,7 @@ function copyPromptFieldSync(promptField) {
 
 async function shareResult(track) {
   const shareData = createNativeShareData(track);
-  if (isMobileSafari() && navigator.share) {
+  if (isTouchShareDevice() && navigator.share) {
     await navigator.share(shareData);
     return "shared";
   }
@@ -1409,6 +1425,10 @@ async function shareResult(track) {
 function isMobileSafari() {
   const userAgent = navigator.userAgent || "";
   return /iP(ad|hone|od)/.test(userAgent) && /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS/i.test(userAgent);
+}
+
+function isTouchShareDevice() {
+  return isMobileSafari() || (navigator.maxTouchPoints > 0 && /Android|Mobile|iP(ad|hone|od)/i.test(navigator.userAgent || ""));
 }
 
 function createNativeShareData(track) {

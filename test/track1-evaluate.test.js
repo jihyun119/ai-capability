@@ -56,14 +56,24 @@ test("rejects numeric profile output from the external user LLM", () => {
   assert.match(result.errors.join("\n"), /profile 숫자 점수는 허용하지 않습니다/);
 });
 
-test("requires exactly three source tags", () => {
+test("trims extra source tags to three", () => {
   const result = validateCanonicalResult({
     ...baseSuccess,
     tags: ["one", "two", "three", "four"]
   });
 
+  assert.equal(result.status, "success");
+  assert.deepEqual(result.tags, ["one", "two", "three"]);
+});
+
+test("requires at least three source tags", () => {
+  const result = validateCanonicalResult({
+    ...baseSuccess,
+    tags: ["one", "two"]
+  });
+
   assert.equal(result.status, "invalid");
-  assert.match(result.errors.join("\n"), /tags는 핵심 키워드 3개/);
+  assert.match(result.errors.join("\n"), /tags는 핵심 키워드가 최소 3개/);
 });
 
 test("scores 12-question questionnaire answers by axis", () => {

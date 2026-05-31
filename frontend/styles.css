@@ -2719,9 +2719,11 @@ input {
 
 .t1-result-screen .nav-buttons,
 .t1-result-screen .t1-result-nav {
+  position: static;
   left: auto;
   right: auto;
   bottom: 0;
+  margin-bottom: 40px;
   grid-template-columns: 156px 156px;
   justify-content: space-between;
   gap: 0;

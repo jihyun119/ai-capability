@@ -29,6 +29,11 @@ const BINARY_THRESHOLDS = {
   low: 44
 };
 
+const SCORE_WEIGHTS = {
+  questionnaire: 0.5,
+  prompt: 0.5
+};
+
 const AXIS_LABELS = {
   A: "의존도",
   B: "친밀도",
@@ -270,14 +275,16 @@ export function validateCanonicalResult(input) {
     return { status: "invalid", reason: "입력이 객체가 아닙니다." };
   }
 
-  if (parsed.status === "insufficient_history") {
+  const normalizedStatus = normalizeStatus(parsed.status, parsed);
+
+  if (normalizedStatus === "insufficient_history") {
     return {
       status: "insufficient_history",
       reason: parsed.reason || "대화 이력이 부족합니다."
     };
   }
 
-  if (parsed.status !== "success") {
+  if (normalizedStatus !== "success") {
     return {
       status: "invalid",
       reason: "status가 success 또는 insufficient_history가 아닙니다."
@@ -307,8 +314,8 @@ export function validateCanonicalResult(input) {
 
   if (!Array.isArray(parsed.tags)) {
     errors.push("tags는 배열이어야 합니다.");
-  } else if (parsed.tags.length !== 3) {
-    errors.push("tags는 핵심 키워드 3개여야 합니다.");
+  } else if (parsed.tags.length < 3) {
+    errors.push("tags는 핵심 키워드가 최소 3개 필요합니다.");
   }
   if (typeof parsed.verdict !== "string") errors.push("verdict는 문자열이어야 합니다.");
 
@@ -330,6 +337,14 @@ export function validateCanonicalResult(input) {
     tags: parsed.tags.slice(0, 3).map(String),
     verdict: stripPrivateLikeText(parsed.verdict)
   };
+}
+
+function normalizeStatus(status, parsed) {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  if (["success", "ok", "valid", "complete", "completed"].includes(normalized)) return "success";
+  if (["insufficient_history", "insufficient", "minimal_history"].includes(normalized)) return "insufficient_history";
+  if (!normalized && parsed?.signals && parsed?.confidence && parsed?.notes) return "success";
+  return normalized;
 }
 
 function normalizeAxisLevels(values) {
@@ -382,7 +397,7 @@ export function scoreQuestionnaire(input) {
 export function scorePromptResult(canonical) {
   const scores = {};
   for (const axis of AXES) {
-    const signal = canonical.signals[axis];
+    const signal = normalizePromptSignal(axis, canonical.signals[axis], canonical.notes[axis]);
     const confidence = canonical.confidence[axis];
     const note = canonical.notes[axis] || "";
     const cap = CONFIDENCE_CAP[confidence];
@@ -398,12 +413,21 @@ export function combineScores(questionnaireScores, promptScores) {
   const scores = {};
   for (const axis of AXES) {
     if (questionnaireScores) {
-      scores[axis] = Math.round(questionnaireScores[axis] * 0.4 + promptScores[axis] * 0.6);
+      scores[axis] = Math.round(questionnaireScores[axis] * SCORE_WEIGHTS.questionnaire + promptScores[axis] * SCORE_WEIGHTS.prompt);
     } else {
       scores[axis] = promptScores[axis];
     }
   }
   return scores;
+}
+
+function normalizePromptSignal(axis, signal, note = "") {
+  if (axis !== "C" || signal !== "low") return signal;
+  const hasDistrust = containsAny(note, DISTRUST_TERMS);
+  const hasQualityControl = containsAny(note, QUALITY_CONTROL_TERMS);
+  const hasActiveTrust = containsAny(note, ACTIVE_TRUST_TERMS);
+  if (!hasDistrust && (hasQualityControl || hasActiveTrust)) return "medium";
+  return signal;
 }
 
 export function mapScoresToBinary(finalScores, options = {}) {
