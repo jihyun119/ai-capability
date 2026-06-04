@@ -136,6 +136,23 @@ async function handleTrack1Submit(payload) {
 }
 
 async function handleTrack2Submit(payload) {
+  const { looksLikeTrack2Prompt } = await import("../backend/validate.js");
+  if (looksLikeTrack2Prompt(payload.freeText)) {
+    return {
+      statusCode: 400,
+      body: {
+        status: "error",
+        track: "track2",
+        version: "track2-v1",
+        error: {
+          code: "PROMPT_PASTED",
+          message: "복사한 프롬프트 원문이 아니라 AI가 작성한 답변을 붙여넣어 주세요.",
+          retryable: true,
+        },
+      },
+    };
+  }
+
   const { score } = await import("../src/track2/scorer.js");
   const scoringResult = score(payload.freeText, payload.answers);
   const body = buildTrack2DemoResponse(scoringResult);

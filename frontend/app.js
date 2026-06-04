@@ -550,7 +550,8 @@ function t1ResultScreen() {
     <nav class="nav-buttons t1-result-nav">
       <button class="cta secondary" type="button" data-share-result="track1">공유하기</button>
       ${button("다른 Track 도전", "track")}
-    </nav>`,
+    </nav>
+    ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t1-character-link")}`,
     "compact-screen t1-result-screen scroll-screen"
   );
 }
@@ -621,6 +622,13 @@ For every one of these six behaviors, you must use at least one frequency word d
 Do not include any personal details, proper names, project names, topic names, field names, or direct quotes from the conversation. All situations must be described in abstract, general terms only.
 
 Do not use any word or phrase that implies a quality judgment or evaluation of any kind, including: effective, impressive, good, poor, strong, weak, thorough, vague, sophisticated, demonstrates, exhibits, reflects, reveals, notably, tends to excel, shows ability, manages to, succeeds in, handles well, effectively, admirably. Describe only what the user does and how often.`;
+
+const t2PromptMarkers = [
+  "look back at our entire conversation history",
+  "write a single cohesive paragraph",
+  "weave all six of the following observations",
+  "for every one of these six behaviors",
+];
 
 function t2PromptScreen() {
   return screen(
@@ -884,10 +892,10 @@ function t2PasteScreen() {
     <section class="t2-answer-submit">
       ${progress(4, 4)}
       <h1>AI가 뭐라고 답했나요?</h1>
-      <p>방금 받은 답변을 그대로 붙여넣어 주세요.<br />문장을 다듬지 않아도 괜찮습니다.</p>
+      <p>프롬프트 원문이 아니라,<br />AI가 작성한 답변을 그대로 붙여넣어 주세요.</p>
       <img class="answer-example-image t2-example-image" src="./assets/track2-example.png" alt="Track 2 AI 답변 예시" />
       <span class="answer-example-caption">(예시 화면)</span>
-      <textarea data-field="t2-paste" placeholder="여기에 AI 답변을 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
+      <textarea data-field="t2-paste" placeholder="여기에 AI가 작성한 줄글 답변을 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
       <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
       ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
     </section>
@@ -1206,6 +1214,13 @@ async function submitTrack2() {
     return;
   }
 
+  if (looksLikeTrack2Prompt(state.t2FreeText)) {
+    state.t2Error = "복사한 프롬프트 원문이 아니라 AI가 작성한 답변을 붙여넣어 주세요.";
+    render();
+    showScreen("t2-paste");
+    return;
+  }
+
   const loadingStartedAt = Date.now();
   showScreen("t2-loading");
 
@@ -1230,6 +1245,11 @@ async function submitTrack2() {
     render();
     showScreen("t2-paste");
   }
+}
+
+function looksLikeTrack2Prompt(text) {
+  const lower = String(text || "").toLowerCase();
+  return t2PromptMarkers.filter((marker) => lower.includes(marker)).length >= 2;
 }
 
 function waitForMinimumLoading(startedAt, minMs = MIN_RESULT_LOADING_MS) {
