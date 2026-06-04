@@ -385,17 +385,14 @@ const t1UserPrompt = `Analyze the USER's interaction style based on past convers
 * **D (User Control):** Level of explicit constraints, formats, goals, and corrections set by the user.
 
 ### Logic & Calibration Rules
-* **Status:** Always use \`"success"\`. If history is limited, set \`evidence_mode\` to \`minimal\` and confidence to \`low\`.
-* **Evidence Mode (\`evidence_mode\`):** Select \`visible_history\` (if $\\ge$ 2 substantive past messages present), \`memory_or_impression\`, \`self_report\`, or \`minimal\` ($<$ 2 past messages).
-* **Confidence (\`confidence\`):** Must be \`low\` if evidence is \`minimal\`; maximum \`medium\` if based solely on \`self_report\`; \`high\` only with repeated behavioral evidence.
+* **Status:** Always use \`"success"\`.
+* **Confidence (\`confidence\`):** Use \`high\` only with repeated behavioral evidence; otherwise use \`medium\` or \`low\`.
 * **Notes (\`notes\`):** Provide exactly one short, generic behavioral observation per axis. For B, distinguish politeness from emotional closeness. For C, distinguish normal quality control from distrust. Do not list raw data or scoring criteria.
 * **Tags (\`tags\`):** Return exactly 3 short English behavior tags. No more, no fewer.
 
 ### Strict JSON Schema
 {
   "status": "success",
-  "evidence_mode": "Choose one: visible_history | memory_or_impression | self_report | minimal",
-  "evidence_notice": "One short sentence describing the evidence level without referencing specific content.",
   "signals": {
     "A": "low/medium/high",
     "B": "low/medium/high",
@@ -511,7 +508,6 @@ function t1ResultScreen() {
     description: "결과 분석을 완료하면 유형 설명이 표시됩니다.",
     keywords: ["분석전", "대기중", "테스트"],
     reasonStory: ["답변을 제출하면 유형 분류 이유가 표시됩니다."],
-    evidenceNotice: "답변 제출 후 근거 안내가 표시됩니다.",
   };
   const descriptionLines = String(card.description || "")
     .split("\n")
@@ -527,7 +523,6 @@ function t1ResultScreen() {
   ];
   const axisDisplayLabels = { A: "의존도", B: "친밀도", C: "신뢰도", D: "통제력" };
   const reasonStory = Array.isArray(card.reasonStory) ? card.reasonStory : [];
-  const evidenceNotice = card.evidenceNotice || result?.inputSummary?.evidenceNotice || "확인된 응답 기반 결과입니다.";
 
   return screen(
     "t1-result",
@@ -551,7 +546,6 @@ function t1ResultScreen() {
         <h2>왜 이 유형이 나왔나요?</h2>
         <p>${reasonStory.length ? reasonStory.map(escapeHtml).join("<br />") : "AI 사용 패턴과 답변 근거를 종합해 유형을 분류했습니다."}</p>
       </article>
-      <p class="t1-evidence-note">${escapeHtml(evidenceNotice)}</p>
     </section>
     <nav class="nav-buttons t1-result-nav">
       <button class="cta secondary" type="button" data-share-result="track1">공유하기</button>

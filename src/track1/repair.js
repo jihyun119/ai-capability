@@ -239,7 +239,7 @@ Rules:
 - Remove names, direct quotes, and sensitive details.
 
 Schema:
-{"status":"success","evidence_mode":"visible_history | memory_or_impression | self_report | minimal","evidence_notice":"short generic sentence","signals":{"A":"low/medium/high","B":"low/medium/high","C":"low/medium/high","D":"low/medium/high"},"confidence":{"A":"low/medium/high","B":"low/medium/high","C":"low/medium/high","D":"low/medium/high"},"notes":{"A":"short generic note","B":"short generic note","C":"short generic note","D":"short generic note"},"verdict":"brief generic summary","tags":["tag1","tag2","tag3"]}`;
+{"status":"success","signals":{"A":"low/medium/high","B":"low/medium/high","C":"low/medium/high","D":"low/medium/high"},"confidence":{"A":"low/medium/high","B":"low/medium/high","C":"low/medium/high","D":"low/medium/high"},"notes":{"A":"short generic note","B":"short generic note","C":"short generic note","D":"short generic note"},"verdict":"brief generic summary","tags":["tag1","tag2","tag3"]}`;
 
 function withTimeout(promise, timeoutMs) {
   return Promise.race([
