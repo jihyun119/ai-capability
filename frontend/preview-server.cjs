@@ -175,6 +175,7 @@ async function persistTrack1Result(payload, evaluationResult) {
       respondentId: payload.respondentId,
       nicknameSnapshot: respondent.nickname,
       birthYear: payload.birthYear,
+      gender: payload.gender || respondent.gender,
       questionnaireVersion: payload.questionnaireVersion || "track1-12",
       questionnaire: payload.questionnaire,
       llmResult: payload.llmResult,
@@ -193,6 +194,7 @@ async function persistTrack2Result(payload, scoringResult, body) {
       respondentId: payload.respondentId,
       nicknameSnapshot: respondent.nickname,
       birthYear: payload.birthYear,
+      gender: payload.gender || respondent.gender,
       answers: payload.answers,
       freeText: payload.freeText,
       scoringResult,
@@ -216,7 +218,7 @@ async function handleRespondentCreate(payload) {
   }
 
   const { createRespondent } = await import("../backend/db.js");
-  const respondent = await createRespondent(nickname, payload.birthYear);
+  const respondent = await createRespondent(nickname, payload.birthYear, payload.gender);
   return {
     statusCode: 201,
     body: {
@@ -225,6 +227,7 @@ async function handleRespondentCreate(payload) {
       accessToken: respondent.access_token,
       nickname: respondent.nickname,
       birthYear: Number(payload.birthYear) || null,
+      gender: respondent.gender || payload.gender || null,
     },
   };
 }

@@ -1322,15 +1322,21 @@ async function prepareRespondent(screenNode) {
     screenNode.querySelector("[data-birth-year]")?.value.trim()
     || Array.from(screenNode.querySelectorAll("[data-birth-input]")).map((input) => input.value.trim())[0]
     || "";
+  const gender = screenNode.querySelector("[data-gender-select]")?.value || "";
   const birth = birthYear;
 
-  state.user = { nickname, birth, birthYear: Number(birthYear) || null };
+  state.user = { nickname, birth, birthYear: Number(birthYear) || null, gender: gender || null };
 
-  if (state.respondent?.nickname === nickname) return state.respondent;
+  if (
+    state.respondent?.nickname === nickname
+    && state.respondent?.birthYear === state.user.birthYear
+    && state.respondent?.gender === state.user.gender
+  ) return state.respondent;
 
   const respondent = await postJson("/api/respondents", {
     nickname,
     birthYear: state.user.birthYear,
+    gender: state.user.gender,
   });
   if (respondent.status !== "success") {
     throw new Error(respondent.error?.message || "응시자 정보를 생성하지 못했습니다.");
@@ -1341,6 +1347,7 @@ async function prepareRespondent(screenNode) {
     accessToken: respondent.accessToken,
     nickname: respondent.nickname || nickname,
     birthYear: respondent.birthYear || state.user.birthYear,
+    gender: respondent.gender || state.user.gender,
   };
 
   return state.respondent;
@@ -1353,6 +1360,7 @@ function respondentPayload() {
     accessToken: state.respondent.accessToken,
     nickname: state.respondent.nickname || state.user?.nickname || null,
     birthYear: state.respondent.birthYear || state.user?.birthYear || null,
+    gender: state.respondent.gender || state.user?.gender || null,
   };
 }
 

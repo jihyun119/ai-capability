@@ -19,12 +19,13 @@ const supabaseRestUrl = `${supabaseUrl.replace(/\/+$/, "").replace(/\/rest\/v1$/
 
 // ── 응시자 생성 ───────────────────────────────────────────────────────────────
 
-export async function createRespondent(nickname, birthYear = null) {
+export async function createRespondent(nickname, birthYear = null, gender = null) {
   const accessToken = randomUUID().replace(/-/g, "");
   const payload = {
     nickname,
     access_token: accessToken,
-    birth_year: toNumber(birthYear)
+    birth_year: toNumber(birthYear),
+    gender: normalizeGender(gender)
   };
 
   const error = await insertWithSchemaFallback("respondents", payload);
@@ -32,7 +33,7 @@ export async function createRespondent(nickname, birthYear = null) {
 
   const { data, error: selectError } = await restSelectOne(
     "respondents",
-    "id,nickname,access_token",
+    "*",
     { access_token: accessToken }
   );
 
@@ -45,7 +46,7 @@ export async function createRespondent(nickname, birthYear = null) {
 export async function validateRespondent(respondentId, accessToken) {
   const { data, error } = await restSelectOne(
     "respondents",
-    "id,nickname,access_token",
+    "*",
     { id: respondentId }
   );
 
@@ -59,7 +60,7 @@ export async function validateRespondent(respondentId, accessToken) {
 
 // ── Track 2 결과 저장 ─────────────────────────────────────────────────────────
 
-export async function saveTrack2Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, answers, freeText, scoringResult, feedbackResult }) {
+export async function saveTrack2Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, gender = null, answers, freeText, scoringResult, feedbackResult }) {
   const { axes, total, grade } = scoringResult;
   const byKey = Object.fromEntries(axes.map((ax) => [ax.key, ax]));
   const field = (schemaKey) => byKey[TRACK2_AXIS_FIELD_MAP[schemaKey]];
@@ -73,6 +74,7 @@ export async function saveTrack2Result({ resultId = randomUUID(), respondentId, 
     nickname:             nicknameSnapshot,
     nickname_snapshot:    nicknameSnapshot,
     birth_year:           toNumber(birthYear),
+    gender:               normalizeGender(gender),
     questionnaire_version: "track2-4-v1",
     q1_answer:            answers.Q1,
     q2_answer:            answers.Q2,
@@ -144,7 +146,7 @@ export async function saveTrack2Result({ resultId = randomUUID(), respondentId, 
 
 // ── Track 1 결과 저장 ─────────────────────────────────────────────────────────
 
-export async function saveTrack1Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, questionnaireVersion = "track1-12", questionnaire, llmResult, evaluationResult }) {
+export async function saveTrack1Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, gender = null, questionnaireVersion = "track1-12", questionnaire, llmResult, evaluationResult }) {
   const answers = questionnaire?.answers || {};
   const canonicalLlm = parseMaybeJson(llmResult);
   const scoreBreakdown = evaluationResult.scoreBreakdown || {};
@@ -168,6 +170,7 @@ export async function saveTrack1Result({ resultId = randomUUID(), respondentId, 
     nickname: nicknameSnapshot,
     nickname_snapshot: nicknameSnapshot,
     birth_year: toNumber(birthYear),
+    gender: normalizeGender(gender),
     questionnaire_version: questionnaireVersion,
     q1_answer: toNumber(answers.Q1),
     q2_answer: toNumber(answers.Q2),
@@ -441,6 +444,7 @@ const TRACK1_COMPACT_COLUMNS = [
   "nickname",
   "nickname_snapshot",
   "birth_year",
+  "gender",
   "questionnaire_version",
   "q1_answer",
   "q2_answer",
@@ -481,6 +485,7 @@ const TRACK2_COMPACT_COLUMNS = [
   "nickname",
   "nickname_snapshot",
   "birth_year",
+  "gender",
   "questionnaire_version",
   "q1_answer",
   "q2_answer",
@@ -523,6 +528,14 @@ function pickPayload(payload, columns) {
 function toNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function normalizeGender(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["male", "m", "남", "남성"].includes(normalized)) return "male";
+  if (["female", "f", "여", "여성"].includes(normalized)) return "female";
+  if (["other", "nonbinary", "non-binary", "기타"].includes(normalized)) return "other";
+  return normalized || null;
 }
 
 function rounded(value) {

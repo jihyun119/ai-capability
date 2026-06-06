@@ -30,6 +30,7 @@ export default async function handler(req, res) {
       respondentId,
       nicknameSnapshot: req.body?.nickname || "익명",
       birthYear: req.body?.birthYear,
+      gender: req.body?.gender,
       answers,
       freeText,
       scoringResult,
