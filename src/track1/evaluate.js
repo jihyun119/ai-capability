@@ -287,7 +287,7 @@ export function validateCanonicalResult(input) {
   if (normalizedStatus !== "success") {
     return {
       status: "invalid",
-      reason: "status가 success 또는 insufficient_history가 아닙니다."
+      reason: "프롬프트 원문이 아니라 AI가 작성한 답변을 그대로 붙여넣어 주세요."
     };
   }
 

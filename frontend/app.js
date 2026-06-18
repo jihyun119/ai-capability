@@ -423,7 +423,7 @@ function t1CopyScreen() {
     "T1-03 복붙 미션",
     `${header()}
     <section class="t1-copy-mission">
-      ${progress(16, 16)}
+      ${progress(t1Questions.length, t1Questions.length)}
       <h1>이제 당신의 AI에게<br />물어볼 차례에요</h1>
       <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
       <article class="t1-prompt-card">
@@ -481,23 +481,39 @@ function loadingScreen(id, title, messages, next) {
 }
 
 function t1ShareScreen() {
+  const result = state.t1Result;
+  const typeName = result?.type?.name || "AI 관계 유형";
+  const card = result?.resultCard || {
+    description: "결과 분석을 완료하면 유형 설명이 표시됩니다.",
+    keywords: ["AI관계", "분석중", "푸키"],
+  };
+  const descriptionLines = String(card.description || "")
+    .split("\n")
+    .filter(Boolean)
+    .map(escapeHtml);
+  const mainDescription = descriptionLines.slice(0, 2).join("<br />") || typeName;
+  const subDescription = descriptionLines.slice(2).join("<br />") || "AI 활용 진단 결과를 확인해보세요.";
+
   return screen(
     "t1-share",
     "결과 공유 카드",
-    `${header()}
-    <section class="share-card">
-      <p>나는</p>
-      <h1>시키는만큼만 해 형</h1>
-      ${char("result", "share-character")}
-      <strong>AI에게 명확한 작업만 맡기고 결과도 딱 그 정도로 기대하는 유저</strong>
-      <article><b>AI 사용 강점</b><span>필요한 작업을 분명히 정하고 효율적으로 요청합니다.</span></article>
-      <article><b>주의할 점</b><span>탐색형 질문으로 새로운 가능성을 넓혀보세요.</span></article>
+    `${header(false)}
+    <button class="share-close" type="button" data-go="t1-result" aria-label="공유 화면 닫기"></button>
+    <section class="t1-share-card" data-share-capture>
+      <div class="t1-share-title">
+        <p>당신의 AI 관계 유형은</p>
+        <h1>${escapeHtml(typeName)}</h1>
+        <span>해시태그</span>
+      </div>
+      ${charByType(typeName, "t1-share-character")}
+      <strong>${mainDescription}</strong>
+      <p class="t1-share-description">${subDescription}</p>
     </section>
-    <nav class="nav-buttons">
-      ${button("결과로", "t1-result", "secondary")}
-      ${button("패턴 더 보기", "t2-intro")}
+    <nav class="nav-buttons t1-share-nav">
+      <button class="cta secondary" type="button" data-save-result="track1">이미지 저장</button>
+      <button class="cta" type="button" data-share-result="track1">공유하기</button>
     </nav>`,
-    "compact-screen"
+    "compact-screen t1-share-screen"
   );
 }
 
@@ -548,7 +564,7 @@ function t1ResultScreen() {
       </article>
     </section>
     <nav class="nav-buttons t1-result-nav">
-      <button class="cta secondary" type="button" data-share-result="track1">공유하기</button>
+      <button class="cta secondary" type="button" data-share-open="track1">공유하기</button>
       ${button("다른 Track 도전", "track")}
     </nav>
     ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t1-character-link")}`,
@@ -853,6 +869,14 @@ function homeScreen() {
         ${char("unsure", "char c4")}
       </div>
     </main>
+    <section class="desktop-home-tracks" aria-label="Track 선택">
+      <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
+      <div class="track-list">
+        ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+        ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+      </div>
+    </section>
     <div class="cta-stack home-start-v2">
       ${button("테스트 시작하기", "track")}
     </div>
@@ -867,7 +891,7 @@ function t1PasteScreen() {
     "T1-04 답변 제출",
     `${header()}
     <section class="t1-answer-submit">
-      ${progress(16, 16)}
+      ${progress(t1Questions.length, t1Questions.length)}
       <h1>AI가 뭐라고 답했나요?</h1>
       <p>프롬프트 원문이 아니라,<br />AI가 반환한 답변을 그대로 붙여넣어 주세요.</p>
       <img class="answer-example-image t1-example-image" src="./assets/track1-example.png" alt="Track 1 AI 답변 예시" />
@@ -1066,6 +1090,39 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  const saveTarget = event.target.closest("[data-save-result]");
+  if (saveTarget) {
+    event.preventDefault();
+    const originalText = saveTarget.dataset.saveLabel || saveTarget.textContent;
+    saveTarget.dataset.saveLabel = originalText;
+    saveTarget.textContent = "저장 중";
+    saveTarget.disabled = true;
+    try {
+      const { blob, filename } = await createResultShareImage(saveTarget.dataset.saveResult);
+      downloadBlob(blob, filename);
+      saveTarget.textContent = "저장 완료";
+    } catch (error) {
+      saveTarget.textContent = "저장 실패";
+      console.error(error);
+    } finally {
+      setTimeout(() => {
+        saveTarget.textContent = originalText;
+        saveTarget.disabled = false;
+      }, 1400);
+    }
+    return;
+  }
+
+  const shareOpenTarget = event.target.closest("[data-share-open]");
+  if (shareOpenTarget) {
+    event.preventDefault();
+    if (shareOpenTarget.dataset.shareOpen === "track1") {
+      render();
+      showScreen("t1-share");
+      return;
+    }
+  }
+
   const target = event.target.closest("[data-go]");
   if (!target) return;
   if (target.matches("[data-login-next]") && target.disabled) return;
@@ -1188,7 +1245,7 @@ async function submitTrack1() {
     showScreen("t1-result");
     persistTrack1Result(result);
   } catch (error) {
-    state.t1Error = error.message;
+    state.t1Error = friendlyTrack1Error(error);
     render();
     showScreen("t1-paste");
   }
@@ -1271,9 +1328,33 @@ async function postJson(url, payload) {
     const details = Array.isArray(result.error?.details) && result.error.details.length > 0
       ? `\n${result.error.details.join("\n")}`
       : "";
-    throw new Error(`${result.error?.message || "요청을 처리할 수 없습니다."}${details}`);
+    const error = new Error(`${result.error?.message || "요청을 처리할 수 없습니다."}${details}`);
+    error.code = result.error?.code;
+    throw error;
   }
   return result;
+}
+
+function friendlyTrack1Error(error) {
+  const message = String(error?.message || "");
+  const code = error?.code || "";
+  const shouldUsePasteGuide = [
+    code === "PROMPT_PASTED",
+    /not enough evidence/i.test(message),
+    /insufficient_history/i.test(message),
+    /status가 success/i.test(message),
+    /schema/i.test(message),
+    /signals/i.test(message),
+    /confidence/i.test(message),
+    /tags/i.test(message),
+    /json/i.test(message),
+  ].some(Boolean);
+
+  if (shouldUsePasteGuide) {
+    return "프롬프트 원문이 아니라, AI가 작성한 답변을 그대로 붙여넣어 주세요.";
+  }
+
+  return message || "AI 답변을 읽지 못했어요. 답변 전체를 다시 붙여넣어 주세요.";
 }
 
 function persistTrack1Result(result) {
@@ -1474,14 +1555,21 @@ function createNativeShareData(track) {
 }
 
 async function createResultShareImage(track) {
-  const screenId = track === "track2" ? "t2-result" : "t1-result";
+  const screenId = track === "track2"
+    ? "t2-result"
+    : document.querySelector('.screen.active[data-screen="t1-share"]')
+      ? "t1-share"
+      : "t1-result";
   const screenNode = document.querySelector(`.screen[data-screen="${screenId}"]`);
+  const captureNode = screenId === "t1-share"
+    ? screenNode?.querySelector("[data-share-capture]") || screenNode
+    : screenNode;
   const filename = track === "track2" ? "pookie-track2-result.png" : "pookie-track1-result.png";
   const title = createNativeShareData(track).title;
   const text = "AI 활용 진단 테스트 결과를 공유합니다.";
 
-  if (screenNode) {
-    const blob = await captureScreenAsPng(screenNode);
+  if (captureNode) {
+    const blob = await captureScreenAsPng(captureNode);
     return { blob, filename, title, text };
   }
 
@@ -1537,7 +1625,8 @@ function createShareCanvas() {
 
 async function captureScreenAsPng(screenNode) {
   const width = Math.ceil(screenNode.getBoundingClientRect().width || 393);
-  const height = Math.ceil(Math.max(screenNode.scrollHeight, screenNode.getBoundingClientRect().height, 920));
+  const minHeight = screenNode.matches?.("[data-share-capture]") ? 0 : 920;
+  const height = Math.ceil(Math.max(screenNode.scrollHeight, screenNode.getBoundingClientRect().height, minHeight));
   const clone = screenNode.cloneNode(true);
 
   clone.classList.add("active");
