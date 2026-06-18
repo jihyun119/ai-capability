@@ -9,6 +9,7 @@
     "track1:e2e": "node scripts/track1-e2e-test.js",
     "track2:test": "node scripts/track2-test-scorer.js",
     "track2:e2e": "node scripts/track2-e2e-test.js",
+    "track3:demo": "node scripts/track3-demo-test.js",
     "frontend:preview": "node frontend/preview-server.cjs",
     "test": "node --test test/*.test.js"
   },
