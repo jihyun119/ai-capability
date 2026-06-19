@@ -1076,6 +1076,18 @@ function footer() {
     </footer>`;
 }
 
+function desktopHomeTracks() {
+  return `
+    <section class="home-desktop-tracks" aria-label="Track 선택">
+      <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
+      <div class="desktop-track-list">
+        ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+        ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+      </div>
+    </section>`;
+}
+
 function homeScreen() {
   return screen(
     "home",
@@ -1094,6 +1106,7 @@ function homeScreen() {
     <div class="cta-stack home-start-v2">
       ${button("테스트 시작하기", "track")}
     </div>
+    ${desktopHomeTracks()}
     ${footer()}`,
     "active h01-screen h01-screen-v2"
   );
@@ -1279,6 +1292,11 @@ function updateLoginValidity(screenNode) {
 }
 
 render();
+
+const initialScreen = new URLSearchParams(window.location.search).get("screen");
+if (initialScreen && document.querySelector(`[data-screen="${initialScreen}"]`)) {
+  showScreen(initialScreen);
+}
 
 document.addEventListener("click", async (event) => {
   if (event.target.closest("[data-menu-open]")) {
