@@ -333,7 +333,8 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
     <nav class="nav-buttons">
       ${button("이전", prev, "secondary muted")}
       ${button("다음", next)}
-    </nav>`,
+    </nav>
+    ${desktopFooter()}`,
     "compact-screen"
   );
 }
@@ -362,7 +363,8 @@ function t1QuestionScreen(question, index, total, prev, next) {
     <nav class="nav-buttons t1-question-nav">
       ${button("이전", prev, "secondary muted")}
       ${button("다음", next)}
-    </nav>`,
+    </nav>
+    ${desktopFooter()}`,
     "compact-screen t1-question-screen"
   );
 }
@@ -428,7 +430,7 @@ function t1CopyScreen() {
     `${header()}
     <section class="t1-copy-mission">
       ${progress(t1Questions.length, t1Questions.length)}
-      <h1>이제 당신의 AI에게<br />물어볼 차례에요</h1>
+      <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
       <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t1UserPrompt}</textarea>
@@ -438,7 +440,8 @@ function t1CopyScreen() {
     <nav class="nav-buttons t1-copy-nav">
       ${button("이전", "t1-q-12", "secondary")}
       ${button("답변 붙여넣으러 가기", "t1-paste")}
-    </nav>`,
+    </nav>
+    ${desktopFooter()}`,
     "compact-screen t1-copy-screen"
   );
 }
@@ -661,7 +664,7 @@ function t2PromptScreen() {
     `${header()}
     <section class="t2-copy-mission">
       ${progress(4, 4)}
-      <h1>이제 당신의 AI에게<br />물어볼 차례에요</h1>
+      <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
       <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t2UserPromptClean}</textarea>
@@ -671,7 +674,8 @@ function t2PromptScreen() {
     <nav class="nav-buttons t1-copy-nav">
       ${button("이전", "t2-q-4", "secondary")}
       ${button("답변 붙여넣으러 가기", "t2-paste")}
-    </nav>`,
+    </nav>
+    ${desktopFooter()}`,
     "compact-screen t2-copy-screen"
   );
 }
@@ -862,6 +866,10 @@ function footer() {
     </footer>`;
 }
 
+function desktopFooter() {
+  return `<div class="desktop-page-footer">${footer()}</div>`;
+}
+
 function legacyDesktopHomeTracks() {
   return `
     <section class="home-desktop-tracks" aria-label="Track 선택">
@@ -946,7 +954,8 @@ function t1PasteScreen() {
     <nav class="nav-buttons t1-answer-nav">
       ${button("이전", "t1-copy", "secondary")}
       ${button("내 유형 분석하기", "t1-loading")}
-    </nav>`,
+    </nav>
+    ${desktopFooter()}`,
     "compact-screen t1-paste-screen"
   );
 }
@@ -969,7 +978,8 @@ function t2PasteScreen() {
     <nav class="nav-buttons t2-answer-nav">
       ${button("이전", "t2-prompt", "secondary")}
       ${button("내 패턴 분석하기", "t2-loading")}
-    </nav>`,
+    </nav>
+    ${desktopFooter()}`,
     "compact-screen t2-paste-screen"
   );
 }
