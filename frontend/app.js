@@ -298,6 +298,10 @@ function t1IntroScreen() {
         <p>당신은 AI를 어떤 태도로 대하고 있을까요?<br />당신의 AI 답변을 통해 평소 사용 습관을 분석합니다.</p>
       </div>
       ${char("searcher", "hero-character")}
+      <div class="desktop-intro-characters t1-desktop-intro-characters" aria-hidden="true">
+        ${char("love", "desktop-intro-character desktop-intro-character-a")}
+        ${char("searcher", "desktop-intro-character desktop-intro-character-b")}
+      </div>
     </section>
     <section class="info-list">
       <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">객관식 12문항</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">의존도, 친밀도, 신뢰도, 통제욕구를 측정해요.</p></article>
@@ -584,6 +588,10 @@ function t2IntroScreen() {
         <p>자소서, 보고서, 과제, 기획처럼 실제 목적이 있는 상황에서 당신이 AI를 어떻게 활용하는지 분석합니다.</p>
       </div>
       ${char("anxious", "hero-character")}
+      <div class="desktop-intro-characters t2-desktop-intro-characters" aria-hidden="true">
+        ${char("result", "desktop-intro-character desktop-intro-character-a")}
+        ${char("anxious", "desktop-intro-character desktop-intro-character-b")}
+      </div>
     </section>
     <section class="info-list t2-info-list">
       <article>
