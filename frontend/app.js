@@ -854,7 +854,7 @@ function footer() {
     </footer>`;
 }
 
-function desktopHomeTracks() {
+function legacyDesktopHomeTracks() {
   return `
     <section class="home-desktop-tracks" aria-label="Track 선택">
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
@@ -862,6 +862,28 @@ function desktopHomeTracks() {
         ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
         ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
         ${trackCard("Track3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+      </div>
+    </section>`;
+}
+
+function desktopHomeTrackCard(track, meta, title, desc, go) {
+  return `
+    <button class="home-track-card" type="button" data-go="${go}">
+      <span class="home-track-chips"><b>${track}</b>${meta.map((item) => `<i>${item}</i>`).join("")}</span>
+      <strong>${title}</strong>
+      <small>${desc}</small>
+      <span class="home-track-arrow" aria-hidden="true">→</span>
+    </button>`;
+}
+
+function desktopHomeTracks() {
+  return `
+    <section class="home-desktop-tracks" aria-label="Track 선택">
+      <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
+      <div class="desktop-track-list">
+        ${desktopHomeTrackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+        ${desktopHomeTrackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${desktopHomeTrackCard("Track3", ["Coming Soon", "준비 중"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
       </div>
     </section>`;
 }

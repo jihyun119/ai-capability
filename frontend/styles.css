@@ -430,6 +430,10 @@ mark {
   display: none;
 }
 
+.desktop-home-tracks {
+  display: none;
+}
+
 .track-hero h1 {
   font-family: Paperlogy, Pretendard, sans-serif;
   font-size: 35px;
@@ -4772,5 +4776,124 @@ input {
   .menu-panel button:not(.menu-close) {
     min-height: 54px;
     font-size: 20px;
+  }
+}
+
+@media (min-width: 900px) {
+  .desktop-home-tracks {
+    display: none !important;
+  }
+
+  .home-desktop-tracks {
+    display: block !important;
+    position: absolute;
+    left: calc(50% + 115px);
+    top: 169px;
+    width: 600px;
+  }
+
+  .home-desktop-tracks h2 {
+    margin: 0 0 42px;
+    text-align: center;
+    font-family: Paperlogy, Pretendard, sans-serif;
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  .home-desktop-tracks h2 strong {
+    font-weight: 800;
+  }
+
+  .home-desktop-tracks .desktop-track-list {
+    display: grid;
+    gap: 32px;
+  }
+
+  .home-track-card {
+    position: relative;
+    display: block;
+    width: 600px;
+    height: 172px;
+    padding: 27px 115px 26px 34px;
+    background: #fff;
+    border: 1px solid #000;
+    border-radius: 12px;
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .home-track-card:hover,
+  .home-track-card:focus-visible {
+    background: #f4edff;
+    border-color: var(--violet);
+    outline: none;
+  }
+
+  .home-track-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .home-track-chips b,
+  .home-track-chips i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 78px;
+    height: 22px;
+    padding: 0 12px;
+    border: 1px solid #000;
+    border-radius: 999px;
+    color: #000;
+    font-size: 13px;
+    font-style: normal;
+    line-height: 1;
+  }
+
+  .home-track-chips b {
+    background: var(--lime);
+    font-weight: 700;
+  }
+
+  .home-track-chips i {
+    background: #fff;
+    font-weight: 600;
+  }
+
+  .home-track-card strong {
+    display: block;
+    margin-top: 13px;
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.16;
+  }
+
+  .home-track-card small {
+    display: block;
+    width: 390px;
+    margin-top: 13px;
+    color: #555;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .home-track-arrow {
+    position: absolute;
+    top: 55px;
+    right: 64px;
+    display: grid;
+    place-items: center;
+    width: 61px;
+    height: 61px;
+    background: var(--lime);
+    border-radius: 50%;
+    color: #000;
+    font-size: 43px;
+    font-weight: 900;
+    line-height: 1;
   }
 }
