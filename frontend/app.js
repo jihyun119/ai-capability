@@ -180,10 +180,12 @@ const state = {
   user: null,
   respondent: null,
   t1Answers: {},
+  t1QuestionError: "",
   t1LlmText: "",
   t1Result: null,
   t1Error: "",
   t2Answers: {},
+  t2QuestionError: "",
   t2FreeText: "",
   t2Result: null,
   t2Error: "",
@@ -224,9 +226,9 @@ function menuOverlay() {
       <nav class="menu-panel" aria-label="더보기">
         <button class="menu-close" type="button" data-menu-close aria-label="메뉴 닫기">×</button>
         <h2>더보기</h2>
-        <button type="button" data-go="t1-login">Track 1</button>
-        <button type="button" data-go="t2-login">Track 2</button>
-        <button type="button" data-go="t3-comingsoon">Track 3</button>
+        <button type="button" data-go="t1-login">Track 1: AI 관계 유형 테스트</button>
+        <button type="button" data-go="t2-login">Track 2: AI 활용 역량 테스트</button>
+        <button type="button" data-go="t3-comingsoon">Track 3: AI 실무 적용 테스트</button>
         <button type="button" data-go="pooky-characters">푸키 캐릭터</button>
       </nav>
     </aside>`;
@@ -276,11 +278,11 @@ function trackScreen() {
       <p>가볍게 관계 유형을 확인하고,<br />실전 역량까지도 푸키와 함께 키워봐요!</p>
     </section>
     <section class="track-list">
-      ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-      ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-      ${trackCard("Track3", ["Coming Soon", "준비 중"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
+      ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+      ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+      ${trackCard("Track 3", ["Coming Soon", "준비 중"], "AI 실무 적용 테스트", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
     </section>
-    <p class="track-note">처음이라면 Track 1로 시작해보세요.<br />결과를 확인한 뒤 Lv.1, Lv.2로<br />자연스럽게 이어갈 수 있습니다.</p>
+    <p class="track-note">처음이라면 AI 관계 유형 테스트로 시작해보세요.<br />결과를 확인한 뒤 다른 테스트로<br />자연스럽게 이어갈 수 있습니다.</p>
     ${footer()}`,
     "h02-screen"
   );
@@ -289,11 +291,11 @@ function trackScreen() {
 function t1IntroScreen() {
   return screen(
     "t1-intro",
-    "T1-01 Track 1 안내",
+    "T1-01 AI 관계 유형 테스트 안내",
     `${header()}
     <section class="intro-hero">
       <div>
-        <p class="eyebrow">Track 1 · 재미용 · 약 5분</p>
+        <p class="eyebrow">Track 1: AI 관계 유형 테스트 · 약 5분</p>
         <h1>AI 관계<br />유형 테스트</h1>
         <p>당신은 AI를 어떤 태도로 대하고 있을까요?<br />당신의 AI 답변을 통해 평소 사용 습관을 분석합니다.</p>
       </div>
@@ -315,6 +317,7 @@ function t1IntroScreen() {
 }
 
 function questionScreen(prefix, index, total, title, options, prev, next) {
+  const questionError = state[`${prefix}QuestionError`];
   return screen(
     `${prefix}-q-${index}`,
     `${prefix.toUpperCase()} 객관식 질문 ${index}`,
@@ -329,6 +332,7 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
           return `<button class="${selected}" type="button" data-${prefix}-question="Q${index}" data-${prefix}-answer="${value}">${option}</button>`;
         }).join("")}
       </div>
+      ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
     </section>
     <nav class="nav-buttons">
       ${button("이전", prev, "secondary muted")}
@@ -359,6 +363,7 @@ function t1QuestionScreen(question, index, total, prev, next) {
         <div class="t1-scale-arrow" aria-hidden="true"><span></span></div>
         <p class="t1-scale-b">${question.b}</p>
       </article>
+      ${state.t1QuestionError ? `<em class="question-error">${state.t1QuestionError}</em>` : ""}
     </section>
     <nav class="nav-buttons t1-question-nav">
       ${button("이전", prev, "secondary muted")}
@@ -549,7 +554,7 @@ function t1ResultScreen() {
 
   return screen(
     "t1-result",
-    "T1-06 Track 1 결과",
+    "T1-06 AI 관계 유형 테스트 결과",
     `${header()}
     <section class="t1-result-content">
       <article class="result-card t1-result-card">
@@ -582,12 +587,12 @@ function t1ResultScreen() {
 function t2IntroScreen() {
   return screen(
     "t2-intro",
-    "T2-01 Track 2 안내",
+    "T2-01 AI 활용 역량 테스트 안내",
     `${header()}
     <section class="intro-hero t2-intro-hero">
       <div>
-        <p class="eyebrow">Track 2 · 패턴 분석 · 약 8분</p>
-        <h1>AI 역량<br />평가 Lv.1</h1>
+        <p class="eyebrow">Track 2: AI 활용 역량 테스트 · 약 8분</p>
+        <h1>AI 활용<br />역량 테스트</h1>
         <p>자소서, 보고서, 과제, 기획처럼 실제 목적이 있는 상황에서 당신이 AI를 어떻게 활용하는지 분석합니다.</p>
       </div>
       ${char("anxious", "hero-character")}
@@ -745,13 +750,13 @@ function t2ResultScreen() {
   ];
   return screen(
     "t2-result",
-    "T2-06 Track 2 결과",
+    "T2-06 AI 활용 역량 테스트 결과",
     `${header()}
     <section class="t2-result-content">
       <article class="t2-score-card">
         <p>당신의 AI 활용 역량 점수는</p>
         <h1>${Math.round(result.total)}점</h1>
-        <div class="radar-chart" aria-label="Track 2 역량 레이더 차트">
+        <div class="radar-chart" aria-label="AI 활용 역량 테스트 레이더 차트">
           <svg viewBox="0 0 270 270" role="img" aria-hidden="true">
             ${[0.2, 0.4, 0.6, 0.8].map((rate) => `<polygon class="radar-grid" points="${gridPolygon(rate)}" />`).join("")}
             ${axisOrder.map((_, index) => `<line class="radar-axis" x1="${center}" y1="${center}" x2="${point(1, index).split(",")[0]}" y2="${point(1, index).split(",")[1]}" />`).join("")}
@@ -792,16 +797,16 @@ function t2ResultScreen() {
 function t3Screens() {
   return screen(
     "t3-comingsoon",
-    "Track 3 Coming Soon",
+    "AI 실무 적용 테스트 Coming Soon",
     `${header()}
     <section class="coming-soon-page">
       <p class="eyebrow">Beta Notice</p>
-      <h1>Track 3는<br />준비 중이에요</h1>
-      <p>이번 베타에서는 Track 1, Track 2를 먼저 완성합니다.<br />직무별 실전 시나리오 평가는 이후 버전에서 공개할게요.</p>
+      <h1>AI 실무 적용 테스트는<br />준비 중이에요</h1>
+      <p>이번 베타에서는 AI 관계 유형 테스트와 AI 활용 역량 테스트를 먼저 완성합니다.<br />직무별 실전 시나리오 평가는 이후 버전에서 공개할게요.</p>
     </section>
     <nav class="nav-buttons">
       ${button("Track 선택", "track", "secondary")}
-      ${button("Track 2 보기", "t2-intro")}
+      ${button("AI 활용 역량 테스트 보기", "t2-intro")}
     </nav>`,
     "compact-screen"
   );
@@ -811,7 +816,7 @@ function myReportScreen() {
   return screen(
     "my-report",
     "M01 마이 리포트",
-    `${header()}<section class="simple-page"><h1>내 AI 활용<br />리포트</h1><p>당신은 AI를 반복적으로 개선하며 결과물을 완성하는 활용자입니다.</p><div class="report-list"><article><strong>Track 1</strong><span>시키는만큼만 해 형</span></article><article><strong>Track 2</strong><span>76점 · 실무 적응형</span></article><article><strong>Track 3</strong><span>82점 · 상위 18%</span></article></div><article class="portfolio-copy"><strong>포트폴리오용 요약</strong><span>AI를 초안 생성 도구로만 사용하지 않고, 목적과 기준에 맞게 결과물을 반복 개선하는 방식으로 활용합니다.</span></article></section><nav class="nav-buttons">${button("처음으로", "home", "secondary")}${button("문장 복사", "my-report")}</nav>`,
+    `${header()}<section class="simple-page"><h1>내 AI 활용<br />리포트</h1><p>당신은 AI를 반복적으로 개선하며 결과물을 완성하는 활용자입니다.</p><div class="report-list"><article><strong>AI 관계 유형 테스트</strong><span>시키는만큼만 해 형</span></article><article><strong>AI 활용 역량 테스트</strong><span>76점 · 실무 적응형</span></article><article><strong>AI 실무 적용 테스트</strong><span>82점 · 상위 18%</span></article></div><article class="portfolio-copy"><strong>포트폴리오용 요약</strong><span>AI를 초안 생성 도구로만 사용하지 않고, 목적과 기준에 맞게 결과물을 반복 개선하는 방식으로 활용합니다.</span></article></section><nav class="nav-buttons">${button("처음으로", "home", "secondary")}${button("문장 복사", "my-report")}</nav>`,
     "compact-screen scroll-screen"
   );
 }
@@ -839,18 +844,18 @@ function mapScreen() {
   const flow = [
     ["H01", "랜딩 홈", "home"],
     ["H02", "Track 선택", "track"],
-    ["L01", "Track 1 로그인", "t1-login"],
-    ["T1-01", "Track 1 안내", "t1-intro"],
-    ["T1-02", "Track 1 객관식 12문항", "t1-q-1"],
+    ["L01", "AI 관계 유형 테스트 로그인", "t1-login"],
+    ["T1-01", "AI 관계 유형 테스트 안내", "t1-intro"],
+    ["T1-02", "AI 관계 유형 테스트 객관식 12문항", "t1-q-1"],
     ["T1-03", "복붙 미션", "t1-copy"],
     ["T1-04", "답변 제출", "t1-paste"],
     ["T1-05", "분석 로딩", "t1-loading"],
-    ["T1-06", "Track 1 결과", "t1-result"],
-    ["L02", "Track 2 로그인", "t2-login"],
-    ["T2-01", "Track 2 안내", "t2-intro"],
-    ["T2-02", "Track 2 객관식 4문항", "t2-q-1"],
+    ["T1-06", "AI 관계 유형 테스트 결과", "t1-result"],
+    ["L02", "AI 활용 역량 테스트 로그인", "t2-login"],
+    ["T2-01", "AI 활용 역량 테스트 안내", "t2-intro"],
+    ["T2-02", "AI 활용 역량 테스트 객관식 4문항", "t2-q-1"],
     ["T2-03", "AI 답변 제출", "t2-paste"],
-    ["T2-04", "Track 2 결과", "t2-result"],
+    ["T2-04", "AI 활용 역량 테스트 결과", "t2-result"],
     ["T3", "Coming Soon", "t3-comingsoon"],
     ["M01", "마이 리포트", "my-report"],
   ];
@@ -875,9 +880,9 @@ function legacyDesktopHomeTracks() {
     <section class="home-desktop-tracks" aria-label="Track 선택">
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="desktop-track-list">
-        ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+        ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
       </div>
     </section>`;
 }
@@ -897,9 +902,9 @@ function desktopHomeTracks() {
     <section class="home-desktop-tracks" aria-label="Track 선택">
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="desktop-track-list">
-        ${desktopHomeTrackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${desktopHomeTrackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${desktopHomeTrackCard("Track3", ["Coming Soon", "준비 중"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
+        ${desktopHomeTrackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+        ${desktopHomeTrackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${desktopHomeTrackCard("Track 3", ["Coming Soon", "준비 중"], "AI 실무 적용 테스트", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
       </div>
     </section>`;
 }
@@ -922,9 +927,9 @@ function homeScreen() {
     <section class="desktop-home-tracks" aria-label="Track 선택">
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="track-list">
-        ${trackCard("Track1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${trackCard("Track2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+        ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
+        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
       </div>
     </section>
     <div class="cta-stack home-start-v2">
@@ -945,7 +950,7 @@ function t1PasteScreen() {
       ${progress(t1Questions.length, t1Questions.length)}
       <h1>AI가 뭐라고 답했나요?</h1>
       <p>프롬프트 원문이 아니라,<br />AI가 반환한 답변을 그대로 붙여넣어 주세요.</p>
-      <img class="answer-example-image t1-example-image" src="./assets/track1-example.png" alt="Track 1 AI 답변 예시" />
+      <img class="answer-example-image t1-example-image" src="./assets/track1-example.png" alt="AI 관계 유형 테스트 AI 답변 예시" />
       <span class="answer-example-caption">(예시 화면)</span>
       <textarea data-field="t1-paste" placeholder="여기에 AI가 답변한 JSON 또는 텍스트를 붙여넣어 주세요.">${escapeHtml(state.t1LlmText)}</textarea>
       <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
@@ -969,7 +974,7 @@ function t2PasteScreen() {
       ${progress(4, 4)}
       <h1>AI가 뭐라고 답했나요?</h1>
       <p>프롬프트 원문이 아니라,<br />AI가 작성한 답변을 그대로 붙여넣어 주세요.</p>
-      <img class="answer-example-image t2-example-image" src="./assets/track2-example.png" alt="Track 2 AI 답변 예시" />
+      <img class="answer-example-image t2-example-image" src="./assets/track2-example.png" alt="AI 활용 역량 테스트 AI 답변 예시" />
       <span class="answer-example-caption">(예시 화면)</span>
       <textarea data-field="t2-paste" placeholder="여기에 AI가 작성한 줄글 답변을 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
       <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
@@ -1099,6 +1104,7 @@ document.addEventListener("click", async (event) => {
   const t1Answer = event.target.closest("[data-t1-answer]");
   if (t1Answer) {
     state.t1Answers[t1Answer.dataset.t1Question] = Number(t1Answer.dataset.t1Answer);
+    state.t1QuestionError = "";
     t1Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
     t1Answer.classList.add("is-selected");
     return;
@@ -1107,6 +1113,7 @@ document.addEventListener("click", async (event) => {
   const t2Answer = event.target.closest("[data-t2-answer]");
   if (t2Answer) {
     state.t2Answers[t2Answer.dataset.t2Question] = t2Answer.dataset.t2Answer;
+    state.t2QuestionError = "";
     t2Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
     t2Answer.classList.add("is-selected");
     return;
@@ -1186,6 +1193,10 @@ document.addEventListener("click", async (event) => {
   if (target.matches("[data-login-next]") && target.disabled) return;
   event.preventDefault();
 
+  if (!ensureQuestionAnsweredBeforeMove(target.dataset.go)) {
+    return;
+  }
+
   if (target.matches("[data-login-next]")) {
     try {
       await prepareRespondent(target.closest(".login-screen"));
@@ -1245,6 +1256,7 @@ document.addEventListener("input", (event) => {
 
 function resetTrack1() {
   state.t1Answers = {};
+  state.t1QuestionError = "";
   state.t1LlmText = "";
   state.t1Result = null;
   state.t1Error = "";
@@ -1252,9 +1264,55 @@ function resetTrack1() {
 
 function resetTrack2() {
   state.t2Answers = {};
+  state.t2QuestionError = "";
   state.t2FreeText = "";
   state.t2Result = null;
   state.t2Error = "";
+}
+
+function ensureQuestionAnsweredBeforeMove(nextScreen) {
+  const activeScreen = document.querySelector(".screen.active");
+  const activeName = activeScreen?.dataset.screen || "";
+  const t1Match = activeName.match(/^t1-q-(\d+)$/);
+  const t2Match = activeName.match(/^t2-q-(\d+)$/);
+
+  if (t1Match && isForwardTrack1Move(activeName, nextScreen)) {
+    const index = Number(t1Match[1]);
+    if (!state.t1Answers[`Q${index}`]) {
+      state.t1QuestionError = "답변을 선택해야 다음 문항으로 넘어갈 수 있어요.";
+      render();
+      showScreen(activeName);
+      return false;
+    }
+  }
+
+  if (t2Match && isForwardTrack2Move(activeName, nextScreen)) {
+    const index = Number(t2Match[1]);
+    if (!state.t2Answers[`Q${index}`]) {
+      state.t2QuestionError = "답변을 선택해야 다음 문항으로 넘어갈 수 있어요.";
+      render();
+      showScreen(activeName);
+      return false;
+    }
+  }
+
+  state.t1QuestionError = "";
+  state.t2QuestionError = "";
+  return true;
+}
+
+function isForwardTrack1Move(activeName, nextScreen) {
+  const current = Number(activeName.replace("t1-q-", ""));
+  if (nextScreen === "t1-copy") return current === t1Questions.length;
+  const next = Number(String(nextScreen).replace("t1-q-", ""));
+  return Number.isFinite(next) && next > current;
+}
+
+function isForwardTrack2Move(activeName, nextScreen) {
+  const current = Number(activeName.replace("t2-q-", ""));
+  if (nextScreen === "t2-prompt") return current === t2Questions.length;
+  const next = Number(String(nextScreen).replace("t2-q-", ""));
+  return Number.isFinite(next) && next > current;
 }
 
 function resetResults() {
@@ -1294,7 +1352,7 @@ async function submitTrack1() {
     });
 
     if (result.status !== "success") {
-      throw new Error(result.error?.message || "Track 1 분석에 실패했습니다.");
+      throw new Error(result.error?.message || "AI 관계 유형 테스트 분석에 실패했습니다.");
     }
 
     state.t1Result = result;
@@ -1347,7 +1405,7 @@ async function submitTrack2() {
     });
 
     if (result.status !== "success") {
-      throw new Error(result.error?.message || "Track 2 분석에 실패했습니다.");
+      throw new Error(result.error?.message || "AI 활용 역량 테스트 분석에 실패했습니다.");
     }
 
     state.t2Result = result;
@@ -1664,7 +1722,7 @@ async function createTrack2ShareImage() {
   const canvas = createShareCanvas();
   const ctx = canvas.getContext("2d");
   drawShareBackground(ctx, canvas);
-  drawShareHeader(ctx, "AI 역량 평가 Lv.1");
+  drawShareHeader(ctx, "AI 활용 역량 테스트");
   drawCenteredText(ctx, "AI 활용 역량 점수", 220, 50, 400, "#111", "Pretendard");
   drawCenteredText(ctx, `${total}점`, 340, 104, 800, "#000", "Pretendard");
   drawCenteredText(ctx, grade, 430, 54, 800, "#7d39eb", "Pretendard");
