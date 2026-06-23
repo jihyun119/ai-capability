@@ -177,15 +177,16 @@ const t2Questions = [
 ];
 
 const state = {
+  currentScreen: "home",
   user: null,
   respondent: null,
   t1Answers: {},
-  t1QuestionError: "",
+  t1QuestionError: null,
   t1LlmText: "",
   t1Result: null,
   t1Error: "",
   t2Answers: {},
-  t2QuestionError: "",
+  t2QuestionError: null,
   t2FreeText: "",
   t2Result: null,
   t2Error: "",
@@ -239,7 +240,9 @@ function button(label, go, variant = "primary", extra = "") {
 }
 
 function screen(id, label, body, classes = "") {
-  return `<section class="screen ${classes}" data-screen="${id}" aria-label="${label}">${body}</section>`;
+  const cleanClasses = classes.replace(/\bactive\b/g, "").trim();
+  const activeClass = state.currentScreen === id ? " active" : "";
+  return `<section class="screen ${cleanClasses}${activeClass}" data-screen="${id}" aria-label="${label}">${body}</section>`;
 }
 
 function progress(current, total) {
@@ -317,7 +320,8 @@ function t1IntroScreen() {
 }
 
 function questionScreen(prefix, index, total, title, options, prev, next) {
-  const questionError = state[`${prefix}QuestionError`];
+  const errorState = state[`${prefix}QuestionError`];
+  const questionError = errorState?.question === `Q${index}` ? errorState.message : "";
   return screen(
     `${prefix}-q-${index}`,
     `${prefix.toUpperCase()} 객관식 질문 ${index}`,
@@ -344,6 +348,9 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
 }
 
 function t1QuestionScreen(question, index, total, prev, next) {
+  const questionError = state.t1QuestionError?.question === `Q${index}`
+    ? state.t1QuestionError.message
+    : "";
   return screen(
     `t1-q-${index}`,
     `Track 1 객관식 질문 ${index}`,
@@ -363,7 +370,7 @@ function t1QuestionScreen(question, index, total, prev, next) {
         <div class="t1-scale-arrow" aria-hidden="true"><span></span></div>
         <p class="t1-scale-b">${question.b}</p>
       </article>
-      ${state.t1QuestionError ? `<em class="question-error">${state.t1QuestionError}</em>` : ""}
+      ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
     </section>
     <nav class="nav-buttons t1-question-nav">
       ${button("이전", prev, "secondary muted")}
@@ -460,7 +467,8 @@ function loadingScreen(id, title, messages, next) {
       <section class="t1-loading-state">
         <h1>${title}</h1>
         <div class="analysis-loading-mascot" aria-hidden="true"></div>
-      </section>`,
+      </section>
+      ${desktopFooter()}`,
       "compact-screen t1-loading-screen"
     );
   }
@@ -474,7 +482,8 @@ function loadingScreen(id, title, messages, next) {
         <div class="analysis-loading-mascot" aria-hidden="true"></div>
         <h1>${title}</h1>
         <ul class="loading-steps">${messages.map((message) => `<li>${message}</li>`).join("")}</ul>
-      </section>`,
+      </section>
+      ${desktopFooter()}`,
       "compact-screen t2-loading-screen"
     );
   }
@@ -505,17 +514,25 @@ function t1ShareScreen() {
     .map(escapeHtml);
   const mainDescription = descriptionLines.slice(0, 2).join("<br />") || typeName;
   const subDescription = descriptionLines.slice(2).join("<br />") || "AI 활용 진단 결과를 확인해보세요.";
+  const hashtags = normalizeShareKeywords(card.keywords);
 
   return screen(
     "t1-share",
     "결과 공유 카드",
-    `${header(false)}
-    <button class="share-close" type="button" data-go="t1-result" aria-label="공유 화면 닫기"></button>
+    `<header class="share-top-bar">
+      <button class="brand" type="button" data-go="home" aria-label="푸키 홈으로 이동">
+        <img class="logo-img" src="${logoDir}Logo.v2.png" alt="" />
+        <span>푸키</span>
+      </button>
+      <button class="share-close" type="button" data-go="t1-result" aria-label="공유 화면 닫기"></button>
+    </header>
     <section class="t1-share-card" data-share-capture>
       <div class="t1-share-title">
         <p>당신의 AI 관계 유형은</p>
         <h1>${escapeHtml(typeName)}</h1>
-        <span>해시태그</span>
+        <div class="t1-share-hashtags">
+          ${hashtags.map((keyword) => `<span>${escapeHtml(keyword)}</span>`).join("")}
+        </div>
       </div>
       ${charByType(typeName, "t1-share-character")}
       <strong>${mainDescription}</strong>
@@ -574,12 +591,14 @@ function t1ResultScreen() {
         <h2>왜 이 유형이 나왔나요?</h2>
         <p>${reasonStory.length ? reasonStory.map(escapeHtml).join("<br />") : "AI 사용 패턴과 답변 근거를 종합해 유형을 분류했습니다."}</p>
       </article>
+      <p class="t1-evidence-note">${escapeHtml(card.evidenceNotice || "확인된 대화 기록 기반 결과입니다.")}</p>
     </section>
     <nav class="nav-buttons t1-result-nav">
       <button class="cta secondary" type="button" data-share-open="track1">공유하기</button>
       ${button("다른 Track 도전", "track")}
     </nav>
-    ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t1-character-link")}`,
+    ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t1-character-link")}
+    ${desktopFooter()}`,
     "compact-screen t1-result-screen scroll-screen"
   );
 }
@@ -1057,10 +1076,24 @@ function render() {
 }
 
 function showScreen(name) {
+  state.currentScreen = name;
+  clearQuestionErrorOutsideScreen(name);
   document.querySelectorAll(".screen").forEach((screenNode) => {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
   });
   app.scrollTop = 0;
+}
+
+function clearQuestionErrorOutsideScreen(name) {
+  const t1Match = String(name).match(/^t1-q-(\d+)$/);
+  if (!t1Match || state.t1QuestionError?.question !== `Q${t1Match[1]}`) {
+    state.t1QuestionError = null;
+  }
+
+  const t2Match = String(name).match(/^t2-q-(\d+)$/);
+  if (!t2Match || state.t2QuestionError?.question !== `Q${t2Match[1]}`) {
+    state.t2QuestionError = null;
+  }
 }
 
 function openMenu() {
@@ -1104,7 +1137,7 @@ document.addEventListener("click", async (event) => {
   const t1Answer = event.target.closest("[data-t1-answer]");
   if (t1Answer) {
     state.t1Answers[t1Answer.dataset.t1Question] = Number(t1Answer.dataset.t1Answer);
-    state.t1QuestionError = "";
+    state.t1QuestionError = null;
     t1Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
     t1Answer.classList.add("is-selected");
     return;
@@ -1113,7 +1146,7 @@ document.addEventListener("click", async (event) => {
   const t2Answer = event.target.closest("[data-t2-answer]");
   if (t2Answer) {
     state.t2Answers[t2Answer.dataset.t2Question] = t2Answer.dataset.t2Answer;
-    state.t2QuestionError = "";
+    state.t2QuestionError = null;
     t2Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
     t2Answer.classList.add("is-selected");
     return;
@@ -1138,11 +1171,11 @@ document.addEventListener("click", async (event) => {
     event.preventDefault();
     const originalText = shareTarget.dataset.shareLabel || shareTarget.textContent;
     shareTarget.dataset.shareLabel = originalText;
-    shareTarget.textContent = "공유 준비 중";
+    shareTarget.textContent = "이미지 준비 중";
     shareTarget.disabled = true;
     try {
       const outcome = await shareResult(shareTarget.dataset.shareResult);
-      shareTarget.textContent = outcome === "shared" ? "공유창 열림" : "PNG 저장됨";
+      shareTarget.textContent = outcome === "shared" ? "결과 공유창 열림" : "이미지 저장됨";
     } catch (error) {
       shareTarget.textContent = "공유 실패";
       console.error(error);
@@ -1163,9 +1196,8 @@ document.addEventListener("click", async (event) => {
     saveTarget.textContent = "저장 중";
     saveTarget.disabled = true;
     try {
-      const { blob, filename } = await createResultShareImage(saveTarget.dataset.saveResult);
-      downloadBlob(blob, filename);
-      saveTarget.textContent = "저장 완료";
+      const outcome = await saveResultImage(saveTarget.dataset.saveResult);
+      saveTarget.textContent = outcome === "shared" ? "저장창 열림" : "저장 완료";
     } catch (error) {
       saveTarget.textContent = "저장 실패";
       console.error(error);
@@ -1182,6 +1214,7 @@ document.addEventListener("click", async (event) => {
   if (shareOpenTarget) {
     event.preventDefault();
     if (shareOpenTarget.dataset.shareOpen === "track1") {
+      state.currentScreen = "t1-share";
       render();
       showScreen("t1-share");
       return;
@@ -1256,7 +1289,7 @@ document.addEventListener("input", (event) => {
 
 function resetTrack1() {
   state.t1Answers = {};
-  state.t1QuestionError = "";
+  state.t1QuestionError = null;
   state.t1LlmText = "";
   state.t1Result = null;
   state.t1Error = "";
@@ -1264,7 +1297,7 @@ function resetTrack1() {
 
 function resetTrack2() {
   state.t2Answers = {};
-  state.t2QuestionError = "";
+  state.t2QuestionError = null;
   state.t2FreeText = "";
   state.t2Result = null;
   state.t2Error = "";
@@ -1279,25 +1312,31 @@ function ensureQuestionAnsweredBeforeMove(nextScreen) {
   if (t1Match && isForwardTrack1Move(activeName, nextScreen)) {
     const index = Number(t1Match[1]);
     if (!state.t1Answers[`Q${index}`]) {
-      state.t1QuestionError = "답변을 선택해야 다음 문항으로 넘어갈 수 있어요.";
+      state.t1QuestionError = {
+        question: `Q${index}`,
+        message: "답변을 선택해야 다음 문항으로 넘어갈 수 있어요.",
+      };
       render();
       showScreen(activeName);
       return false;
     }
+    state.t1QuestionError = null;
   }
 
   if (t2Match && isForwardTrack2Move(activeName, nextScreen)) {
     const index = Number(t2Match[1]);
     if (!state.t2Answers[`Q${index}`]) {
-      state.t2QuestionError = "답변을 선택해야 다음 문항으로 넘어갈 수 있어요.";
+      state.t2QuestionError = {
+        question: `Q${index}`,
+        message: "답변을 선택해야 다음 문항으로 넘어갈 수 있어요.",
+      };
       render();
       showScreen(activeName);
       return false;
     }
+    state.t2QuestionError = null;
   }
 
-  state.t1QuestionError = "";
-  state.t2QuestionError = "";
   return true;
 }
 
@@ -1612,13 +1651,8 @@ function copyPromptFieldSync(promptField) {
 }
 
 async function shareResult(track) {
-  const shareData = createNativeShareData(track);
-  if (isTouchShareDevice() && navigator.share) {
-    await navigator.share(shareData);
-    return "shared";
-  }
-
-  const { blob, filename } = await createResultShareImage(track);
+  const { blob, filename, title, text } = await createResultShareImage(track);
+  const shareData = { title, text };
   const file = new File([blob], filename, { type: "image/png" });
 
   if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
@@ -1627,14 +1661,24 @@ async function shareResult(track) {
       return "shared";
     } catch (error) {
       if (error?.name === "AbortError") throw error;
-      await navigator.share(shareData);
-      return "shared";
     }
   }
 
-  if (navigator.share) {
-    await navigator.share(shareData);
-    return "shared";
+  downloadBlob(blob, filename);
+  return "downloaded";
+}
+
+async function saveResultImage(track) {
+  const { blob, filename, title, text } = await createResultShareImage(track);
+  const file = new File([blob], filename, { type: "image/png" });
+
+  if (isTouchShareDevice() && navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+    try {
+      await navigator.share({ title, text, files: [file] });
+      return "shared";
+    } catch (error) {
+      if (error?.name === "AbortError") throw error;
+    }
   }
 
   downloadBlob(blob, filename);
@@ -1656,8 +1700,7 @@ function createNativeShareData(track) {
     const grade = result.grade || "AI 활용 역량";
     return {
       title: `내 AI 활용 역량은 ${grade}`,
-      text: "AI 활용 진단 테스트 결과를 확인해보세요.",
-      url: window.location.href,
+      text: "내 AI 활용 역량 결과 카드입니다.",
     };
   }
 
@@ -1665,8 +1708,7 @@ function createNativeShareData(track) {
   const typeName = result?.type?.name || "AI 관계 유형";
   return {
     title: `내 AI 관계 유형은 ${typeName}`,
-    text: "AI 활용 진단 테스트 결과를 확인해보세요.",
-    url: window.location.href,
+    text: "내 AI 관계 유형 결과 카드입니다.",
   };
 }
 
@@ -1676,20 +1718,26 @@ async function createResultShareImage(track) {
     : document.querySelector('.screen.active[data-screen="t1-share"]')
       ? "t1-share"
       : "t1-result";
+  if (track === "track2") return createTrack2ShareImage();
+  if (screenId === "t1-share") return createTrack1ShareImage();
+
   const screenNode = document.querySelector(`.screen[data-screen="${screenId}"]`);
   const captureNode = screenId === "t1-share"
     ? screenNode?.querySelector("[data-share-capture]") || screenNode
     : screenNode;
   const filename = track === "track2" ? "pookie-track2-result.png" : "pookie-track1-result.png";
   const title = createNativeShareData(track).title;
-  const text = "AI 활용 진단 테스트 결과를 공유합니다.";
+  const text = createNativeShareData(track).text;
 
   if (captureNode) {
-    const blob = await captureScreenAsPng(captureNode);
-    return { blob, filename, title, text };
+    try {
+      const blob = await captureScreenAsPng(captureNode);
+      return { blob, filename, title, text };
+    } catch (error) {
+      console.warn("Result DOM capture failed; falling back to canvas image.", error);
+    }
   }
 
-  if (track === "track2") return createTrack2ShareImage();
   return createTrack1ShareImage();
 }
 
@@ -1697,21 +1745,20 @@ async function createTrack1ShareImage() {
   const result = state.t1Result;
   const typeName = result?.type?.name || "AI 관계 유형";
   const card = result?.resultCard || {};
-  const keywords = card.keywords || [];
+  const keywords = normalizeShareKeywords(card.keywords);
   const description = card.description || "AI 활용 진단 결과를 확인해보세요.";
-  const axes = result?.axisScores || {};
   const canvas = createShareCanvas();
   const ctx = canvas.getContext("2d");
-  drawShareBackground(ctx, canvas);
-  drawShareHeader(ctx, "AI 관계 유형 테스트");
-  drawCenteredText(ctx, "당신의 AI 관계 유형은", 220, 50, 400, "#111", "Pretendard");
-  drawCenteredText(ctx, typeName, 305, 72, 800, "#000", "Pretendard");
-  await drawCharacter(ctx, characterSrcByType(typeName), 300, 365, 480, 420);
-  drawCenteredMultilineText(ctx, description, 835, 760, 42, 36, 300, "#111");
-  drawCenteredPills(ctx, keywords, 945, 760);
-  drawTrack1Axes(ctx, axes, 120, 1110);
-  drawShareFooter(ctx);
-  return canvasToSharePayload(canvas, "pookie-track1-result.png", `내 AI 관계 유형은 ${typeName}`, "AI 활용 진단 테스트 결과를 공유합니다.");
+  await drawTrack1ShareCard(ctx, canvas, typeName, keywords, description);
+  return canvasToSharePayload(canvas, "pookie-track1-result.png", `내 AI 관계 유형은 ${typeName}`, "내 AI 관계 유형 결과 카드입니다.");
+}
+
+function normalizeShareKeywords(keywords) {
+  const fallback = ["AI관계", "결과공유", "푸키"];
+  const cleaned = (Array.isArray(keywords) ? keywords : [])
+    .map((keyword) => String(keyword || "").replace(/^#/, "").trim())
+    .filter(Boolean);
+  return [...cleaned, ...fallback].slice(0, 3);
 }
 
 async function createTrack2ShareImage() {
@@ -1729,7 +1776,7 @@ async function createTrack2ShareImage() {
   drawCenteredMultilineText(ctx, feedback.summary || "AI 활용 진단 결과를 확인해보세요.", 540, 800, 38, 30, 400, "#111");
   drawTrack2Axes(ctx, result.axes || {}, 120, 760);
   drawShareFooter(ctx);
-  return canvasToSharePayload(canvas, "pookie-track2-result.png", `내 AI 활용 역량은 ${grade}`, "AI 활용 진단 테스트 결과를 공유합니다.");
+  return canvasToSharePayload(canvas, "pookie-track2-result.png", `내 AI 활용 역량은 ${grade}`, "내 AI 활용 역량 결과 카드입니다.");
 }
 
 function createShareCanvas() {
@@ -1859,6 +1906,35 @@ function drawShareFooter(ctx) {
   ctx.lineWidth = 4;
   ctx.stroke();
   drawCenteredText(ctx, "AI 시대에서 살아남기 · AI 활용역량 진단 테스트", 1332, 30, 800, "#000", "Pretendard");
+}
+
+async function drawTrack1ShareCard(ctx, canvas, typeName, keywords, description) {
+  const descriptionLines = String(description || "")
+    .split("\n")
+    .filter(Boolean);
+  const mainDescription = descriptionLines.slice(0, 2).join(" ") || "AI 관계 유형 결과입니다.";
+  const subDescription = descriptionLines.slice(2).join(" ") || descriptionLines[0] || "AI 사용 패턴을 바탕으로 나온 결과입니다.";
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#7d39eb";
+  roundRect(ctx, 72, 72, 56, 56, 8);
+  ctx.fill();
+  drawLogoEyes(ctx, 72, 72);
+  drawText(ctx, "푸키", 148, 113, 34, 800, "#000", "Paperlogy");
+
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 4;
+  roundRect(ctx, 56, 164, 968, 1030, 34);
+  ctx.stroke();
+
+  drawCenteredText(ctx, "당신의 AI 관계 유형은", 250, 50, 300, "#111", "Pretendard");
+  drawCenteredText(ctx, typeName, 324, 72, 800, "#7d39eb", "Unbounded");
+  drawCenteredPills(ctx, keywords, 358, 760);
+  await drawCharacter(ctx, characterSrcByType(typeName), 220, 468, 640, 450);
+  drawCenteredMultilineText(ctx, mainDescription, 1000, 720, 44, 36, 800, "#7d39eb");
+  drawCenteredMultilineText(ctx, subDescription, 1120, 700, 34, 28, 300, "#111");
 }
 
 async function drawCharacter(ctx, src, x, y, width, height) {
@@ -2034,10 +2110,20 @@ function downloadBlob(blob, filename) {
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
+  link.target = "_blank";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  if (isTouchShareDevice()) {
+    setTimeout(() => {
+      try {
+        window.open(url, "_blank", "noopener,noreferrer");
+      } catch {
+        // Browser download behavior differs by mobile webview/Safari version.
+      }
+    }, 120);
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 function escapeHtml(value) {
