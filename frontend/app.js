@@ -519,30 +519,96 @@ function t1ShareScreen() {
   return screen(
     "t1-share",
     "결과 공유 카드",
-    `<header class="share-top-bar">
-      <button class="brand" type="button" data-go="home" aria-label="푸키 홈으로 이동">
-        <img class="logo-img" src="${logoDir}Logo.v2.png" alt="" />
-        <span>푸키</span>
-      </button>
-      <button class="share-close" type="button" data-go="t1-result" aria-label="공유 화면 닫기"></button>
-    </header>
-    <section class="t1-share-card" data-share-capture>
-      <div class="t1-share-title">
-        <p>당신의 AI 관계 유형은</p>
-        <h1>${escapeHtml(typeName)}</h1>
-        <div class="t1-share-hashtags">
-          ${hashtags.map((keyword) => `<span>${escapeHtml(keyword)}</span>`).join("")}
+    `<div class="share-export t1-share-export" data-share-capture>
+      <header class="share-top-bar">
+        <button class="brand" type="button" data-go="home" aria-label="푸키 홈으로 이동">
+          <img class="logo-img" src="${logoDir}Logo.v2.png" alt="" />
+          <span>푸키</span>
+        </button>
+        <button class="share-close" type="button" data-go="t1-result" aria-label="공유 화면 닫기"></button>
+      </header>
+      <section class="t1-share-card">
+        <div class="t1-share-title">
+          <p>당신의 AI 관계 유형은</p>
+          <h1>${escapeHtml(typeName)}</h1>
+          <div class="t1-share-hashtags">
+            ${hashtags.map((keyword) => `<span>${escapeHtml(keyword)}</span>`).join("")}
+          </div>
         </div>
-      </div>
-      ${charByType(typeName, "t1-share-character")}
-      <strong>${mainDescription}</strong>
-      <p class="t1-share-description">${subDescription}</p>
-    </section>
+        ${charByType(typeName, "t1-share-character")}
+        <strong>${mainDescription}</strong>
+        <p class="t1-share-description">${subDescription}</p>
+      </section>
+    </div>
     <nav class="nav-buttons t1-share-nav">
       <button class="cta secondary" type="button" data-save-result="track1">이미지 저장</button>
       <button class="cta" type="button" data-share-result="track1">공유하기</button>
     </nav>`,
     "compact-screen t1-share-screen"
+  );
+}
+
+function t2ShareScreen() {
+  const result = state.t2Result?.result || {
+    total: 0,
+    grade: "분석 대기 중",
+    axes: {
+      task_clarity: { label: "작업 명확성", rate: 0 },
+      context: { label: "맥락 설명", rate: 0 },
+      role: { label: "역할 지정", rate: 0 },
+      output_format: { label: "출력 형식", rate: 0 },
+      iteration: { label: "반복 개선", rate: 0 },
+      critical_review: { label: "비판적 검토", rate: 0 },
+    },
+    feedback: {
+      summary: "답변을 제출하면 AI 활용 역량 분석이 표시됩니다.",
+      strengths: [{ description: "답변 제출 후 표시됩니다." }],
+      weaknesses: [{ description: "답변 제출 후 표시됩니다." }],
+    },
+  };
+  const feedback = {
+    summary: result.feedback?.summary || "AI 활용 진단 결과를 확인해보세요.",
+    strength: result.feedback?.strength || result.feedback?.strengths?.[0]?.description || "강점 분석이 표시됩니다.",
+    weakness: result.feedback?.weakness || result.feedback?.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.",
+  };
+  const chart = renderTrack2Radar(result);
+
+  return screen(
+    "t2-share",
+    "Track 2 결과 공유 카드",
+    `<div class="share-export t2-share-export" data-share-capture>
+      <header class="share-top-bar">
+        <button class="brand" type="button" data-go="home" aria-label="푸키 홈으로 이동">
+          <img class="logo-img" src="${logoDir}Logo.v2.png" alt="" />
+          <span>푸키</span>
+        </button>
+        <button class="share-close" type="button" data-go="t2-result" aria-label="공유 화면 닫기"></button>
+      </header>
+      <section class="t2-share-content">
+        <article class="t2-score-card t2-share-score-card">
+          <p>당신의 AI 활용 역량 점수는</p>
+          <h1>${Math.round(result.total)}점</h1>
+          ${chart}
+        </article>
+        <strong class="t2-grade-pill">${escapeHtml(result.grade)}</strong>
+        <p class="t2-result-summary">${escapeHtml(feedback.summary)}</p>
+        <section class="t2-feedback-list">
+          <article>
+            <h2><span>Strength</span> 강점</h2>
+            <p class="t2-feedback-body">${escapeHtml(feedback.strength)}</p>
+          </article>
+          <article>
+            <h2><span>Weakness</span> 약점</h2>
+            <p class="t2-feedback-body">${escapeHtml(feedback.weakness)}</p>
+          </article>
+        </section>
+      </section>
+    </div>
+    <nav class="nav-buttons t2-share-nav">
+      <button class="cta secondary" type="button" data-save-result="track2">이미지 저장</button>
+      <button class="cta" type="button" data-share-result="track2">공유하기</button>
+    </nav>`,
+    "compact-screen t1-share-screen t2-share-screen"
   );
 }
 
@@ -681,6 +747,8 @@ const t2PromptMarkers = [
   "for every one of these six behaviors",
 ];
 
+const pookieShareText = "푸키에서 AI 시대 생존력을 테스트해보세요. 지금 바로 당신의 AI 역량을 확인할 수 있어요! https://ai-capability-green.vercel.app/";
+
 function t2PromptScreen() {
   return screen(
     "t2-prompt",
@@ -748,6 +816,45 @@ function t2ResultScreen() {
     weakness: result.feedback?.weakness || result.feedback?.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.",
     insight: result.feedback?.insight || "면접용 요약 문장이 표시됩니다.",
   };
+  const chart = renderTrack2Radar(result);
+  return screen(
+    "t2-result",
+    "T2-06 AI 활용 역량 테스트 결과",
+    `${header()}
+    <section class="t2-result-content">
+      <article class="t2-score-card">
+        <p>당신의 AI 활용 역량 점수는</p>
+        <h1>${Math.round(result.total)}점</h1>
+        ${chart}
+      </article>
+      <strong class="t2-grade-pill">${result.grade}</strong>
+      <p class="t2-result-summary">${feedback.summary}</p>
+      <section class="t2-feedback-list">
+        <article>
+          <h2><span>Strength</span> 강점</h2>
+          <p class="t2-feedback-body">${feedback.strength}</p>
+        </article>
+        <article>
+          <h2><span>Weakness</span> 약점</h2>
+          <p class="t2-feedback-body">${feedback.weakness}</p>
+        </article>
+        <article class="t2-interview-card">
+          <h2><span>면접에서 이렇게 말할 수 있어요</span></h2>
+          <p class="t2-feedback-body">${feedback.insight}</p>
+        </article>
+      </section>
+      <nav class="nav-buttons t2-result-nav">
+        <button class="cta secondary" type="button" data-share-open="track2">공유하기</button>
+        ${button("다른 Track 도전", "track")}
+      </nav>
+      ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t2-character-link")}
+    </section>
+    ${footer()}`,
+    "t2-result-screen scroll-screen"
+  );
+}
+
+function renderTrack2Radar(result) {
   const axisOrder = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
   const center = 135;
   const maxRadius = 94;
@@ -767,50 +874,16 @@ function t2ResultScreen() {
     { x: 38, y: 197, anchor: "end" },
     { x: 38, y: 76, anchor: "end" },
   ];
-  return screen(
-    "t2-result",
-    "T2-06 AI 활용 역량 테스트 결과",
-    `${header()}
-    <section class="t2-result-content">
-      <article class="t2-score-card">
-        <p>당신의 AI 활용 역량 점수는</p>
-        <h1>${Math.round(result.total)}점</h1>
-        <div class="radar-chart" aria-label="AI 활용 역량 테스트 레이더 차트">
-          <svg viewBox="0 0 270 270" role="img" aria-hidden="true">
-            ${[0.2, 0.4, 0.6, 0.8].map((rate) => `<polygon class="radar-grid" points="${gridPolygon(rate)}" />`).join("")}
-            ${axisOrder.map((_, index) => `<line class="radar-axis" x1="${center}" y1="${center}" x2="${point(1, index).split(",")[0]}" y2="${point(1, index).split(",")[1]}" />`).join("")}
-            <polygon class="radar-fill" points="${radarPoints}" />
-            <polygon class="radar-stroke" points="${radarPoints}" />
-            ${axisOrder.map((key, index) => `<circle class="radar-dot" cx="${point(result.axes[key]?.rate || 0, index).split(",")[0]}" cy="${point(result.axes[key]?.rate || 0, index).split(",")[1]}" r="3.5" />`).join("")}
-            ${axisOrder.map((key, index) => `<text class="radar-label" x="${labelPositions[index].x}" y="${labelPositions[index].y}" text-anchor="${labelPositions[index].anchor}">${result.axes[key]?.label || key}</text>`).join("")}
-          </svg>
-        </div>
-      </article>
-      <strong class="t2-grade-pill">${result.grade}</strong>
-      <p class="t2-result-summary">${feedback.summary}</p>
-      <section class="t2-feedback-list">
-        <article>
-          <h2><span>Strength</span> 강점</h2>
-          <p class="t2-feedback-body">${feedback.strength}</p>
-        </article>
-        <article>
-          <h2><span>Weakness</span> 약점</h2>
-          <p class="t2-feedback-body">${feedback.weakness}</p>
-        </article>
-        <article class="t2-interview-card">
-          <h2><span>면접에서 이렇게 말할 수 있어요</span></h2>
-          <p class="t2-feedback-body">${feedback.insight}</p>
-        </article>
-      </section>
-      <nav class="nav-buttons t2-result-nav">
-        <button class="cta secondary" type="button" data-share-result="track2">공유하기</button>
-        ${button("다른 Track 도전", "track")}
-      </nav>
-      ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t2-character-link")}
-    </section>
-    ${footer()}`,
-    "t2-result-screen scroll-screen"
-  );
+  return `<div class="radar-chart" aria-label="AI 활용 역량 테스트 레이더 차트">
+    <svg viewBox="0 0 270 270" role="img" aria-hidden="true">
+      ${[0.2, 0.4, 0.6, 0.8].map((rate) => `<polygon class="radar-grid" points="${gridPolygon(rate)}" />`).join("")}
+      ${axisOrder.map((_, index) => `<line class="radar-axis" x1="${center}" y1="${center}" x2="${point(1, index).split(",")[0]}" y2="${point(1, index).split(",")[1]}" />`).join("")}
+      <polygon class="radar-fill" points="${radarPoints}" />
+      <polygon class="radar-stroke" points="${radarPoints}" />
+      ${axisOrder.map((key, index) => `<circle class="radar-dot" cx="${point(result.axes[key]?.rate || 0, index).split(",")[0]}" cy="${point(result.axes[key]?.rate || 0, index).split(",")[1]}" r="3.5" />`).join("")}
+      ${axisOrder.map((key, index) => `<text class="radar-label" x="${labelPositions[index].x}" y="${labelPositions[index].y}" text-anchor="${labelPositions[index].anchor}">${result.axes[key]?.label || key}</text>`).join("")}
+    </svg>
+  </div>`;
 }
 
 function t3Screens() {
@@ -1065,6 +1138,7 @@ function render() {
     t2PasteScreen(),
     t2LoadingScreen(),
     t2ResultScreen(),
+    t2ShareScreen(),
     t3Screens(),
     myReportScreen(),
     characterGalleryScreen(),
@@ -1213,10 +1287,11 @@ document.addEventListener("click", async (event) => {
   const shareOpenTarget = event.target.closest("[data-share-open]");
   if (shareOpenTarget) {
     event.preventDefault();
-    if (shareOpenTarget.dataset.shareOpen === "track1") {
-      state.currentScreen = "t1-share";
+    const shareScreen = shareOpenTarget.dataset.shareOpen === "track2" ? "t2-share" : "t1-share";
+    if (shareOpenTarget.dataset.shareOpen === "track1" || shareOpenTarget.dataset.shareOpen === "track2") {
+      state.currentScreen = shareScreen;
       render();
-      showScreen("t1-share");
+      showScreen(shareScreen);
       return;
     }
   }
@@ -1702,7 +1777,7 @@ function createNativeShareData(track) {
     const grade = result.grade || "AI 활용 역량";
     return {
       title: `내 AI 활용 역량은 ${grade}`,
-      text: "내 AI 활용 역량 결과 카드입니다.",
+      text: pookieShareText,
     };
   }
 
@@ -1710,21 +1785,22 @@ function createNativeShareData(track) {
   const typeName = result?.type?.name || "AI 관계 유형";
   return {
     title: `내 AI 관계 유형은 ${typeName}`,
-    text: "내 AI 관계 유형 결과 카드입니다.",
+    text: pookieShareText,
   };
 }
 
 async function createResultShareImage(track) {
   const screenId = track === "track2"
-    ? "t2-result"
+    ? document.querySelector('.screen.active[data-screen="t2-share"]')
+      ? "t2-share"
+      : "t2-result"
     : document.querySelector('.screen.active[data-screen="t1-share"]')
       ? "t1-share"
       : "t1-result";
-  if (screenId === "t1-share") return createTrack1ShareImage();
 
   const screenNode = document.querySelector(`.screen.active[data-screen="${screenId}"]`) ||
     document.querySelector(`.screen[data-screen="${screenId}"]`);
-  const captureNode = screenId === "t1-share"
+  const captureNode = screenId === "t1-share" || screenId === "t2-share"
     ? screenNode?.querySelector("[data-share-capture]") || screenNode
     : screenNode;
   const filename = track === "track2" ? "pookie-track2-result.png" : "pookie-track1-result.png";
@@ -1752,7 +1828,7 @@ async function createTrack1ShareImage() {
   const canvas = createShareCanvas();
   const ctx = canvas.getContext("2d");
   await drawTrack1ShareCard(ctx, canvas, typeName, keywords, description);
-  return canvasToSharePayload(canvas, "pookie-track1-result.png", `내 AI 관계 유형은 ${typeName}`, "내 AI 관계 유형 결과 카드입니다.");
+  return canvasToSharePayload(canvas, "pookie-track1-result.png", `내 AI 관계 유형은 ${typeName}`, pookieShareText);
 }
 
 function normalizeShareKeywords(keywords) {
@@ -1778,7 +1854,7 @@ async function createTrack2ShareImage() {
   drawCenteredMultilineText(ctx, feedback.summary || "AI 활용 진단 결과를 확인해보세요.", 540, 800, 38, 30, 400, "#111");
   drawTrack2Axes(ctx, result.axes || {}, 120, 760);
   drawShareFooter(ctx);
-  return canvasToSharePayload(canvas, "pookie-track2-result.png", `내 AI 활용 역량은 ${grade}`, "내 AI 활용 역량 결과 카드입니다.");
+  return canvasToSharePayload(canvas, "pookie-track2-result.png", `내 AI 활용 역량은 ${grade}`, pookieShareText);
 }
 
 function createShareCanvas() {
