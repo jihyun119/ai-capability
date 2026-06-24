@@ -719,6 +719,566 @@
   }
 }
 
+/* 2026-06-24 final PC overrides */
+@media (min-width: 900px) {
+  .screen.active {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.h02-screen {
+    display: grid !important;
+    grid-template-columns: 488px 600px !important;
+    justify-content: center !important;
+    align-content: start !important;
+    column-gap: 112px !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 170px 120px 140px !important;
+  }
+
+  .screen.active.h02-screen .track-hero,
+  .screen.active.h02-screen .track-list {
+    transform: none !important;
+  }
+
+  .screen.active.t1-question-screen,
+  .screen.active[data-screen^="t2-q-"] {
+    min-height: 1024px !important;
+    padding: 160px 120px 160px !important;
+  }
+
+  .screen.active.t1-question-screen .question-error,
+  .screen.active[data-screen^="t2-q-"] .question-error {
+    display: block !important;
+    max-width: 900px !important;
+    margin: 28px auto 0 !important;
+    color: #ff4545 !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .screen.active.t1-question-screen .nav-buttons,
+  .screen.active[data-screen^="t2-q-"] .nav-buttons,
+  .screen.active.t1-paste-screen .nav-buttons,
+  .screen.active.t2-paste-screen .nav-buttons {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 46px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active.t1-question-screen .nav-buttons .cta,
+  .screen.active[data-screen^="t2-q-"] .nav-buttons .cta,
+  .screen.active.t1-paste-screen .nav-buttons .cta,
+  .screen.active.t2-paste-screen .nav-buttons .cta {
+    width: 100% !important;
+    max-width: 540px !important;
+    height: 90px !important;
+    margin: 0 !important;
+  }
+
+  .screen.active.t1-paste-screen .t1-answer-submit small,
+  .screen.active.t2-paste-screen .t2-answer-submit small {
+    display: none !important;
+  }
+
+  .screen.active.t1-paste-screen .form-error,
+  .screen.active.t2-paste-screen .form-error {
+    display: block !important;
+    max-width: 900px !important;
+    margin: 24px auto 0 !important;
+    color: #ff4545 !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+  }
+
+  .screen.active.t1-result-screen,
+  .screen.active.t2-result-screen {
+    overflow: visible !important;
+    padding-bottom: 160px !important;
+  }
+
+  .screen.active.t1-result-screen .t1-result-nav,
+  .screen.active.t2-result-screen .t2-result-nav {
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 54px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active.t1-result-screen .t1-result-nav .cta,
+  .screen.active.t2-result-screen .t2-result-nav .cta {
+    width: 100% !important;
+    max-width: 540px !important;
+    height: 90px !important;
+    margin: 0 !important;
+  }
+
+  .screen.active.t1-result-screen .t1-character-link,
+  .screen.active.t2-result-screen .t2-character-link {
+    display: flex !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 90px !important;
+    margin: 36px auto 0 !important;
+  }
+
+  .screen.active.t1-share-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 64px 0 96px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.t1-share-screen .share-top-bar {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    width: 352px !important;
+    height: 28px !important;
+    margin: 0 auto !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-card {
+    width: 352px !important;
+    max-width: 352px !important;
+    min-height: 597px !important;
+    margin: 24px auto 0 !important;
+    padding: 36px 24px 47px !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-nav {
+    display: grid !important;
+    grid-template-columns: 156px 156px !important;
+    gap: 40px !important;
+    width: 352px !important;
+    max-width: 352px !important;
+    margin: 22px auto 0 !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-nav .cta {
+    width: 156px !important;
+    height: 44px !important;
+    margin: 0 !important;
+  }
+
+  .screen.active.character-gallery-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 0 120px 120px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.character-gallery-screen .character-gallery-page {
+    width: 1200px !important;
+    max-width: 1200px !important;
+    margin: 150px auto 0 !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.character-gallery-screen .character-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 274px) !important;
+    justify-content: center !important;
+    gap: 28px 34px !important;
+    width: 1200px !important;
+  }
+
+  .screen.active.character-gallery-screen .character-tile {
+    width: 274px !important;
+    height: 274px !important;
+    min-height: 274px !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.character-gallery-screen .character-tile img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .menu-overlay.open .menu-panel {
+    width: 520px !important;
+    max-width: 520px !important;
+    padding: 56px 64px !important;
+  }
+
+  .menu-panel button:not(.menu-close) {
+    display: block !important;
+    width: 100% !important;
+    padding: 18px 0 !important;
+    border-bottom: 1px solid #ddd !important;
+    font-size: 22px !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* 2026-06-24 PC layout hardening */
+@media (min-width: 900px) {
+  .screen.active {
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .screen.active .top-bar {
+    position: absolute !important;
+    left: 120px !important;
+    right: 120px !important;
+    top: 64px !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 48px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 40 !important;
+  }
+
+  .screen.active .brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    width: auto !important;
+    height: 48px !important;
+  }
+
+  .screen.active .brand .logo-img {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+  }
+
+  .screen.active .brand span {
+    white-space: nowrap !important;
+  }
+
+  .screen.active .menu-button {
+    width: 48px !important;
+    height: 48px !important;
+    flex: 0 0 48px !important;
+  }
+
+  .screen.active.h02-screen {
+    display: grid !important;
+    grid-template-columns: 1fr 600px !important;
+    column-gap: 112px !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 170px 120px 135px !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .screen.active.h02-screen .track-hero {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    position: relative !important;
+    width: 488px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.h02-screen .track-title-row {
+    display: block !important;
+    width: 488px !important;
+    margin: 0 !important;
+  }
+
+  .screen.active.h02-screen .track-title-row h1 {
+    width: 488px !important;
+    margin: 0 !important;
+    font-size: 54px !important;
+    line-height: 1.22 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .screen.active.h02-screen .track-title-row .hero-character {
+    position: absolute !important;
+    left: 242px !important;
+    top: 118px !important;
+    width: 220px !important;
+    height: 220px !important;
+    object-fit: contain !important;
+  }
+
+  .screen.active.h02-screen .track-hero p {
+    width: 360px !important;
+    margin: 205px 0 0 !important;
+    font-size: 24px !important;
+    line-height: 1.35 !important;
+  }
+
+  .screen.active.h02-screen .track-list {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: grid !important;
+    gap: 32px !important;
+    width: 600px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.h02-screen .track-card {
+    width: 600px !important;
+    min-height: 154px !important;
+    padding: 28px 88px 28px 34px !important;
+    border: 2px solid #000 !important;
+    border-radius: 14px !important;
+    text-align: left !important;
+  }
+
+  .screen.active.h02-screen .track-card strong {
+    font-size: 32px !important;
+    line-height: 1.2 !important;
+  }
+
+  .screen.active.h02-screen .track-card small {
+    max-width: 400px !important;
+    font-size: 18px !important;
+    line-height: 1.35 !important;
+  }
+
+  .screen.active.h02-screen .track-note {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    margin: 40px auto 0 !important;
+    text-align: center !important;
+  }
+
+  .screen.active.h02-screen .site-footer {
+    grid-column: 1 / -1 !important;
+    width: 1440px !important;
+    max-width: 100vw !important;
+    margin: 40px -120px -135px !important;
+  }
+
+  .screen.active.t1-question-screen,
+  .screen.active[data-screen^="t2-q-"] {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 160px 120px 170px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.t1-question-screen .question-error,
+  .screen.active[data-screen^="t2-q-"] .question-error {
+    position: relative !important;
+    z-index: 35 !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 960px !important;
+    margin: 22px auto 0 !important;
+    color: #ff4545 !important;
+    font-size: 20px !important;
+    font-style: normal !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .screen.active.t1-question-screen .nav-buttons,
+  .screen.active[data-screen^="t2-q-"] .nav-buttons,
+  .screen.active.t1-paste-screen .nav-buttons,
+  .screen.active.t2-paste-screen .nav-buttons {
+    position: relative !important;
+    z-index: 30 !important;
+    display: grid !important;
+    grid-template-columns: 540px 540px !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: 1200px !important;
+    margin: 54px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active.t1-question-screen .nav-buttons .cta,
+  .screen.active[data-screen^="t2-q-"] .nav-buttons .cta,
+  .screen.active.t1-paste-screen .nav-buttons .cta,
+  .screen.active.t2-paste-screen .nav-buttons .cta {
+    width: 540px !important;
+    height: 90px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t1-paste-screen .t1-answer-submit small,
+  .screen.active.t2-paste-screen .t2-answer-submit small {
+    display: none !important;
+  }
+
+  .screen.active.t1-result-screen,
+  .screen.active.t2-result-screen {
+    overflow: visible !important;
+    padding-bottom: 150px !important;
+  }
+
+  .screen.active.t1-result-screen .t1-result-nav,
+  .screen.active.t2-result-screen .t2-result-nav {
+    clear: both !important;
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    display: grid !important;
+    grid-template-columns: 540px 540px !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: 1200px !important;
+    margin: 54px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t1-result-screen .t1-result-nav .cta,
+  .screen.active.t2-result-screen .t2-result-nav .cta {
+    width: 540px !important;
+    max-width: 540px !important;
+    height: 90px !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t1-result-screen .t1-character-link,
+  .screen.active.t2-result-screen .t2-character-link {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    display: flex !important;
+    width: 1200px !important;
+    max-width: 1200px !important;
+    height: 90px !important;
+    margin: 36px auto 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t2-result-screen .t2-result-content .t2-result-nav,
+  .screen.active.t2-result-screen .t2-result-content .t2-character-link {
+    grid-column: 1 / -1 !important;
+  }
+
+  .screen.active.t1-share-screen {
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 64px 0 96px !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .screen.active.t1-share-screen .share-top-bar,
+  .screen.active.t1-share-screen .t1-share-card,
+  .screen.active.t1-share-screen .t1-share-nav {
+    width: 352px !important;
+    max-width: 352px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-card {
+    min-height: 597px !important;
+    margin-top: 24px !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-nav {
+    display: grid !important;
+    grid-template-columns: 156px 156px !important;
+    gap: 40px !important;
+    margin-top: 22px !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-nav .cta {
+    width: 156px !important;
+    height: 44px !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+  }
+
+  .screen.active.character-gallery-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 0 120px 120px !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .screen.active.character-gallery-screen .character-gallery-page {
+    width: 1200px !important;
+    max-width: 1200px !important;
+    margin: 150px auto 0 !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.character-gallery-screen .character-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 28px 34px !important;
+    width: 1200px !important;
+  }
+
+  .screen.active.character-gallery-screen .character-card {
+    width: 274px !important;
+    min-height: 274px !important;
+    box-sizing: border-box !important;
+  }
+
+  .menu-overlay.open .menu-panel {
+    width: 520px !important;
+    max-width: 520px !important;
+    padding: 56px 64px !important;
+  }
+
+  .menu-panel button:not(.menu-close) {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 18px 0 !important;
+    border-bottom: 1px solid #ddd !important;
+    font-size: 22px !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+}
+
 @media (min-width: 900px) {
   .screen.active.t1-loading-screen,
   .screen.active.t2-loading-screen {
@@ -986,5 +1546,228 @@
 
   .screen.active.t2-result-screen .t2-feedback-list .t2-interview-card {
     min-height: 220px !important;
+  }
+}
+
+/* 2026-06-24 actual final PC overrides */
+@media (min-width: 900px) {
+  .screen.active {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.h02-screen {
+    display: grid !important;
+    grid-template-columns: 488px 600px !important;
+    justify-content: center !important;
+    column-gap: 112px !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 170px 120px 140px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.h02-screen .track-hero,
+  .screen.active.h02-screen .track-list {
+    transform: none !important;
+  }
+
+  .screen.active.t1-question-screen,
+  .screen.active[data-screen^="t2-q-"] {
+    min-height: 1024px !important;
+    padding: 160px 120px 160px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.t1-question-screen .question-error,
+  .screen.active[data-screen^="t2-q-"] .question-error {
+    display: block !important;
+    max-width: 900px !important;
+    margin: 28px auto 0 !important;
+    color: #ff4545 !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .screen.active.t1-question-screen .nav-buttons,
+  .screen.active[data-screen^="t2-q-"] .nav-buttons,
+  .screen.active.t1-paste-screen .nav-buttons,
+  .screen.active.t2-paste-screen .nav-buttons {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 46px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active.t1-question-screen .nav-buttons .cta,
+  .screen.active[data-screen^="t2-q-"] .nav-buttons .cta,
+  .screen.active.t1-paste-screen .nav-buttons .cta,
+  .screen.active.t2-paste-screen .nav-buttons .cta {
+    width: 100% !important;
+    max-width: 540px !important;
+    height: 90px !important;
+    margin: 0 !important;
+  }
+
+  .screen.active.t1-paste-screen .t1-answer-submit small,
+  .screen.active.t2-paste-screen .t2-answer-submit small {
+    display: none !important;
+  }
+
+  .screen.active.t1-paste-screen .form-error,
+  .screen.active.t2-paste-screen .form-error {
+    display: block !important;
+    max-width: 900px !important;
+    margin: 24px auto 0 !important;
+    color: #ff4545 !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+  }
+
+  .screen.active.t1-result-screen,
+  .screen.active.t2-result-screen {
+    overflow: visible !important;
+    padding-bottom: 160px !important;
+  }
+
+  .screen.active.t1-result-screen .t1-result-nav,
+  .screen.active.t2-result-screen .t2-result-nav {
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 54px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active.t1-result-screen .t1-result-nav .cta,
+  .screen.active.t2-result-screen .t2-result-nav .cta {
+    width: 100% !important;
+    max-width: 540px !important;
+    height: 90px !important;
+    margin: 0 !important;
+  }
+
+  .screen.active.t1-result-screen .t1-character-link,
+  .screen.active.t2-result-screen .t2-character-link {
+    display: flex !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 90px !important;
+    margin: 36px auto 0 !important;
+  }
+
+  .screen.active.t1-share-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 64px 0 96px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.t1-share-screen .share-top-bar {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    width: 352px !important;
+    height: 28px !important;
+    margin: 0 auto !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-card {
+    width: 352px !important;
+    max-width: 352px !important;
+    min-height: 597px !important;
+    margin: 24px auto 0 !important;
+    padding: 36px 24px 47px !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-nav {
+    display: grid !important;
+    grid-template-columns: 156px 156px !important;
+    gap: 40px !important;
+    width: 352px !important;
+    max-width: 352px !important;
+    margin: 22px auto 0 !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.t1-share-screen .t1-share-nav .cta {
+    width: 156px !important;
+    height: 44px !important;
+    margin: 0 !important;
+  }
+
+  .screen.active.character-gallery-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1024px !important;
+    padding: 0 120px 120px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.character-gallery-screen .character-gallery-page {
+    width: 1200px !important;
+    max-width: 1200px !important;
+    margin: 150px auto 0 !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.character-gallery-screen .character-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 274px) !important;
+    justify-content: center !important;
+    gap: 28px 34px !important;
+    width: 1200px !important;
+  }
+
+  .screen.active.character-gallery-screen .character-tile {
+    width: 274px !important;
+    height: 274px !important;
+    min-height: 274px !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.character-gallery-screen .character-tile img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .menu-overlay.open .menu-panel {
+    width: 520px !important;
+    max-width: 520px !important;
+    padding: 56px 64px !important;
+  }
+
+  .menu-panel button:not(.menu-close) {
+    display: block !important;
+    width: 100% !important;
+    padding: 18px 0 !important;
+    border-bottom: 1px solid #ddd !important;
+    font-size: 22px !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
   }
 }

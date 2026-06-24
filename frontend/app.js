@@ -972,7 +972,6 @@ function t1PasteScreen() {
       <img class="answer-example-image t1-example-image" src="./assets/track1-example.png" alt="AI 관계 유형 테스트 AI 답변 예시" />
       <span class="answer-example-caption">(예시 화면)</span>
       <textarea data-field="t1-paste" placeholder="여기에 AI가 답변한 JSON 또는 텍스트를 붙여넣어 주세요.">${escapeHtml(state.t1LlmText)}</textarea>
-      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
       ${state.t1Error ? `<em class="form-error">${state.t1Error}</em>` : ""}
     </section>
     <nav class="nav-buttons t1-answer-nav">
@@ -996,7 +995,6 @@ function t2PasteScreen() {
       <img class="answer-example-image t2-example-image" src="./assets/track2-example.png" alt="AI 활용 역량 테스트 AI 답변 예시" />
       <span class="answer-example-caption">(예시 화면)</span>
       <textarea data-field="t2-paste" placeholder="여기에 AI가 작성한 줄글 답변을 붙여넣어 주세요.">${escapeHtml(state.t2FreeText)}</textarea>
-      <small>답변이 길수록 유형 분석이 더 구체적일 수 있습니다.</small>
       ${state.t2Error ? `<em class="form-error">${state.t2Error}</em>` : ""}
     </section>
     <nav class="nav-buttons t2-answer-nav">
@@ -1138,6 +1136,7 @@ document.addEventListener("click", async (event) => {
   if (t1Answer) {
     state.t1Answers[t1Answer.dataset.t1Question] = Number(t1Answer.dataset.t1Answer);
     state.t1QuestionError = null;
+    t1Answer.closest(".screen")?.querySelector(".question-error")?.remove();
     t1Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
     t1Answer.classList.add("is-selected");
     return;
@@ -1147,6 +1146,7 @@ document.addEventListener("click", async (event) => {
   if (t2Answer) {
     state.t2Answers[t2Answer.dataset.t2Question] = t2Answer.dataset.t2Answer;
     state.t2QuestionError = null;
+    t2Answer.closest(".screen")?.querySelector(".question-error")?.remove();
     t2Answer.parentElement.querySelectorAll("button").forEach((buttonNode) => buttonNode.classList.remove("is-selected"));
     t2Answer.classList.add("is-selected");
     return;
@@ -1391,7 +1391,9 @@ async function submitTrack1() {
     });
 
     if (result.status !== "success") {
-      throw new Error(result.error?.message || "AI 관계 유형 테스트 분석에 실패했습니다.");
+      const apiError = new Error(result.error?.message || result.reason || "AI 관계 유형 테스트 분석에 실패했습니다.");
+      apiError.code = result.error?.code || result.status;
+      throw apiError;
     }
 
     state.t1Result = result;
@@ -1718,10 +1720,10 @@ async function createResultShareImage(track) {
     : document.querySelector('.screen.active[data-screen="t1-share"]')
       ? "t1-share"
       : "t1-result";
-  if (track === "track2") return createTrack2ShareImage();
   if (screenId === "t1-share") return createTrack1ShareImage();
 
-  const screenNode = document.querySelector(`.screen[data-screen="${screenId}"]`);
+  const screenNode = document.querySelector(`.screen.active[data-screen="${screenId}"]`) ||
+    document.querySelector(`.screen[data-screen="${screenId}"]`);
   const captureNode = screenId === "t1-share"
     ? screenNode?.querySelector("[data-share-capture]") || screenNode
     : screenNode;
@@ -1738,7 +1740,7 @@ async function createResultShareImage(track) {
     }
   }
 
-  return createTrack1ShareImage();
+  return track === "track2" ? createTrack2ShareImage() : createTrack1ShareImage();
 }
 
 async function createTrack1ShareImage() {
