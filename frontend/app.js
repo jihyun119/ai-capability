@@ -1841,19 +1841,15 @@ function normalizeShareKeywords(keywords) {
 
 async function createTrack2ShareImage() {
   const result = state.t2Result?.result || {};
-  const total = result.total ?? "--";
+  const total = Number.isFinite(Number(result.total)) ? Math.round(Number(result.total)) : "--";
   const grade = result.grade || "AI 활용 역량";
   const feedback = result.feedback || {};
+  const summary = feedback.summary || "AI 활용 진단 결과를 확인해보세요.";
+  const strength = feedback.strength || feedback.strengths?.[0]?.description || "강점 분석이 표시됩니다.";
+  const weakness = feedback.weakness || feedback.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.";
   const canvas = createShareCanvas();
   const ctx = canvas.getContext("2d");
-  drawShareBackground(ctx, canvas);
-  drawShareHeader(ctx, "AI 활용 역량 테스트");
-  drawCenteredText(ctx, "AI 활용 역량 점수", 220, 50, 400, "#111", "Pretendard");
-  drawCenteredText(ctx, `${total}점`, 340, 104, 800, "#000", "Pretendard");
-  drawCenteredText(ctx, grade, 430, 54, 800, "#7d39eb", "Pretendard");
-  drawCenteredMultilineText(ctx, feedback.summary || "AI 활용 진단 결과를 확인해보세요.", 540, 800, 38, 30, 400, "#111");
-  drawTrack2Axes(ctx, result.axes || {}, 120, 760);
-  drawShareFooter(ctx);
+  drawTrack2ShareCard(ctx, canvas, { total, grade, axes: result.axes || {}, summary, strength, weakness });
   return canvasToSharePayload(canvas, "pookie-track2-result.png", `내 AI 활용 역량은 ${grade}`, pookieShareText);
 }
 
@@ -1986,6 +1982,153 @@ function drawShareFooter(ctx) {
   drawCenteredText(ctx, "AI 시대에서 살아남기 · AI 활용역량 진단 테스트", 1332, 30, 800, "#000", "Pretendard");
 }
 
+function drawTrack2ShareCard(ctx, canvas, result) {
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#7d39eb";
+  roundRect(ctx, 72, 72, 56, 56, 8);
+  ctx.fill();
+  drawLogoEyes(ctx, 72, 72);
+  drawText(ctx, "푸키", 148, 113, 34, 800, "#000", "Paperlogy");
+  drawCloseIcon(ctx, 958, 80, 46);
+
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 3;
+  roundRect(ctx, 56, 164, 968, 548, 28);
+  ctx.stroke();
+
+  drawCenteredText(ctx, "당신의 AI 활용 역량 점수는", 260, 50, 300, "#111", "Pretendard");
+  drawCenteredText(ctx, `${result.total}점`, 344, 104, 800, "#000", "Unbounded");
+  drawTrack2RadarCanvas(ctx, result.axes, 294, 374, 492);
+
+  drawPill(ctx, result.grade, 326, 782, 428, 72, 36);
+  drawCenteredMultilineText(ctx, result.summary, 936, 840, 42, 32, 300, "#111");
+  drawTrack2FeedbackCard(ctx, 56, 1050, "Strength", "강점", result.strength);
+  drawTrack2FeedbackCard(ctx, 56, 1202, "Weakness", "약점", result.weakness);
+}
+
+function drawCloseIcon(ctx, x, y, size) {
+  ctx.save();
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + size, y + size);
+  ctx.moveTo(x + size, y);
+  ctx.lineTo(x, y + size);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPill(ctx, text, x, y, width, height, radius) {
+  ctx.fillStyle = "#c6ff33";
+  roundRect(ctx, x, y, width, height, radius);
+  ctx.fill();
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  drawCenteredText(ctx, text, y + 48, 32, 800, "#000", "Pretendard");
+}
+
+function drawTrack2FeedbackCard(ctx, x, y, labelEn, labelKo, body) {
+  ctx.fillStyle = "#fff";
+  roundRect(ctx, x, y, 968, 116, 16);
+  ctx.fill();
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.font = "800 30px Pretendard";
+  ctx.fillStyle = "#7d39eb";
+  ctx.textAlign = "left";
+  ctx.fillText(labelEn, x + 62, y + 44);
+  const labelWidth = ctx.measureText(labelEn).width;
+  ctx.fillStyle = "#000";
+  ctx.fillText(` ${labelKo}`, x + 62 + labelWidth, y + 44);
+
+  drawMultilineText(ctx, body, x + 62, y + 82, 820, 29, 24, 400, "#000", 2);
+}
+
+function drawTrack2RadarCanvas(ctx, axes, x, y, size) {
+  const axisOrder = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
+  const fallbackLabels = {
+    task_clarity: "작업 명확성",
+    context: "맥락 설명",
+    role: "역할 지정",
+    output_format: "출력 형식",
+    iteration: "반복 개선",
+    critical_review: "비판적 검토",
+  };
+  const centerX = x + size / 2;
+  const centerY = y + size / 2 + 14;
+  const maxRadius = size * 0.32;
+  const angles = [-90, -30, 30, 90, 150, 210];
+  const point = (rate, index) => {
+    const angle = (angles[index] * Math.PI) / 180;
+    const radius = maxRadius * rate;
+    return [centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius];
+  };
+
+  ctx.save();
+  ctx.strokeStyle = "#d9d9d9";
+  ctx.lineWidth = 2;
+  for (const rate of [0.2, 0.4, 0.6, 0.8]) {
+    const points = axisOrder.map((_, index) => point(rate, index));
+    drawPolygonPath(ctx, points);
+    ctx.stroke();
+  }
+  for (let index = 0; index < axisOrder.length; index += 1) {
+    const [axisX, axisY] = point(1, index);
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(axisX, axisY);
+    ctx.stroke();
+  }
+
+  const radarPoints = axisOrder.map((key, index) => point(Math.max(0, Math.min(1, Number(axes[key]?.rate) || 0)), index));
+  ctx.fillStyle = "#7d39eb";
+  drawPolygonPath(ctx, radarPoints);
+  ctx.fill();
+  ctx.strokeStyle = "#7d39eb";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  ctx.fillStyle = "#000";
+  for (const [dotX, dotY] of radarPoints) {
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const labelPositions = [
+    [centerX, y + 10, "center"],
+    [x + size - 10, y + 145, "right"],
+    [x + size - 10, y + 340, "right"],
+    [centerX, y + size - 4, "center"],
+    [x + 10, y + 340, "left"],
+    [x + 10, y + 145, "left"],
+  ];
+  ctx.font = "500 22px Pretendard";
+  ctx.fillStyle = "#000";
+  axisOrder.forEach((key, index) => {
+    const [labelX, labelY, align] = labelPositions[index];
+    ctx.textAlign = align;
+    ctx.fillText(axes[key]?.label || fallbackLabels[key], labelX, labelY);
+  });
+  ctx.restore();
+}
+
+function drawPolygonPath(ctx, points) {
+  ctx.beginPath();
+  points.forEach(([x, y], index) => {
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+}
+
 async function drawTrack1ShareCard(ctx, canvas, typeName, keywords, description) {
   const descriptionLines = String(description || "")
     .split("\n")
@@ -2099,6 +2242,16 @@ function drawCenteredMultilineText(ctx, text, y, maxWidth, lineHeight, fontSize,
     ctx.fillText(line, 540, y + index * lineHeight);
   });
   ctx.textAlign = "left";
+}
+
+function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight, fontSize, fontWeight, color, maxLines = 5) {
+  const lines = wrapText(ctx, String(text || "").replace(/\n+/g, " "), maxWidth, fontSize, fontWeight);
+  ctx.font = `${fontWeight} ${fontSize}px Pretendard`;
+  ctx.fillStyle = color;
+  ctx.textAlign = "left";
+  lines.slice(0, maxLines).forEach((line, index) => {
+    ctx.fillText(line, x, y + index * lineHeight);
+  });
 }
 
 function drawCenteredText(ctx, text, y, fontSize, fontWeight, color, fontFamily) {
