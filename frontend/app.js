@@ -180,6 +180,7 @@ const state = {
   currentScreen: "home",
   user: null,
   respondent: null,
+  respondentPromise: null,
   t1Answers: {},
   t1QuestionError: null,
   t1LlmText: "",
@@ -433,7 +434,7 @@ const t1UserPrompt = `Analyze the USER's interaction style based on past convers
   "tags": ["keyword1", "keyword2", "keyword3"]
 }`;
 
-const MIN_RESULT_LOADING_MS = 4500;
+const MIN_RESULT_LOADING_MS = 1200;
 
 function t1CopyScreen() {
   return screen(
@@ -608,7 +609,7 @@ function t2ShareScreen() {
       <button class="cta secondary" type="button" data-save-result="track2">이미지 저장</button>
       <button class="cta" type="button" data-share-result="track2">공유하기</button>
     </nav>`,
-    "compact-screen t1-share-screen t2-share-screen"
+    "compact-screen t2-share-screen"
   );
 }
 
@@ -1153,7 +1154,20 @@ function showScreen(name) {
   document.querySelectorAll(".screen").forEach((screenNode) => {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
   });
+  resetViewportPosition();
+}
+
+function resetViewportPosition() {
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  app.scrollTo?.({ top: 0, left: 0, behavior: "auto" });
   app.scrollTop = 0;
+  app.scrollLeft = 0;
+  window.scrollTo?.({ top: 0, left: 0, behavior: "auto" });
+  requestAnimationFrame(() => {
+    app.scrollTop = 0;
+    app.scrollLeft = 0;
+    window.scrollTo?.(0, 0);
+  });
 }
 
 function clearQuestionErrorOutsideScreen(name) {
@@ -1307,7 +1321,7 @@ document.addEventListener("click", async (event) => {
 
   if (target.matches("[data-login-next]")) {
     try {
-      await prepareRespondent(target.closest(".login-screen"));
+      beginPrepareRespondent(target.closest(".login-screen"));
     } catch (error) {
       alert(error.message || "사용자 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
       return;
@@ -1458,6 +1472,7 @@ async function submitTrack1() {
   showScreen("t1-loading");
 
   try {
+    await ensureRespondentReady();
     const result = await postJson("/api/track1/submit", {
       ...respondentPayload(),
       questionnaireVersion: "track1-12",
@@ -1514,6 +1529,7 @@ async function submitTrack2() {
   showScreen("t2-loading");
 
   try {
+    await ensureRespondentReady();
     const result = await postJson("/api/track2/submit", {
       ...respondentPayload(),
       answers: state.t2Answers,
@@ -1627,7 +1643,27 @@ function fireAndForgetPostJson(url, payload) {
   });
 }
 
-async function prepareRespondent(screenNode) {
+function beginPrepareRespondent(screenNode) {
+  const user = readRespondentInput(screenNode);
+
+  if (
+    state.respondent?.nickname === user.nickname
+    && state.respondent?.birthYear === user.birthYear
+    && state.respondent?.gender === user.gender
+  ) {
+    state.respondentPromise = null;
+    return state.respondent;
+  }
+
+  state.respondentPromise = createRespondent(user).catch((error) => {
+    console.error("[respondent]", error);
+    state.respondentPromise = null;
+    return null;
+  });
+  return state.respondentPromise;
+}
+
+function readRespondentInput(screenNode) {
   const nickname = screenNode?.querySelector(".nickname-input input")?.value.trim();
   if (!nickname) throw new Error("닉네임을 입력해 주세요.");
 
@@ -1639,17 +1675,14 @@ async function prepareRespondent(screenNode) {
   const birth = birthYear;
 
   state.user = { nickname, birth, birthYear: Number(birthYear) || null, gender: gender || null };
+  return state.user;
+}
 
-  if (
-    state.respondent?.nickname === nickname
-    && state.respondent?.birthYear === state.user.birthYear
-    && state.respondent?.gender === state.user.gender
-  ) return state.respondent;
-
+async function createRespondent(user) {
   const respondent = await postJson("/api/respondents", {
-    nickname,
-    birthYear: state.user.birthYear,
-    gender: state.user.gender,
+    nickname: user.nickname,
+    birthYear: user.birthYear,
+    gender: user.gender,
   });
   if (respondent.status !== "success") {
     throw new Error(respondent.error?.message || "응시자 정보를 생성하지 못했습니다.");
@@ -1658,12 +1691,26 @@ async function prepareRespondent(screenNode) {
   state.respondent = {
     respondentId: respondent.respondentId,
     accessToken: respondent.accessToken,
-    nickname: respondent.nickname || nickname,
-    birthYear: respondent.birthYear || state.user.birthYear,
-    gender: respondent.gender || state.user.gender,
+    nickname: respondent.nickname || user.nickname,
+    birthYear: respondent.birthYear || user.birthYear,
+    gender: respondent.gender || user.gender,
   };
+  state.respondentPromise = null;
 
   return state.respondent;
+}
+
+async function ensureRespondentReady() {
+  if (state.respondent?.respondentId && state.respondent?.accessToken) return state.respondent;
+  if (state.respondentPromise) {
+    const respondent = await state.respondentPromise;
+    if (respondent?.respondentId && respondent?.accessToken) return respondent;
+  }
+  if (state.user?.nickname) {
+    state.respondentPromise = createRespondent(state.user);
+    return await state.respondentPromise;
+  }
+  return null;
 }
 
 function respondentPayload() {
@@ -1998,9 +2045,9 @@ function drawTrack2ShareCard(ctx, canvas, result) {
   roundRect(ctx, 56, 164, 968, 548, 28);
   ctx.stroke();
 
-  drawCenteredText(ctx, "당신의 AI 활용 역량 점수는", 260, 50, 300, "#111", "Pretendard");
-  drawCenteredText(ctx, `${result.total}점`, 344, 104, 800, "#000", "Unbounded");
-  drawTrack2RadarCanvas(ctx, result.axes, 294, 374, 492);
+  drawCenteredText(ctx, "당신의 AI 활용 역량 점수는", 255, 48, 300, "#111", "Pretendard");
+  drawCenteredText(ctx, `${result.total}점`, 338, 98, 800, "#000", "Unbounded");
+  drawTrack2RadarCanvas(ctx, result.axes, 390, 390, 300);
 
   drawPill(ctx, result.grade, 326, 782, 428, 72, 36);
   drawCenteredMultilineText(ctx, result.summary, 936, 840, 42, 32, 300, "#111");

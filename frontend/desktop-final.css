@@ -719,6 +719,110 @@
   }
 }
 
+@media (min-width: 900px) {
+  .screen.active.t2-share-screen {
+    width: 1440px !important;
+    min-width: 1440px !important;
+    min-height: 1061px !important;
+    padding: 64px 20px 0 !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.t2-share-screen .share-export,
+  .screen.active.t2-share-screen .share-top-bar,
+  .screen.active.t2-share-screen .t2-share-content,
+  .screen.active.t2-share-screen .t2-score-card,
+  .screen.active.t2-share-screen .t2-result-summary,
+  .screen.active.t2-share-screen .t2-feedback-list,
+  .screen.active.t2-share-screen .t2-share-nav {
+    width: 352px !important;
+    max-width: 352px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .screen.active.t2-share-screen .share-export {
+    width: 353px !important;
+    max-width: 353px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-share-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin-top: 27px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-score-card {
+    height: 396px !important;
+    padding: 31px 0 0 !important;
+    border-radius: 10px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-score-card > p {
+    font-size: 24px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-score-card > h1 {
+    margin-top: 3px !important;
+    font-size: 48px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-score-card .radar-chart {
+    width: 270px !important;
+    height: 270px !important;
+    margin-top: 1px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-grade-pill {
+    width: 158px !important;
+    height: 40px !important;
+    margin: 34px auto 0 !important;
+    font-size: 20px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-result-summary {
+    margin-top: 31px !important;
+    font-size: 16px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-feedback-list {
+    display: grid !important;
+    gap: 10px !important;
+    margin-top: 31px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-feedback-list article {
+    width: 352px !important;
+    min-height: 107px !important;
+    padding: 20px 23px 18px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-feedback-list h2 {
+    font-size: 18px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-feedback-list .t2-feedback-body {
+    font-size: 14px !important;
+  }
+
+  .screen.active.t2-share-screen .t2-share-nav {
+    display: grid !important;
+    grid-template-columns: 156px 156px !important;
+    gap: 40px !important;
+    margin-top: 46px !important;
+    padding: 0 !important;
+  }
+
+  .screen.active.t2-share-screen .t2-share-nav .cta {
+    width: 156px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+  }
+}
+
 /* 2026-06-24 final PC overrides */
 @media (min-width: 900px) {
   .screen.active {
@@ -938,6 +1042,23 @@
     line-height: 1.2 !important;
     text-align: left !important;
     white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .screen.active.t2-share-screen .t2-score-card {
+    width: 352px !important;
+    max-width: 352px !important;
+    height: 396px !important;
+    min-height: 396px !important;
+    margin: 0 auto !important;
+    padding: 31px 0 0 !important;
+  }
+
+  .screen.active.t2-share-screen .t2-score-card .radar-chart {
+    width: 270px !important;
+    height: 270px !important;
+    margin: 1px auto 0 !important;
   }
 }
 
