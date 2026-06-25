@@ -30,8 +30,8 @@ const BINARY_THRESHOLDS = {
 };
 
 const SCORE_WEIGHTS = {
-  questionnaire: 0.5,
-  prompt: 0.5
+  questionnaire: 0.7,
+  prompt: 0.3
 };
 
 const AXIS_LABELS = {

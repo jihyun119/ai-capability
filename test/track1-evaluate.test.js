@@ -198,7 +198,7 @@ test("returns the schema-aligned Track 1 API response shape", () => {
   });
   assert.deepEqual(result.axisScores.C, {
     label: "신뢰도",
-    score: 56,
+    score: 57,
     level: "중간",
     gauge: "■■■■■■░░░░"
   });
@@ -232,8 +232,8 @@ test("can include DB/debug fields when requested", () => {
 
   assert.deepEqual(result.scoreBreakdown.final, {
     A: 92,
-    B: 27,
-    C: 56,
+    B: 26,
+    C: 57,
     D: 92
   });
   assert.deepEqual(result.sourceTags, ["workflow-heavy", "task-focused", "directive"]);
