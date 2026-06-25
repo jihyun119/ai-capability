@@ -7071,3 +7071,32 @@ input {
     grid-column: 1 / -1 !important;
   }
 }
+
+/* 2026-06-25 final mobile viewport scroll guard */
+@media (max-width: 899px) {
+  html,
+  body {
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .app-shell {
+    width: min(393px, 100vw) !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .screen.active {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
