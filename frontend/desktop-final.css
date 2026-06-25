@@ -1045,6 +1045,525 @@
   }
 }
 
+/* 2026-06-25 final-order guard for Track2 desktop screens */
+@media (min-width: 900px) {
+  .screen.active[data-screen^="t2-q-"],
+  .screen.active.t2-copy-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1180px !important;
+    margin: 0 auto !important;
+    padding: 0 120px 120px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .desktop-page-footer,
+  .screen.active.t2-copy-screen .desktop-page-footer {
+    display: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area,
+  .screen.active.t2-copy-screen .t2-copy-mission {
+    position: static !important;
+    display: block !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 132px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .progress-label,
+  .screen.active.t2-copy-screen .progress-label {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 0 auto 20px !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .progress,
+  .screen.active.t2-copy-screen .progress {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 30px !important;
+    margin: 0 auto !important;
+    border-radius: 999px !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area h1,
+  .screen.active.t2-copy-screen .t2-copy-mission h1 {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 980px !important;
+    max-width: 100% !important;
+    margin: 64px auto 0 !important;
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area > p,
+  .screen.active.t2-copy-screen .t2-copy-mission > p {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 900px !important;
+    max-width: 100% !important;
+    margin: 30px auto 0 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    text-align: center !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .answer-list {
+    display: grid !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 56px auto 0 !important;
+    gap: 28px !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .answer-list button {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 108px !important;
+    padding: 28px 72px !important;
+    border: 1px solid #000 !important;
+    border-radius: 10px !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-prompt-card {
+    position: static !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 360px !important;
+    min-height: 360px !important;
+    margin: 40px auto 0 !important;
+    padding: 42px 64px !important;
+    border: 1px solid #000 !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-prompt-card textarea {
+    display: block !important;
+    width: 100% !important;
+    height: 220px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    text-align: left !important;
+    resize: none !important;
+    overflow: auto !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-copy-button {
+    width: 360px !important;
+    height: 64px !important;
+    margin: 22px auto 0 !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .nav-buttons,
+  .screen.active.t2-copy-screen .t1-copy-nav {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 56px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .nav-buttons .cta,
+  .screen.active.t2-copy-screen .t1-copy-nav .cta {
+    width: 100% !important;
+    height: 90px !important;
+    margin: 0 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+  }
+
+  .screen.active.t2-result-screen {
+    overflow: visible !important;
+  }
+
+  .screen.active.t2-result-screen .top-bar {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 40px !important;
+    margin: 64px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    z-index: 2 !important;
+  }
+
+  .screen.active.t2-result-screen .brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    height: 40px !important;
+  }
+
+  .screen.active.t2-result-screen .brand .logo-img {
+    display: block !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+  }
+
+  .screen.active.t2-result-screen .brand span {
+    display: block !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+  }
+
+  .screen.active.t2-result-screen .t2-result-content {
+    margin-top: 44px !important;
+  }
+
+  .screen.active.t2-result-screen .t2-feedback-list .t2-feedback-body {
+    font-family: PretendardBold, Pretendard, sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    color: #000 !important;
+    word-break: keep-all !important;
+  }
+}
+
+/* 2026-06-25 Track2 desktop stability fixes */
+@media (min-width: 900px) {
+  .screen.active[data-screen^="t2-q-"] {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1180px !important;
+    margin: 0 auto !important;
+    padding: 0 120px 120px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .desktop-page-footer {
+    display: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area {
+    position: static !important;
+    display: block !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 132px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .progress-label {
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 0 auto 20px !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .progress {
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 30px !important;
+    margin: 0 auto !important;
+    border-radius: 999px !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area h1 {
+    width: 980px !important;
+    max-width: 100% !important;
+    margin: 64px auto 0 !important;
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area > p {
+    width: 900px !important;
+    max-width: 100% !important;
+    margin: 24px auto 0 !important;
+    font-size: 24px !important;
+    line-height: 1.45 !important;
+    text-align: center !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .answer-list {
+    display: grid !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 56px auto 0 !important;
+    gap: 28px !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .answer-list button {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 108px !important;
+    padding: 28px 72px !important;
+    border: 1px solid #000 !important;
+    border-radius: 10px !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .nav-buttons {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 56px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .nav-buttons .cta {
+    width: 100% !important;
+    height: 90px !important;
+    margin: 0 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+  }
+
+  .screen.active.t2-copy-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1180px !important;
+    margin: 0 auto !important;
+    padding: 0 120px 120px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active.t2-copy-screen .desktop-page-footer {
+    display: none !important;
+  }
+
+  .screen.active.t2-copy-screen .t2-copy-mission {
+    position: static !important;
+    display: block !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 132px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active.t2-copy-screen .progress-label {
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 0 auto 20px !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .screen.active.t2-copy-screen .progress {
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 30px !important;
+    margin: 0 auto !important;
+    border-radius: 999px !important;
+  }
+
+  .screen.active.t2-copy-screen .t2-copy-mission h1 {
+    width: 960px !important;
+    max-width: 100% !important;
+    margin: 64px auto 0 !important;
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active.t2-copy-screen .t2-copy-mission > p {
+    width: 760px !important;
+    max-width: 100% !important;
+    margin: 36px auto 0 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    text-align: center !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-prompt-card {
+    position: static !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 360px !important;
+    min-height: 360px !important;
+    margin: 40px auto 0 !important;
+    padding: 42px 64px !important;
+    border: 1px solid #000 !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-prompt-card textarea {
+    display: block !important;
+    width: 100% !important;
+    height: 220px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    text-align: left !important;
+    resize: none !important;
+    overflow: auto !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-copy-button {
+    width: 360px !important;
+    height: 64px !important;
+    margin: 22px auto 0 !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-copy-nav {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 56px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-copy-nav .cta {
+    width: 100% !important;
+    height: 90px !important;
+    margin: 0 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+  }
+
+  .screen.active.t2-result-screen {
+    overflow: visible !important;
+    padding-top: 0 !important;
+  }
+
+  .screen.active.t2-result-screen .top-bar {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 40px !important;
+    margin: 64px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    z-index: 2 !important;
+  }
+
+  .screen.active.t2-result-screen .brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    height: 40px !important;
+  }
+
+  .screen.active.t2-result-screen .brand .logo-img {
+    display: block !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+  }
+
+  .screen.active.t2-result-screen .brand span {
+    display: block !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+  }
+
+  .screen.active.t2-result-screen .t2-result-content {
+    margin-top: 44px !important;
+  }
+
+  .screen.active.t2-result-screen .t2-feedback-list .t2-feedback-body {
+    font-family: PretendardBold, Pretendard, sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    color: #000 !important;
+    word-break: keep-all !important;
+  }
+}
+
 @media (min-width: 900px) {
   .screen.active.t2-share-screen .t2-score-card {
     width: 352px !important;
@@ -1890,5 +2409,216 @@
     line-height: 1.2 !important;
     text-align: left !important;
     white-space: nowrap !important;
+  }
+}
+
+/* 2026-06-25 final-order guard for Track2 desktop screens */
+@media (min-width: 900px) {
+  .screen.active[data-screen^="t2-q-"],
+  .screen.active.t2-copy-screen {
+    display: block !important;
+    width: 1440px !important;
+    max-width: 100% !important;
+    min-height: 1180px !important;
+    margin: 0 auto !important;
+    padding: 0 120px 120px !important;
+    overflow: visible !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .desktop-page-footer,
+  .screen.active.t2-copy-screen .desktop-page-footer {
+    display: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area,
+  .screen.active.t2-copy-screen .t2-copy-mission {
+    position: static !important;
+    display: block !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 132px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .progress-label,
+  .screen.active.t2-copy-screen .progress-label {
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 0 auto 20px !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .progress,
+  .screen.active.t2-copy-screen .progress {
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 30px !important;
+    margin: 0 auto !important;
+    border-radius: 999px !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area h1,
+  .screen.active.t2-copy-screen .t2-copy-mission h1 {
+    width: 980px !important;
+    max-width: 100% !important;
+    margin: 64px auto 0 !important;
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .question-area > p,
+  .screen.active.t2-copy-screen .t2-copy-mission > p {
+    width: 900px !important;
+    max-width: 100% !important;
+    margin: 30px auto 0 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    text-align: center !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .answer-list {
+    display: grid !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 56px auto 0 !important;
+    gap: 28px !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .answer-list button {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 108px !important;
+    padding: 28px 72px !important;
+    border: 1px solid #000 !important;
+    border-radius: 10px !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-prompt-card {
+    position: static !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 360px !important;
+    min-height: 360px !important;
+    margin: 40px auto 0 !important;
+    padding: 42px 64px !important;
+    border: 1px solid #000 !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-prompt-card textarea {
+    display: block !important;
+    width: 100% !important;
+    height: 220px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    text-align: left !important;
+    resize: none !important;
+    overflow: auto !important;
+  }
+
+  .screen.active.t2-copy-screen .t1-copy-button {
+    width: 360px !important;
+    height: 64px !important;
+    margin: 22px auto 0 !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .nav-buttons,
+  .screen.active.t2-copy-screen .t1-copy-nav {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 540px) minmax(0, 540px) !important;
+    justify-content: center !important;
+    gap: 120px !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    margin: 56px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .screen.active[data-screen^="t2-q-"] .nav-buttons .cta,
+  .screen.active.t2-copy-screen .t1-copy-nav .cta {
+    width: 100% !important;
+    height: 90px !important;
+    margin: 0 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+  }
+
+  .screen.active.t2-result-screen {
+    overflow: visible !important;
+  }
+
+  .screen.active.t2-result-screen .top-bar {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 1200px !important;
+    max-width: calc(100vw - 240px) !important;
+    height: 40px !important;
+    margin: 64px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    z-index: 2 !important;
+  }
+
+  .screen.active.t2-result-screen .brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    height: 40px !important;
+  }
+
+  .screen.active.t2-result-screen .brand .logo-img {
+    display: block !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+  }
+
+  .screen.active.t2-result-screen .brand span {
+    display: block !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+  }
+
+  .screen.active.t2-result-screen .t2-result-content {
+    margin-top: 44px !important;
+  }
+
+  .screen.active.t2-result-screen .t2-feedback-list .t2-feedback-body {
+    font-family: PretendardBold, Pretendard, sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 1.45 !important;
+    color: #000 !important;
+    word-break: keep-all !important;
   }
 }
