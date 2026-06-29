@@ -635,6 +635,7 @@ function t1ResultScreen() {
   ];
   const axisDisplayLabels = { A: "의존도", B: "친밀도", C: "신뢰도", D: "통제력" };
   const reasonStory = Array.isArray(card.reasonStory) ? card.reasonStory : [];
+  const evidenceNotice = card.evidenceNotice ? `<p class="t1-evidence-note">${escapeHtml(card.evidenceNotice)}</p>` : "";
 
   return screen(
     "t1-result",
@@ -658,7 +659,7 @@ function t1ResultScreen() {
         <h2>왜 이 유형이 나왔나요?</h2>
         <p>${reasonStory.length ? reasonStory.map(escapeHtml).join("<br />") : "AI 사용 패턴과 답변 근거를 종합해 유형을 분류했습니다."}</p>
       </article>
-      <p class="t1-evidence-note">${escapeHtml(card.evidenceNotice || "확인된 대화 기록 기반 결과입니다.")}</p>
+      ${evidenceNotice}
     </section>
     <nav class="nav-buttons t1-result-nav">
       <button class="cta secondary" type="button" data-share-open="track1">공유하기</button>

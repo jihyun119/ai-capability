@@ -204,7 +204,7 @@ test("returns the schema-aligned Track 1 API response shape", () => {
   });
   assert.equal(result.resultCard.title, "선긋는 상사형");
   assert.deepEqual(result.resultCard.keywords, ["업무형", "거리두기", "명확한지시"]);
-  assert.equal(result.resultCard.evidenceNotice, "확인된 대화 기록 기반 결과입니다.");
+  assert.equal(result.resultCard.evidenceNotice, null);
   assert.equal(result.scoreBreakdown, undefined);
 });
 

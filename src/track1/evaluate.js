@@ -558,7 +558,7 @@ function buildResultCard(type, canonical) {
     description: copy.description,
     keywords: copy.keywords,
     reasonStory: copy.reason,
-    evidenceNotice: evidenceNoticeKo(canonical.evidence_mode)
+    evidenceNotice: null
   };
 }
 
@@ -633,16 +633,6 @@ function uiLevel(score) {
   if (score <= 44) return "낮음";
   if (score <= 64) return "중간";
   return "높음";
-}
-
-function evidenceNoticeKo(evidenceMode) {
-  const notices = {
-    minimal: "대화 기록이 적어 추정에 가깝습니다.",
-    memory_or_impression: "기억 기반 분석으로 실제와 다를 수 있습니다.",
-    self_report: "입력된 자기 설명을 바탕으로 가볍게 추정했어요.",
-    visible_history: "확인된 대화 기록 기반 결과입니다."
-  };
-  return notices[evidenceMode] || null;
 }
 
 function clamp(value, min, max) {
