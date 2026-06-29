@@ -5258,10 +5258,14 @@ input {
   .app-shell {
     width: 100%;
     max-width: 393px;
-    height: auto;
+    height: 100dvh;
     min-height: 100dvh;
+    max-height: 100dvh;
     margin: 0 auto;
-    overflow-y: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     box-shadow: none;
   }
 
@@ -5409,6 +5413,11 @@ input {
     width: 100vw;
     height: 100dvh;
     min-height: 100dvh;
+    max-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     box-shadow: none;
   }
 }
@@ -7069,34 +7078,5 @@ input {
 
   .t2-character-link {
     grid-column: 1 / -1 !important;
-  }
-}
-
-/* 2026-06-25 final mobile viewport scroll guard */
-@media (max-width: 899px) {
-  html,
-  body {
-    width: 100% !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    overflow: hidden !important;
-  }
-
-  .app-shell {
-    width: min(393px, 100vw) !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
-    margin: 0 auto !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .screen.active {
-    min-height: 100dvh !important;
-    height: auto !important;
-    overflow: visible !important;
   }
 }
