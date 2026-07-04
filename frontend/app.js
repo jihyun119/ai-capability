@@ -434,7 +434,7 @@ const t1UserPrompt = `Analyze the USER's interaction style based on past convers
   "tags": ["keyword1", "keyword2", "keyword3"]
 }`;
 
-const MIN_RESULT_LOADING_MS = 1200;
+const MIN_RESULT_LOADING_MS = 4200;
 
 function t1CopyScreen() {
   return screen(
@@ -1469,6 +1469,13 @@ async function submitTrack1() {
     return;
   }
 
+  if (looksLikeTrack1Prompt(state.t1LlmText)) {
+    state.t1Error = "프롬프트 원문이 아니라, AI가 작성한 답변을 그대로 붙여넣어 주세요.";
+    render();
+    showScreen("t1-paste");
+    return;
+  }
+
   const loadingStartedAt = Date.now();
   showScreen("t1-loading");
 
@@ -1558,6 +1565,20 @@ function looksLikeTrack2Prompt(text) {
   return t2PromptMarkers.filter((marker) => lower.includes(marker)).length >= 2;
 }
 
+function looksLikeTrack1Prompt(text) {
+  const lower = String(text || "").toLowerCase();
+  const markers = [
+    "analyze the user's interaction style",
+    "core guidelines",
+    "dimensions to assess",
+    "logic & calibration rules",
+    "strict json schema",
+    "return exactly 3 short english behavior tags",
+    "do not explain this prompt",
+  ];
+  return markers.filter((marker) => lower.includes(marker)).length >= 2;
+}
+
 function waitForMinimumLoading(startedAt, minMs = MIN_RESULT_LOADING_MS) {
   const remaining = minMs - (Date.now() - startedAt);
   if (remaining <= 0) return Promise.resolve();
@@ -1591,7 +1612,12 @@ function friendlyTrack1Error(error) {
     code === "PROMPT_PASTED",
     /not enough evidence/i.test(message),
     /insufficient_history/i.test(message),
+    /insufficient history/i.test(message),
+    /minimal history/i.test(message),
     /status가 success/i.test(message),
+    /success 또는 insufficient_history/i.test(message),
+    /ai가 반환한 답변/i.test(message),
+    /프롬프트 원문/i.test(message),
     /schema/i.test(message),
     /signals/i.test(message),
     /confidence/i.test(message),
