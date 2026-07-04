@@ -932,6 +932,51 @@ mark {
   }
 }
 
+@media (max-width: 899px) {
+  html,
+  body {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    background: var(--white) !important;
+  }
+
+  body {
+    display: block !important;
+  }
+
+  .app-shell {
+    width: min(393px, 100vw) !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  .screen.active {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .h01-screen.active,
+  .h02-screen.active,
+  .t1-intro-screen.active,
+  .t2-intro-screen.active {
+    min-height: 920px !important;
+  }
+
+  .t1-result-screen.active,
+  .t2-result-screen.active,
+  .t1-share-screen.active,
+  .t2-share-screen.active {
+    min-height: 100dvh !important;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
 @media (min-width: 900px) {
   .t1-loading-screen,
   .t2-loading-screen {
