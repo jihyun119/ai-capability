@@ -719,6 +719,8 @@ img {
   margin-top: 24px;
   font-size: 24px;
   line-height: 1.25;
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 
 .t1-question-guide {
@@ -794,6 +796,8 @@ img {
   font-weight: 700;
   line-height: 1.35;
   text-align: left;
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 
 .screen[data-screen^="t2-q"] .answer-list button {
@@ -812,7 +816,7 @@ img {
   position: relative;
   display: block;
   width: var(--mobile-inner);
-  height: 384px;
+  height: 456px;
   margin: 38px auto 0;
   border: 1px solid #000;
   border-radius: 12px;
@@ -823,13 +827,27 @@ img {
 .t1-scale-card p {
   position: absolute;
   left: 50%;
-  width: 315px;
+  width: 300px;
   margin: 0;
   color: #000;
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 400 !important;
   line-height: 1.18;
+  word-break: keep-all;
+  overflow-wrap: normal;
   transform: translateX(-50%);
+}
+
+.t1-scale-card p.is-long {
+  width: 306px;
+  font-size: 19px;
+  line-height: 1.16;
+}
+
+.t1-scale-card p.is-very-long {
+  width: 312px;
+  font-size: 18px;
+  line-height: 1.15;
 }
 
 .t1-scale-a {
@@ -843,7 +861,7 @@ img {
 .t1-scale-row {
   position: absolute;
   left: 50%;
-  top: 98px;
+  top: 152px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -867,7 +885,7 @@ img {
 .t1-scale-arrow {
   position: absolute;
   left: calc(50% + 64px);
-  top: 108px;
+  top: 162px;
   width: 12px;
   height: 162px;
   border-left: 2px dashed #adadad;
@@ -1053,6 +1071,44 @@ img {
   font-weight: 700;
 }
 
+.t2-loading-screen .loading-steps {
+  position: relative;
+  display: block;
+  width: min(310px, 100%);
+  min-height: 26px;
+}
+
+.t2-loading-screen .loading-steps li {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: loading-step-rotate 4.8s infinite;
+}
+
+.t2-loading-screen .loading-steps li:nth-child(2) {
+  animation-delay: 1.2s;
+}
+
+.t2-loading-screen .loading-steps li:nth-child(3) {
+  animation-delay: 2.4s;
+}
+
+.t2-loading-screen .loading-steps li:nth-child(4) {
+  animation-delay: 3.6s;
+}
+
+@keyframes loading-step-rotate {
+  0%,
+  20% {
+    opacity: 1;
+  }
+
+  25%,
+  100% {
+    opacity: 0;
+  }
+}
+
 .t1-result-content,
 .t2-result-content {
   display: flex;
@@ -1095,6 +1151,16 @@ img {
   line-height: 1;
 }
 
+.t1-result-card h1 {
+  max-width: 290px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 34px;
+  line-height: 1.16;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
 .result-character {
   width: 210px;
   margin: 24px auto 0;
@@ -1122,20 +1188,26 @@ img {
 }
 
 .scores p {
+  display: grid;
+  grid-template-columns: minmax(132px, auto) 1fr;
+  align-items: center;
+  gap: 16px;
   margin: 0;
 }
 
 .scores span {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 4px;
   font-size: 15px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .scores i {
   display: block;
-  height: 12px;
-  margin-top: 8px;
+  height: 24px;
+  margin-top: 0;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--purple) var(--score), #ddd 0);
 }
@@ -1532,6 +1604,10 @@ img {
     min-height: 100svh;
   }
 
+  .screen.active.compact-screen {
+    padding-bottom: calc(48px + env(safe-area-inset-bottom));
+  }
+
   .top-bar {
     width: var(--mobile-inner);
     height: 24px;
@@ -1766,6 +1842,10 @@ img {
     word-break: keep-all;
   }
 
+  .compact-screen .nav-buttons {
+    margin-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+
   .intro-hero {
     margin-top: 31px;
     text-align: left;
@@ -1816,6 +1896,86 @@ img {
     min-height: 300px;
     border-radius: 12px;
     font-size: 13px;
+  }
+
+  .t1-copy-screen .t1-copy-mission,
+  .t2-copy-screen .t2-copy-mission {
+    margin-top: 31px;
+  }
+
+  .t1-copy-screen .progress-label,
+  .t2-copy-screen .progress-label {
+    margin: 0 0 3px;
+    color: #8a8d96;
+    font-size: 15px;
+    line-height: 18px;
+    text-align: left;
+  }
+
+  .t1-copy-screen .progress,
+  .t2-copy-screen .progress {
+    height: 11px;
+  }
+
+  .t1-copy-screen .t1-copy-mission h1,
+  .t2-copy-screen .t2-copy-mission h1 {
+    margin-top: 37px;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 36px;
+  }
+
+  .t1-copy-screen .t1-copy-mission p,
+  .t2-copy-screen .t2-copy-mission p {
+    margin-top: 34px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  .t1-copy-screen .t1-prompt-card,
+  .t2-copy-screen .t1-prompt-card {
+    margin-top: 37px;
+    padding: 36px 22px;
+    border: 1px solid #000;
+    border-radius: 10px;
+  }
+
+  .t1-copy-screen .t1-prompt-card textarea,
+  .t2-copy-screen .t1-prompt-card textarea {
+    min-height: 200px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    resize: none;
+  }
+
+  .t1-copy-screen .t1-copy-button,
+  .t2-copy-screen .t1-copy-button {
+    width: 228px;
+    min-height: 44px;
+    margin: 22px auto 0;
+    border: 0;
+    border-radius: 8px;
+    background: var(--lime);
+    color: #000;
+    white-space: nowrap;
+  }
+
+  .t1-copy-screen .t1-copy-nav,
+  .t2-copy-screen .t1-copy-nav {
+    margin-top: 31px;
+    margin-bottom: calc(32px + env(safe-area-inset-bottom));
+  }
+
+  .t1-copy-screen .t1-copy-nav .cta,
+  .t2-copy-screen .t1-copy-nav .cta {
+    padding: 0 10px;
+    font-size: 14px;
+    white-space: nowrap;
   }
 
   .t1-answer-submit textarea,

@@ -476,7 +476,7 @@ function t1CopyScreen() {
       </article>
     </section>
     <nav class="nav-buttons t1-copy-nav">
-      ${button("이전", "t1-q-12", "secondary")}
+      ${button("이전", `t1-q-${t1Questions.length}`, "secondary")}
       ${button("답변 붙여넣으러 가기", "t1-paste")}
     </nav>
     ${desktopFooter()}`,
@@ -737,7 +737,7 @@ function t2QuestionScreens() {
   return t2Questions
     .map((question, index) => {
       const n = index + 1;
-      return questionScreen("t2", n, 4, `${question.label}<br />${question.title}`, question.options, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === 4 ? "t2-prompt" : `t2-q-${n + 1}`);
+      return questionScreen("t2", n, 4, question.title, question.options, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === 4 ? "t2-prompt" : `t2-q-${n + 1}`);
     })
     .join("");
 }
@@ -922,11 +922,7 @@ function t3Screens() {
       <p class="eyebrow">Beta Notice</p>
       <h1>AI 실무 적용 테스트는<br />준비 중이에요</h1>
       <p>이번 베타에서는 AI 관계 유형 테스트와 AI 활용 역량 테스트를 먼저 완성합니다.<br />직무별 실전 시나리오 평가는 이후 버전에서 공개할게요.</p>
-    </section>
-    <nav class="nav-buttons">
-      ${button("Track 선택", "track", "secondary")}
-      ${button("AI 활용 역량 테스트 보기", "t2-intro")}
-    </nav>`,
+    </section>`,
     "compact-screen"
   );
 }
