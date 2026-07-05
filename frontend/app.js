@@ -361,7 +361,7 @@ function t1QuestionScreen(question, index, total, prev, next) {
       <h1>${question.heading}</h1>
       <p class="t1-question-guide">아래 두 문장을 비교한 뒤,<br />현재 나와 더 가까운 정도를 선택해주세요.</p>
       <article class="t1-scale-card">
-        <p class="t1-scale-a">${formatT1ScaleText(question.a)}</p>
+        <p class="t1-scale-a ${t1ScaleTextClass(question.a)}">${formatT1ScaleText(question.a)}</p>
         <div class="t1-scale-row">
           ${[1, 2, 3, 4, 5].map((value) => {
             const selected = state.t1Answers[`Q${index}`] === value ? " class=\"is-selected\"" : "";
@@ -369,7 +369,7 @@ function t1QuestionScreen(question, index, total, prev, next) {
           }).join("")}
         </div>
         <div class="t1-scale-arrow" aria-hidden="true"><span></span></div>
-        <p class="t1-scale-b">${formatT1ScaleText(question.b)}</p>
+        <p class="t1-scale-b ${t1ScaleTextClass(question.b)}">${formatT1ScaleText(question.b)}</p>
       </article>
       ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
     </section>
@@ -388,6 +388,13 @@ function formatT1ScaleText(text) {
     "나는 AI 없이 하루를 보내면 뭔가 빠진 느낌이 든다": "나는 AI없이<br />하루를 보내면<br />뭔가 빠진 느낌이 든다",
   };
   return fixed[text] || text;
+}
+
+function t1ScaleTextClass(text) {
+  const length = text.replace(/\s/g, "").length;
+  if (length >= 34) return "is-very-long";
+  if (length >= 24) return "is-long";
+  return "";
 }
 
 function t1QuestionScreens() {

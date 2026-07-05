@@ -1880,14 +1880,36 @@ img {
     word-break: keep-all;
   }
 
+  .t1-question-screen .t1-scale-card p.is-long {
+    width: 260px;
+    font-size: 24px;
+    line-height: 1.18;
+  }
+
+  .t1-question-screen .t1-scale-card p.is-very-long {
+    width: 300px;
+    font-size: 22px;
+    line-height: 1.15;
+  }
+
   .t1-question-screen .t1-scale-a {
     left: 0;
     width: 171px;
   }
 
+  .t1-question-screen .t1-scale-a.is-long,
+  .t1-question-screen .t1-scale-a.is-very-long {
+    left: 0;
+  }
+
   .t1-question-screen .t1-scale-b {
     right: -3px;
     width: 256px;
+  }
+
+  .t1-question-screen .t1-scale-b.is-long,
+  .t1-question-screen .t1-scale-b.is-very-long {
+    right: -3px;
   }
 
   .t1-question-screen .t1-scale-row {
