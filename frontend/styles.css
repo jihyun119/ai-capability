@@ -1296,19 +1296,22 @@ img {
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1181px) {
   html {
     overflow-y: scroll;
     scrollbar-gutter: stable;
   }
 
   .screen.active {
-    width: 100%;
-    min-height: 100vh;
+    --pc-content-left: max(40px, calc((100% - var(--pc-inner)) / 2));
+    width: min(1440px, 100%);
+    min-height: 1024px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .top-bar {
-    width: min(var(--pc-inner), calc(100vw - 80px));
+    width: min(var(--pc-inner), calc(100% - 80px));
     height: 39px;
     margin-top: 65px;
   }
@@ -1367,19 +1370,20 @@ img {
   .screen.active.h02-screen,
   .screen.active.t1-intro-screen,
   .screen.active.t2-intro-screen {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 504px) 92px minmax(0, 601px) minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    justify-content: center;
-    align-content: start;
+    position: relative;
+    display: block;
+    min-height: 1024px;
   }
 
   .h01-screen-v2 .top-bar,
   .h02-screen .top-bar,
   .t1-intro-screen .top-bar,
   .t2-intro-screen .top-bar {
-    grid-column: 2 / 5;
-    grid-row: 1;
+    position: absolute;
+    left: var(--pc-content-left);
+    top: 65px;
+    width: min(var(--pc-inner), calc(100% - 80px));
+    margin: 0;
   }
 
   .home-content-v2,
@@ -1394,23 +1398,32 @@ img {
   .h02-screen .track-hero,
   .t1-intro-screen .intro-hero,
   .t2-intro-screen .intro-hero {
-    grid-column: 2;
-    grid-row: 2;
+    position: absolute;
+    left: var(--pc-content-left);
+    top: 162px;
+    margin: 0;
   }
 
   .desktop-home-tracks,
   .h02-screen .track-list,
   .t1-intro-screen .info-list,
   .t2-intro-screen .info-list {
-    grid-column: 4;
-    grid-row: 2;
+    position: absolute;
+    left: calc(var(--pc-content-left) + 596px);
+    top: 162px;
     width: 601px;
-    margin: 58px 0 0;
+    margin: 0;
+  }
+
+  .t1-intro-screen .info-list,
+  .t2-intro-screen .info-list {
+    left: calc(var(--pc-content-left) + 599px);
+    top: 149px;
   }
 
   .desktop-home-tracks h2 {
     display: block;
-    margin: 0 0 28px;
+    margin: 0 0 37px;
     font-size: 42px;
     font-weight: 400;
     line-height: 1.2;
@@ -1481,6 +1494,11 @@ img {
     text-align: left;
   }
 
+  .t1-intro-screen .intro-hero h1 br,
+  .t2-intro-screen .intro-hero h1 br {
+    display: none;
+  }
+
   .track-hero {
     text-align: left;
   }
@@ -1500,26 +1518,31 @@ img {
   }
 
   .desktop-intro-characters {
-    position: relative;
+    position: absolute;
+    left: 52px;
+    top: 230px;
     display: block;
-    width: 460px;
-    height: 300px;
-    margin-top: 20px;
+    width: 457px;
+    height: 298px;
+    margin: 0;
   }
 
   .desktop-intro-character {
     position: absolute;
-    width: 250px;
+    height: auto;
+    object-fit: contain;
   }
 
   .desktop-intro-character-a {
     left: 0;
     top: 0;
+    width: 263px;
   }
 
   .desktop-intro-character-b {
-    right: 0;
-    top: 42px;
+    left: 207px;
+    top: 41px;
+    width: 250px;
   }
 
   .info-list {
@@ -1532,23 +1555,30 @@ img {
   }
 
   .intro-start {
-    grid-column: 2 / 5;
-    grid-row: 3;
-    width: min(var(--pc-inner), calc(100vw - 80px));
+    position: absolute;
+    left: var(--pc-content-left);
+    top: 737px;
+    width: min(var(--pc-inner), calc(100% - 80px));
     min-height: 90px;
-    margin: 46px auto 0;
+    margin: 0;
     border-radius: 8px;
     font-size: 24px;
+  }
+
+  .t1-intro-screen .intro-start,
+  .t2-intro-screen .intro-start {
+    margin: 0;
   }
 
   .h01-screen-v2 .footer,
   .h02-screen .footer,
   .t1-intro-screen .footer,
   .t2-intro-screen .footer {
-    grid-column: 1 / -1;
-    grid-row: 4;
-    justify-self: stretch;
+    position: absolute;
+    left: 0;
+    top: 889px;
     width: 100%;
+    margin: 0;
   }
 
   .login-content {
@@ -1774,61 +1804,5 @@ img {
 
   .character-grid {
     grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 900px) and (max-width: 1180px) {
-  .screen.active.h01-screen-v2,
-  .screen.active.h02-screen,
-  .screen.active.t1-intro-screen,
-  .screen.active.t2-intro-screen {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr);
-  }
-
-  .h01-screen-v2 .home-content-v2,
-  .h02-screen .track-hero,
-  .t1-intro-screen .intro-hero,
-  .t2-intro-screen .intro-hero,
-  .desktop-home-tracks,
-  .h02-screen .track-list,
-  .t1-intro-screen .info-list,
-  .t2-intro-screen .info-list {
-    grid-column: 2;
-    width: min(720px, calc(100vw - 80px));
-  }
-
-  .desktop-home-tracks,
-  .h02-screen .track-list,
-  .t1-intro-screen .info-list,
-  .t2-intro-screen .info-list {
-    grid-row: 3;
-    margin-top: 44px;
-  }
-
-  .intro-start {
-    grid-row: 4;
-  }
-
-  .h01-screen-v2 .footer,
-  .h02-screen .footer,
-  .t1-intro-screen .footer,
-  .t2-intro-screen .footer {
-    grid-row: 5;
-  }
-
-  .t1-result-content,
-  .t2-result-content {
-    grid-template-columns: minmax(0, 720px);
-    width: min(720px, calc(100vw - 80px));
-  }
-
-  .t1-result-content .result-card,
-  .t2-result-content .t2-score-card,
-  .t2-grade-pill,
-  .t2-result-summary,
-  .t2-feedback-list,
-  .scores,
-  .t1-result-info {
-    grid-column: 1;
   }
 }
