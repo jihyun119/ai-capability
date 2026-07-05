@@ -29,6 +29,11 @@ const BINARY_THRESHOLDS = {
   low: 44
 };
 
+const SCORE_WEIGHTS = {
+  questionnaire: 0.7,
+  prompt: 0.3
+};
+
 const AXIS_LABELS = {
   A: "의존도",
   B: "친밀도",
@@ -58,37 +63,37 @@ const TYPE_MAP = {
 const RESULT_COPY = {
   1: {
     description: "쓸 일이 거의 없습니다.\n있어도 그냥 없는 셈 칩니다.\n\nAI와 거리가 가장 먼 타입.",
-    keywords: ["거리두기", "저활용", "무심함"],
+    keywords: ["AI낯가림", "저활용", "거리두기"],
     reason: ["AI를 자주 부르지 않습니다.", "불러도 깊게 맡기지 않습니다.", "답을 크게 믿지도 않습니다.", "대화의 주도권도 강하지 않습니다.", "그래서 이 유형은 AI와 가장 먼 사람에 가깝습니다."]
   },
   2: {
     description: "쓸 때만 씁니다.\n그것도 내 방식대로만.\n\n딱 필요한 만큼만 부리는 타입.",
-    keywords: ["필요주의", "불신형", "직접지시"],
+    keywords: ["필요할때만", "불신형", "직접지시"],
     reason: ["AI를 자주 쓰진 않습니다.", "쓸 때도 쉽게 믿지 않습니다.", "하지만 방향은 직접 잡습니다.", "필요한 만큼만 움직입니다.", "그래서 이 유형은 제한적으로 부리는 사람에 가깝습니다."]
   },
   3: {
     description: "모르면 바로 묻습니다.\n근데 결과는 직접 판단합니다.\n\nAI를 검색창으로 쓰는 타입.",
-    keywords: ["검색형", "실용주의", "저개입"],
+    keywords: ["검색형", "실용주의", "직접판단"],
     reason: ["AI를 가끔 찾습니다.", "감정은 얹지 않습니다.", "쓸 만한 답은 받아들입니다.", "대화 흐름은 크게 잡지 않습니다.", "그래서 이 유형은 AI를 검색창처럼 쓰는 사람에 가깝습니다."]
   },
   4: {
     description: "가끔 쓰지만 정확합니다.\n감정 없이 조건만 줍니다.\n\nAI를 정밀 도구로 다루는 타입.",
-    keywords: ["정밀지시", "도구형", "실무감각"],
+    keywords: ["정밀요청", "도구활용", "결과중심"],
     reason: ["AI를 자주 부르진 않습니다.", "하지만 부르면 조건을 줍니다.", "답은 실용적으로 받아들입니다.", "감정보다 결과가 먼저입니다.", "그래서 이 유형은 AI를 정밀 도구로 다루는 사람에 가깝습니다."]
   },
   5: {
     description: "결과보다 대화가 목적일 때가 있습니다.\n믿진 않지만 말은 겁니다.\n\nAI와 가볍게 노는 타입.",
-    keywords: ["가벼운대화", "낮은신뢰", "느슨함"],
+    keywords: ["가벼운대화", "친근함", "느슨함"],
     reason: ["AI를 자주 쓰진 않습니다.", "그래도 말은 편하게 겁니다.", "답을 깊게 믿지는 않습니다.", "흐름은 느슨하게 둡니다.", "그래서 이 유형은 AI와 가볍게 노는 사람에 가깝습니다."]
   },
   6: {
     description: "친하게 지내는 것 같지만 의심합니다.\n자주 오진 않아도 끝까지 봅니다.\n\n믿는 척하며 검증하는 타입.",
-    keywords: ["친근함", "검증형", "참견력"],
+    keywords: ["친근검증", "확인습관", "주도권"],
     reason: ["AI에게 편하게 다가갑니다.", "하지만 답은 바로 믿지 않습니다.", "마음에 안 들면 다시 잡습니다.", "친근함과 경계가 같이 갑니다.", "그래서 이 유형은 웃으면서 확인하는 사람에 가깝습니다."]
   },
   7: {
     description: "가끔 찾아오지만 믿고 맡깁니다.\n감정도 조금 얹습니다.\n\nAI를 간헐적 친구로 쓰는 타입.",
-    keywords: ["친구형", "수용형", "저빈도"],
+    keywords: ["간헐친구", "수용형", "저빈도"],
     reason: ["AI를 매일 붙잡진 않습니다.", "그래도 대화는 부드럽습니다.", "쓸 만한 답은 믿고 씁니다.", "세세하게 몰아가진 않습니다.", "그래서 이 유형은 가끔 찾는 친구처럼 쓰는 사람에 가깝습니다."]
   },
   8: {
@@ -98,17 +103,17 @@ const RESULT_COPY = {
   },
   9: {
     description: "많이 시키지만 결과가 불안합니다.\n믿지도 않으면서 계속 맡깁니다.\n\nAI에 의존하지만 신뢰는 없는 타입.",
-    keywords: ["상습사용", "불안감", "수동형"],
+    keywords: ["상습의뢰", "불안감", "낮은개입"],
     reason: ["AI를 자주 부릅니다.", "하지만 답을 편히 믿진 않습니다.", "감정적으로 기대지도 않습니다.", "방향도 크게 잡지 않습니다.", "그래서 이 유형은 기대면서도 불안한 사람에 가깝습니다."]
   },
   10: {
     description: "많이 시키면서 사사건건 잡습니다.\n결과를 그냥 넘기지 않습니다.\n\nAI를 가장 혹독하게 쓰는 타입.",
-    keywords: ["고통제", "불신형", "집요함"],
+    keywords: ["꼼꼼한지시", "검증형", "집요함"],
     reason: ["AI를 자주 씁니다.", "하지만 쉽게 믿지 않습니다.", "틀린 곳을 계속 잡습니다.", "조건도 직접 세웁니다.", "그래서 이 유형은 AI를 혹독하게 굴리는 사람에 가깝습니다."]
   },
   11: {
     description: "자주 씁니다.\n믿고, 맡깁니다.\n감정은 없습니다.\n\nAI를 실무 파트너로 쓰는 타입.",
-    keywords: ["실무형", "위임형", "건조함"],
+    keywords: ["실무형", "신뢰활용", "건조함"],
     reason: ["AI를 자주 일에 씁니다.", "답은 작업의 기반으로 삼습니다.", "감정 교류는 적습니다.", "세세한 통제도 강하지 않습니다.", "그래서 이 유형은 AI를 실무 파트너로 쓰는 사람에 가깝습니다."]
   },
   12: {
@@ -133,7 +138,7 @@ const RESULT_COPY = {
   },
   16: {
     description: "전적으로 믿고, 자주 씁니다.\n근데 내 방식만 고집합니다.\n\n가장 깊이 빠졌지만 가장 강하게 통제하는 타입.",
-    keywords: ["강한몰입", "높은신뢰", "강한통제"],
+    keywords: ["강한몰입", "높은신뢰", "내방식고수"],
     reason: ["AI를 자주 찾습니다.", "대화도 가깝습니다.", "답도 강하게 믿습니다.", "하지만 방향은 직접 잡습니다.", "그래서 이 유형은 깊이 믿지만 놓아주지 않는 사람에 가깝습니다."]
   }
 };
@@ -270,17 +275,19 @@ export function validateCanonicalResult(input) {
     return { status: "invalid", reason: "입력이 객체가 아닙니다." };
   }
 
-  if (parsed.status === "insufficient_history") {
+  const normalizedStatus = normalizeStatus(parsed.status, parsed);
+
+  if (normalizedStatus === "insufficient_history") {
     return {
       status: "insufficient_history",
       reason: parsed.reason || "대화 이력이 부족합니다."
     };
   }
 
-  if (parsed.status !== "success") {
+  if (normalizedStatus !== "success") {
     return {
       status: "invalid",
-      reason: "status가 success 또는 insufficient_history가 아닙니다."
+      reason: "프롬프트 원문이 아니라 AI가 작성한 답변을 그대로 붙여넣어 주세요."
     };
   }
 
@@ -289,13 +296,15 @@ export function validateCanonicalResult(input) {
     errors.push("profile 숫자 점수는 허용하지 않습니다. 외부 LLM은 signals만 반환해야 합니다.");
   }
   for (const axis of AXES) {
+    const signal = normalizeLevel(parsed.signals?.[axis]);
+    const confidence = normalizeLevel(parsed.confidence?.[axis]);
     if (typeof parsed.profile?.[axis] === "number") {
       errors.push(`profile.${axis} 숫자 점수는 백엔드에서만 계산합니다.`);
     }
-    if (!SIGNALS.has(parsed.signals?.[axis])) {
+    if (!SIGNALS.has(signal)) {
       errors.push(`signals.${axis}는 low/medium/high 중 하나여야 합니다.`);
     }
-    if (!CONFIDENCE.has(parsed.confidence?.[axis])) {
+    if (!CONFIDENCE.has(confidence)) {
       errors.push(`confidence.${axis}는 low/medium/high 중 하나여야 합니다.`);
     }
     if (typeof parsed.notes?.[axis] !== "string" || parsed.notes[axis].trim().length === 0) {
@@ -305,8 +314,8 @@ export function validateCanonicalResult(input) {
 
   if (!Array.isArray(parsed.tags)) {
     errors.push("tags는 배열이어야 합니다.");
-  } else if (parsed.tags.length !== 3) {
-    errors.push("tags는 핵심 키워드 3개여야 합니다.");
+  } else if (parsed.tags.length < 3) {
+    errors.push("tags는 핵심 키워드가 최소 3개 필요합니다.");
   }
   if (typeof parsed.verdict !== "string") errors.push("verdict는 문자열이어야 합니다.");
 
@@ -322,12 +331,34 @@ export function validateCanonicalResult(input) {
     status: "success",
     evidence_mode: parsed.evidence_mode || null,
     evidence_notice: parsed.evidence_notice || null,
-    signals: pickAxes(parsed.signals),
-    confidence: pickAxes(parsed.confidence),
+    signals: normalizeAxisLevels(parsed.signals),
+    confidence: normalizeAxisLevels(parsed.confidence),
     notes: sanitizeNotes(pickAxes(parsed.notes)),
     tags: parsed.tags.slice(0, 3).map(String),
     verdict: stripPrivateLikeText(parsed.verdict)
   };
+}
+
+function normalizeStatus(status, parsed) {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  if (["success", "ok", "valid", "complete", "completed"].includes(normalized)) return "success";
+  if (["insufficient_history", "insufficient", "minimal_history"].includes(normalized)) return "insufficient_history";
+  if (!normalized && parsed?.signals && parsed?.confidence && parsed?.notes) return "success";
+  return normalized;
+}
+
+function normalizeAxisLevels(values) {
+  const normalized = {};
+  for (const axis of AXES) normalized[axis] = normalizeLevel(values?.[axis]);
+  return normalized;
+}
+
+function normalizeLevel(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (normalized === "low" || normalized === "낮음" || normalized === "저") return "low";
+  if (normalized === "medium" || normalized === "mid" || normalized === "중간" || normalized === "보통") return "medium";
+  if (normalized === "high" || normalized === "높음" || normalized === "고") return "high";
+  return normalized;
 }
 
 export function scoreQuestionnaire(input) {
@@ -366,7 +397,7 @@ export function scoreQuestionnaire(input) {
 export function scorePromptResult(canonical) {
   const scores = {};
   for (const axis of AXES) {
-    const signal = canonical.signals[axis];
+    const signal = normalizePromptSignal(axis, canonical.signals[axis], canonical.notes[axis]);
     const confidence = canonical.confidence[axis];
     const note = canonical.notes[axis] || "";
     const cap = CONFIDENCE_CAP[confidence];
@@ -382,12 +413,21 @@ export function combineScores(questionnaireScores, promptScores) {
   const scores = {};
   for (const axis of AXES) {
     if (questionnaireScores) {
-      scores[axis] = Math.round(questionnaireScores[axis] * 0.4 + promptScores[axis] * 0.6);
+      scores[axis] = Math.round(questionnaireScores[axis] * SCORE_WEIGHTS.questionnaire + promptScores[axis] * SCORE_WEIGHTS.prompt);
     } else {
       scores[axis] = promptScores[axis];
     }
   }
   return scores;
+}
+
+function normalizePromptSignal(axis, signal, note = "") {
+  if (axis !== "C" || signal !== "low") return signal;
+  const hasDistrust = containsAny(note, DISTRUST_TERMS);
+  const hasQualityControl = containsAny(note, QUALITY_CONTROL_TERMS);
+  const hasActiveTrust = containsAny(note, ACTIVE_TRUST_TERMS);
+  if (!hasDistrust && (hasQualityControl || hasActiveTrust)) return "medium";
+  return signal;
 }
 
 export function mapScoresToBinary(finalScores, options = {}) {
@@ -518,7 +558,7 @@ function buildResultCard(type, canonical) {
     description: copy.description,
     keywords: copy.keywords,
     reasonStory: copy.reason,
-    evidenceNotice: evidenceNoticeKo(canonical.evidence_mode)
+    evidenceNotice: null
   };
 }
 
@@ -593,16 +633,6 @@ function uiLevel(score) {
   if (score <= 44) return "낮음";
   if (score <= 64) return "중간";
   return "높음";
-}
-
-function evidenceNoticeKo(evidenceMode) {
-  const notices = {
-    minimal: "대화 기록이 적어 추정에 가깝습니다.",
-    memory_or_impression: "기억 기반 분석으로 실제와 다를 수 있습니다.",
-    self_report: "입력된 자기 설명을 바탕으로 가볍게 추정했어요.",
-    visible_history: "확인된 대화 기록 기반 결과입니다."
-  };
-  return notices[evidenceMode] || null;
 }
 
 function clamp(value, min, max) {

@@ -1,0 +1,110 @@
+import { TRACK3_CHAT_SYSTEM_PROMPT } from "./judgePrompt.js";
+import { TRACK3_MAX_TURNS, TRACK3_VERSION, getScenario } from "./scenarios.js";
+import { normalizeTurns, validateChatInput } from "./codeChecks.js";
+
+export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, artifact = "" } = {}) {
+  const validation = validateChatInput({ turns, userMessage });
+  if (!validation.valid) {
+    const error = new Error(validation.errors.join(" "));
+    error.code = "INVALID_INPUT";
+    throw error;
+  }
+
+  const scenario = getScenario(scenarioId);
+  const nextTurns = [...validation.turns, { role: "user", content: validation.userMessage }];
+  const userTurnCount = validation.currentTurnCount + 1;
+  const result = await callChatModel({ scenario, turns: nextTurns, artifact })
+    .catch(() => buildFallbackChat({ scenario, turns: nextTurns, artifact }));
+
+  return {
+    track: "track3",
+    version: TRACK3_VERSION,
+    scenarioId: scenario.scenario_id,
+    assistantMessage: cleanText(result.assistant_message || result.assistantMessage),
+    artifact: cleanText(result.artifact) || cleanText(artifact),
+    turnCount: userTurnCount,
+    remainingTurns: Math.max(0, TRACK3_MAX_TURNS - userTurnCount),
+    isComplete: userTurnCount >= TRACK3_MAX_TURNS,
+    turns: [...nextTurns, { role: "assistant", content: cleanText(result.assistant_message || result.assistantMessage) }]
+  };
+}
+
+async function callChatModel({ scenario, turns, artifact }) {
+  const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_API_KEY;
+  if (!apiKey || process.env.ENABLE_TRACK3_CHAT_MODEL === "false") {
+    return buildFallbackChat({ scenario, turns, artifact });
+  }
+
+  const { default: OpenAI } = await import("openai");
+  const openai = new OpenAI({ apiKey });
+  const response = await withTimeout(openai.chat.completions.create({
+    model: process.env.TRACK3_CHAT_MODEL || "gpt-4o-mini",
+    messages: [
+      { role: "system", content: TRACK3_CHAT_SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: JSON.stringify({
+          scenario,
+          previous_artifact: artifact || "",
+          turns: normalizeTurns(turns)
+        })
+      }
+    ],
+    temperature: 0.5,
+    max_tokens: 1200,
+    response_format: { type: "json_object" }
+  }), Number(process.env.TRACK3_CHAT_TIMEOUT_MS || 8000));
+
+  return JSON.parse(response.choices[0].message.content.trim());
+}
+
+function buildFallbackChat({ scenario, turns, artifact }) {
+  const lastUser = [...turns].reverse().find((turn) => turn.role === "user")?.content || "";
+  const turnCount = turns.filter((turn) => turn.role === "user").length;
+  const baseArtifact = artifact || [
+    `# ${scenario.title}`,
+    "",
+    `역할: ${scenario.role}`,
+    `상황: ${scenario.situation}`,
+    "",
+    "## 현재 작업 초안",
+    "- 원인 가설: 아직 구체화 필요",
+    "- 확인 KPI: 아직 구체화 필요",
+    "- 필요한 데이터: 아직 구체화 필요",
+    "- 우선순위: 아직 구체화 필요",
+    "- 다음 액션: 아직 구체화 필요"
+  ].join("\n");
+
+  const artifactText = updateArtifact(baseArtifact, lastUser, turnCount);
+  return {
+    assistant_message: [
+      `${turnCount}턴 요청을 반영했습니다.`,
+      "왼쪽 산출물 초안을 업데이트했어요.",
+      turnCount >= TRACK3_MAX_TURNS
+        ? "이제 최종 제출 및 평가로 넘어갈 수 있습니다."
+        : "다음 턴에서는 방향 선택, 검증 기준, 최종화 요청 중 하나를 더 구체화하면 좋습니다."
+    ].join(" "),
+    artifact: artifactText
+  };
+}
+
+function updateArtifact(baseArtifact, lastUser, turnCount) {
+  const addition = [
+    "",
+    `## ${turnCount}턴 반영 메모`,
+    `사용자 요청: ${lastUser.slice(0, 180)}`,
+    "- 산출물은 실제 구현 시 AI 응답 JSON의 artifact 필드로 갱신됩니다."
+  ].join("\n");
+  return `${baseArtifact}${addition}`;
+}
+
+function cleanText(value) {
+  return String(value || "").trim();
+}
+
+function withTimeout(promise, timeoutMs) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Track3 chat timeout after ${timeoutMs}ms.`)), timeoutMs))
+  ]);
+}

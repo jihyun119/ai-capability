@@ -56,14 +56,24 @@ test("rejects numeric profile output from the external user LLM", () => {
   assert.match(result.errors.join("\n"), /profile 숫자 점수는 허용하지 않습니다/);
 });
 
-test("requires exactly three source tags", () => {
+test("trims extra source tags to three", () => {
   const result = validateCanonicalResult({
     ...baseSuccess,
     tags: ["one", "two", "three", "four"]
   });
 
+  assert.equal(result.status, "success");
+  assert.deepEqual(result.tags, ["one", "two", "three"]);
+});
+
+test("requires at least three source tags", () => {
+  const result = validateCanonicalResult({
+    ...baseSuccess,
+    tags: ["one", "two"]
+  });
+
   assert.equal(result.status, "invalid");
-  assert.match(result.errors.join("\n"), /tags는 핵심 키워드 3개/);
+  assert.match(result.errors.join("\n"), /tags는 핵심 키워드가 최소 3개/);
 });
 
 test("scores 12-question questionnaire answers by axis", () => {
@@ -188,13 +198,13 @@ test("returns the schema-aligned Track 1 API response shape", () => {
   });
   assert.deepEqual(result.axisScores.C, {
     label: "신뢰도",
-    score: 56,
+    score: 57,
     level: "중간",
     gauge: "■■■■■■░░░░"
   });
   assert.equal(result.resultCard.title, "선긋는 상사형");
   assert.deepEqual(result.resultCard.keywords, ["업무형", "거리두기", "명확한지시"]);
-  assert.equal(result.resultCard.evidenceNotice, "확인된 대화 기록 기반 결과입니다.");
+  assert.equal(result.resultCard.evidenceNotice, null);
   assert.equal(result.scoreBreakdown, undefined);
 });
 
@@ -222,8 +232,8 @@ test("can include DB/debug fields when requested", () => {
 
   assert.deepEqual(result.scoreBreakdown.final, {
     A: 92,
-    B: 27,
-    C: 56,
+    B: 26,
+    C: 57,
     D: 92
   });
   assert.deepEqual(result.sourceTags, ["workflow-heavy", "task-focused", "directive"]);

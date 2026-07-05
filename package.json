@@ -6,6 +6,15 @@
   "scripts": {
     "track1:backend": "node scripts/track1-backend-evaluate.js",
     "track1:backend:sample": "node scripts/track1-backend-evaluate.js examples/track1/sample_success.json --questionnaire examples/track1/sample_questionnaire_answers.json",
-    "test": "node --test"
+    "track1:e2e": "node scripts/track1-e2e-test.js",
+    "track2:test": "node scripts/track2-test-scorer.js",
+    "track2:e2e": "node scripts/track2-e2e-test.js",
+    "track3:demo": "node scripts/track3-demo-test.js",
+    "frontend:preview": "node frontend/preview-server.cjs",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "openai": "^4.52.0"
   }
 }

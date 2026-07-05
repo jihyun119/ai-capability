@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "Q1": "D",
+    "Q2": "D",
+    "Q3": "B",
+    "Q4": "C"
+  },
+  "freeText": "I usually give the AI my goal, audience, and constraints before asking for an output. I frequently provide background context about the project. When the AI's answer falls short, I always revise my prompt by pointing out exactly what's wrong and why. I sometimes ask the AI to act as a senior product manager. I occasionally challenge the AI when its suggestions seem inconsistent with my data.",
+  "respondentInfo": {
+    "nickname": "테스터",
+    "gender": "other",
+    "birthYear": 1999
+  }
+}
