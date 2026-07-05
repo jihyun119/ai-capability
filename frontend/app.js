@@ -299,8 +299,8 @@ function t1IntroScreen() {
     `${header()}
     <section class="intro-hero">
       <div>
-        <p class="eyebrow">Track 1: AI 관계 유형 테스트 · 약 5분</p>
-        <h1>AI 관계<br />유형 테스트</h1>
+        <p class="eyebrow">Track 1 · 재미용 · 약 5분</p>
+        <h1>AI 관계<br /> 유형 테스트</h1>
         <p>당신은 AI를 어떤 태도로 대하고 있을까요?<br />당신의 AI 답변을 통해 평소 사용 습관을 분석합니다.</p>
       </div>
       ${char("searcher", "hero-character")}
@@ -310,7 +310,7 @@ function t1IntroScreen() {
       </div>
     </section>
     <section class="info-list">
-      <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">객관식 12문항</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">의존도, 친밀도, 신뢰도, 통제욕구를 측정해요.</p></article>
+      <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">객관식 16문항</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">의존도, 친밀도, 신뢰도, 통제욕구를 측정해요.</p></article>
       <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">프롬프트 복붙</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">내 AI가 말하는 나의 사용 습관을 붙여넣어요.</p></article>
       <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">캐릭터 결과</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">16개 유형 중 가장 가까운 유형을 보여줘요.</p></article>
     </section>
@@ -676,13 +676,13 @@ function t2IntroScreen() {
     `${header()}
     <section class="intro-hero t2-intro-hero">
       <div>
-        <p class="eyebrow">Track 2: AI 활용 역량 테스트 · 약 8분</p>
-        <h1>AI 활용<br />역량 테스트</h1>
+        <p class="eyebrow">Track 2 · 패턴 분석 · 약 8분</p>
+        <h1>AI 역량<br /> 평가 Lv.1</h1>
         <p>자소서, 보고서, 과제, 기획처럼 실제 목적이 있는 상황에서 당신이 AI를 어떻게 활용하는지 분석합니다.</p>
       </div>
-      ${char("anxious", "hero-character")}
+      ${charByType("프로 트집러형", "hero-character")}
       <div class="desktop-intro-characters t2-desktop-intro-characters" aria-hidden="true">
-        ${char("result", "desktop-intro-character desktop-intro-character-a")}
+        ${charByType("프로 트집러형", "desktop-intro-character desktop-intro-character-a")}
         ${char("anxious", "desktop-intro-character desktop-intro-character-b")}
       </div>
     </section>
@@ -973,8 +973,8 @@ function legacyDesktopHomeTracks() {
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="desktop-track-list">
         ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
       </div>
     </section>`;
 }
@@ -995,8 +995,8 @@ function desktopHomeTracks() {
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="desktop-track-list">
         ${desktopHomeTrackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${desktopHomeTrackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${desktopHomeTrackCard("Track 3", ["Coming Soon", "준비 중"], "AI 실무 적용 테스트", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
+        ${desktopHomeTrackCard("Track 2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${desktopHomeTrackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
       </div>
     </section>`;
 }
@@ -1020,8 +1020,8 @@ function homeScreen() {
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="track-list">
         ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
       </div>
     </section>
     <div class="cta-stack home-start-v2">
