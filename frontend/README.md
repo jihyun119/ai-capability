@@ -31,9 +31,9 @@ http://127.0.0.1:4173/
 - `preview-server.cjs`: 로컬 미리보기 서버
 - `fonts/`: Pretendard, Paperlogy, Unbounded 폰트
 - `Logo/`: 서비스 로고 에셋
-- `캐릭터_최종/`: 화면에 사용되는 캐릭터 PNG
-- `모바일_와이어프레임_제작/`: 원본 기준 PNG
-- `모바일_와이어프레임_코드/`: Figma/Anima에서 복사한 참고 코드
+- `characters-final/`: 결과 화면에 사용되는 캐릭터 PNG
+- `characters/`: 캐릭터 더보기 화면에 사용되는 PNG
+- `design-reference/`: Figma 기준 와이어프레임 참고 자료
 
 ## 백엔드 연결 메모
 
