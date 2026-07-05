@@ -1872,15 +1872,23 @@ function isTouchShareDevice() {
 
 function displayTrack2Grade(result = {}) {
   const rawGrade = String(result.grade || "").trim();
+  const displayGradeByRaw = {
+    "AI 파트너형": "AI 전략가",
+    "AI 활용형": "실무 적용형",
+    "AI 탐색형": "성장형 활용자",
+    "AI 입문형": "단발성 사용자",
+    "AI 초보형": "입문 사용자",
+  };
+  if (displayGradeByRaw[rawGrade]) return displayGradeByRaw[rawGrade];
   if (rawGrade && !/[#,:]/.test(rawGrade) && rawGrade.length <= 16) return rawGrade;
 
   const total = Number(result.total);
   if (Number.isFinite(total)) {
-    if (total >= 85) return "AI 파트너형";
-    if (total >= 70) return "AI 활용형";
-    if (total >= 55) return "AI 탐색형";
-    if (total >= 40) return "AI 입문형";
-    return "AI 초보형";
+    if (total >= 85) return "AI 전략가";
+    if (total >= 70) return "실무 적용형";
+    if (total >= 55) return "성장형 활용자";
+    if (total >= 40) return "단발성 사용자";
+    return "입문 사용자";
   }
   return "AI 활용 역량";
 }
