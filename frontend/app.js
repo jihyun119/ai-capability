@@ -137,7 +137,7 @@ const t2Questions = [
       "A. 자기소개서를 써달라고 바로 요청하고 나온 초안을 그대로 다듬는다.",
       "B. 지원 직무와 경험 몇 가지를 알려주고 초안을 작성해 달라고 한다.",
       "C. 원하는 문항 구조, 분량, 어조, 강조 경험을 정리해 준 뒤 초안을 받는다.",
-      "D. 먼저 내 경험을 정리할 질문을 AI가 하게 만들고, 답변을 바탕으로 초안을 만든다.",
+      "D. 나 스스로 경험 정리가 가능하도록 AI가 방향을 제시하게 하고, 대화 속 나의 답변을 바탕으로 초안을 만든다.",
       "E. AI는 표현 참고용으로만 쓰고, 핵심 구성과 최종 문장은 직접 작성한다.",
     ],
   },
@@ -228,9 +228,9 @@ function menuOverlay() {
       <nav class="menu-panel" aria-label="더보기">
         <button class="menu-close" type="button" data-menu-close aria-label="메뉴 닫기">×</button>
         <h2>더보기</h2>
-        <button type="button" data-go="t1-login">Track 1: AI 관계 유형 테스트</button>
-        <button type="button" data-go="t2-login">Track 2: AI 활용 역량 테스트</button>
-        <button type="button" data-go="t3-comingsoon">Track 3: AI 실무 적용 테스트</button>
+        <button type="button" data-go="t1-login">Track 1</button>
+        <button type="button" data-go="t2-login">Track 2</button>
+        <button type="button" data-go="t3-comingsoon">Track 3</button>
         <button type="button" data-go="pooky-characters">푸키 캐릭터</button>
       </nav>
     </aside>`;
@@ -246,10 +246,20 @@ function screen(id, label, body, classes = "") {
   return `<section class="screen ${cleanClasses}${activeClass}" data-screen="${id}" aria-label="${label}">${body}</section>`;
 }
 
-function progress(current, total) {
+function progress(current, total, mobileTotal = total) {
+  const mobileProgress = mobileTotal !== total
+    ? `<p class="progress-label progress-label-mobile">${current}/${mobileTotal}</p>`
+    : "";
+  const mobileFill = mobileTotal !== total
+    ? `<span class="progress-fill-mobile" style="width:${(current / mobileTotal) * 100}%"></span>`
+    : "";
   return `
-    <p class="progress-label">${current}/${total}</p>
-    <div class="progress" aria-hidden="true"><span style="width:${(current / total) * 100}%"></span></div>`;
+    <p class="progress-label progress-label-desktop">${current}/${total}</p>
+    ${mobileProgress}
+    <div class="progress" aria-hidden="true">
+      <span class="progress-fill-desktop" style="width:${(current / total) * 100}%"></span>
+      ${mobileFill}
+    </div>`;
 }
 
 function rangeOptions(start, end, suffix = "") {
@@ -283,8 +293,8 @@ function trackScreen() {
     </section>
     <section class="track-list">
       ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-      ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-      ${trackCard("Track 3", ["Coming Soon", "준비 중"], "AI 실무 적용 테스트", "직무별 가상 시나리오와 인앱 프롬프트 평가는 베타 이후 공개됩니다.", "t3-comingsoon")}
+        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
     </section>
     <p class="track-note">처음이라면 AI 관계 유형 테스트로 시작해보세요.<br />결과를 확인한 뒤 다른 테스트로<br />자연스럽게 이어갈 수 있습니다.</p>
     ${footer()}`,
@@ -330,6 +340,7 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
     <section class="question-area">
       ${progress(index, total)}
       <h1>${title}</h1>
+      ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
       <div class="answer-list">
         ${options.map((option) => {
           const value = option.slice(0, 1);
@@ -337,7 +348,6 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
           return `<button class="${selected}" type="button" data-${prefix}-question="Q${index}" data-${prefix}-answer="${value}">${option}</button>`;
         }).join("")}
       </div>
-      ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
     </section>
     <nav class="nav-buttons">
       ${button("이전", prev, "secondary muted")}
@@ -357,9 +367,10 @@ function t1QuestionScreen(question, index, total, prev, next) {
     `Track 1 객관식 질문 ${index}`,
     `${header()}
     <section class="t1-question-area">
-      ${progress(index, 16)}
+      ${progress(index, 16, total)}
       <h1>${question.heading}</h1>
       <p class="t1-question-guide">아래 두 문장을 비교한 뒤,<br />현재 나와 더 가까운 정도를 선택해주세요.</p>
+      ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
       <article class="t1-scale-card">
         <p class="t1-scale-a ${t1ScaleTextClass(question.a)}">${formatT1ScaleText(question.a)}</p>
         <div class="t1-scale-row">
@@ -371,7 +382,6 @@ function t1QuestionScreen(question, index, total, prev, next) {
         <div class="t1-scale-arrow" aria-hidden="true"><span></span></div>
         <p class="t1-scale-b ${t1ScaleTextClass(question.b)}">${formatT1ScaleText(question.b)}</p>
       </article>
-      ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
     </section>
     <nav class="nav-buttons t1-question-nav">
       ${button("이전", prev, "secondary muted")}
@@ -384,8 +394,8 @@ function t1QuestionScreen(question, index, total, prev, next) {
 
 function formatT1ScaleText(text) {
   const fixed = {
-    "나는 AI 없이도 하루 일과에 큰 지장이 없다": "나는 AI없이도<br />하루 일과에 큰<br />지장이 없다",
-    "나는 AI 없이 하루를 보내면 뭔가 빠진 느낌이 든다": "나는 AI없이<br />하루를 보내면<br />뭔가 빠진 느낌이 든다",
+    "나는 AI 없이도 하루 일과에 큰 지장이 없다": "나는 AI없이도 하루 일과에 큰<br />지장이 없다",
+    "나는 AI 없이 하루를 보내면 뭔가 빠진 느낌이 든다": "나는 AI없이 하루를 보내면<br />뭔가 빠진 느낌이 든다",
   };
   return fixed[text] || text;
 }
@@ -557,7 +567,7 @@ function t1ShareScreen() {
       </section>
     </div>
     <nav class="nav-buttons t1-share-nav">
-      <button class="cta secondary" type="button" data-save-result="track1">이미지 저장</button>
+      <button class="cta secondary mobile-share-save" type="button" data-save-result="track1">이미지 저장</button>
       <button class="cta" type="button" data-share-result="track1">공유하기</button>
     </nav>`,
     "compact-screen t1-share-screen"
@@ -582,8 +592,9 @@ function t2ShareScreen() {
       weaknesses: [{ description: "답변 제출 후 표시됩니다." }],
     },
   };
+  const displayGrade = displayTrack2Grade(result);
   const feedback = {
-    summary: result.feedback?.summary || "AI 활용 진단 결과를 확인해보세요.",
+    summary: displayTrack2Summary(result, result.feedback?.summary || "AI 활용 진단 결과를 확인해보세요."),
     strength: result.feedback?.strength || result.feedback?.strengths?.[0]?.description || "강점 분석이 표시됩니다.",
     weakness: result.feedback?.weakness || result.feedback?.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.",
   };
@@ -606,7 +617,7 @@ function t2ShareScreen() {
           <h1>${Math.round(result.total)}점</h1>
           ${chart}
         </article>
-        <strong class="t2-grade-pill">${escapeHtml(result.grade)}</strong>
+        <strong class="t2-grade-pill">${escapeHtml(displayGrade)}</strong>
         <p class="t2-result-summary">${escapeHtml(feedback.summary)}</p>
         <section class="t2-feedback-list">
           <article>
@@ -621,7 +632,7 @@ function t2ShareScreen() {
       </section>
     </div>
     <nav class="nav-buttons t2-share-nav">
-      <button class="cta secondary" type="button" data-save-result="track2">이미지 저장</button>
+      <button class="cta secondary mobile-share-save" type="button" data-save-result="track2">이미지 저장</button>
       <button class="cta" type="button" data-share-result="track2">공유하기</button>
     </nav>`,
     "compact-screen t2-share-screen"
@@ -825,8 +836,9 @@ function t2ResultScreen() {
       insight: "답변을 제출하면 면접용 요약 문장이 표시됩니다.",
     },
   };
+  const displayGrade = displayTrack2Grade(result);
   const feedback = {
-    summary: result.feedback?.summary || "AI 활용 진단 결과를 확인해보세요.",
+    summary: displayTrack2Summary(result, result.feedback?.summary || "AI 활용 진단 결과를 확인해보세요."),
     strength: result.feedback?.strength || result.feedback?.strengths?.[0]?.description || "강점 분석이 표시됩니다.",
     weakness: result.feedback?.weakness || result.feedback?.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.",
     insight: result.feedback?.insight || "면접용 요약 문장이 표시됩니다.",
@@ -842,7 +854,7 @@ function t2ResultScreen() {
         <h1>${Math.round(result.total)}점</h1>
         ${chart}
       </article>
-      <strong class="t2-grade-pill">${result.grade}</strong>
+      <strong class="t2-grade-pill">${escapeHtml(displayGrade)}</strong>
       <p class="t2-result-summary">${feedback.summary}</p>
       <section class="t2-feedback-list">
         <article>
@@ -854,7 +866,7 @@ function t2ResultScreen() {
           <p class="t2-feedback-body">${feedback.weakness}</p>
         </article>
         <article class="t2-interview-card">
-          <h2><span>면접에서 이렇게 말할 수 있어요</span></h2>
+          <h2><span>나는 AI를 이렇게 활용하는 사람이에요</span></h2>
           <p class="t2-feedback-body">${feedback.insight}</p>
         </article>
       </section>
@@ -988,8 +1000,8 @@ function legacyDesktopHomeTracks() {
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="desktop-track-list">
         ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
       </div>
     </section>`;
 }
@@ -1010,8 +1022,8 @@ function desktopHomeTracks() {
       <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
       <div class="desktop-track-list">
         ${desktopHomeTrackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${desktopHomeTrackCard("Track 2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${desktopHomeTrackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
+        ${desktopHomeTrackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
+        ${desktopHomeTrackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
       </div>
     </section>`;
 }
@@ -1022,7 +1034,8 @@ function homeScreen() {
     "H01 랜딩 홈",
     `${header()}
     <main class="home-content home-content-v2">
-      <h1><span>POOKIE</span><mark>AI 시대에서</mark> 살아남기</h1>
+      <h1 class="home-title-mobile">나, <mark>AI</mark>를<br />잘 쓰고 있는 걸까?</h1>
+      <h1 class="home-title-desktop"><span>POOKIE</span><mark>AI 시대에서</mark> 살아남기</h1>
       <p>AI를 얼마나 자주 쓰는지가 아니라,<br /><strong>어떤 방식으로 활용</strong>하는지 진단해보세요.<br /><strong>가벼운 유형 테스트</strong>부터 <strong>실전 프롬프트 역량 평가</strong>까지<br />확인할 수 있습니다.</p>
       <div class="character-cluster">
         ${char("friend", "char c1")}
@@ -1031,16 +1044,9 @@ function homeScreen() {
         ${char("unsure", "char c4")}
       </div>
     </main>
-    <section class="desktop-home-tracks" aria-label="Track 선택">
-      <h2>원하는 <strong>Track</strong>으로 시작하세요!</h2>
-      <div class="track-list">
-        ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
-        ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 역량 평가 Lv.1", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 역량 평가 Lv.2", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-comingsoon")}
-      </div>
-    </section>
     <div class="cta-stack home-start-v2">
-      ${button("테스트 시작하기", "track")}
+      ${button("내 AI 유형 알아보기", "track")}
+      ${button("실전 역량 평가하기", "track")}
     </div>
     ${desktopHomeTracks()}
     ${footer()}`,
@@ -1348,6 +1354,12 @@ document.addEventListener("click", async (event) => {
   }
 
   if (target.dataset.go === "t2-loading" || target.dataset.go === "t2-result") {
+    if (target.dataset.go === "t2-result" && state.t2Result) {
+      render();
+      closeMenu();
+      showScreen("t2-result");
+      return;
+    }
     await submitTrack2();
     return;
   }
@@ -1858,10 +1870,33 @@ function isTouchShareDevice() {
   return isMobileSafari() || (navigator.maxTouchPoints > 0 && /Android|Mobile|iP(ad|hone|od)/i.test(navigator.userAgent || ""));
 }
 
+function displayTrack2Grade(result = {}) {
+  const rawGrade = String(result.grade || "").trim();
+  if (rawGrade && !/[#,:]/.test(rawGrade) && rawGrade.length <= 16) return rawGrade;
+
+  const total = Number(result.total);
+  if (Number.isFinite(total)) {
+    if (total >= 85) return "AI 파트너형";
+    if (total >= 70) return "AI 활용형";
+    if (total >= 55) return "AI 탐색형";
+    if (total >= 40) return "AI 입문형";
+    return "AI 초보형";
+  }
+  return "AI 활용 역량";
+}
+
+function displayTrack2Summary(result = {}, summary = "") {
+  const rawGrade = String(result.grade || "").trim();
+  const displayGrade = displayTrack2Grade(result);
+  return rawGrade && rawGrade !== displayGrade
+    ? String(summary).replaceAll(rawGrade, displayGrade)
+    : String(summary);
+}
+
 function createNativeShareData(track) {
   if (track === "track2") {
     const result = state.t2Result?.result || {};
-    const grade = result.grade || "AI 활용 역량";
+    const grade = displayTrack2Grade(result);
     return {
       title: `내 AI 활용 역량은 ${grade}`,
       text: pookieShareText,
@@ -1929,9 +1964,9 @@ function normalizeShareKeywords(keywords) {
 async function createTrack2ShareImage() {
   const result = state.t2Result?.result || {};
   const total = Number.isFinite(Number(result.total)) ? Math.round(Number(result.total)) : "--";
-  const grade = result.grade || "AI 활용 역량";
+  const grade = displayTrack2Grade(result);
   const feedback = result.feedback || {};
-  const summary = feedback.summary || "AI 활용 진단 결과를 확인해보세요.";
+  const summary = displayTrack2Summary(result, feedback.summary || "AI 활용 진단 결과를 확인해보세요.");
   const strength = feedback.strength || feedback.strengths?.[0]?.description || "강점 분석이 표시됩니다.";
   const weakness = feedback.weakness || feedback.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.";
   const canvas = createShareCanvas();
@@ -2087,7 +2122,7 @@ function drawTrack2ShareCard(ctx, canvas, result) {
 
   drawCenteredText(ctx, "당신의 AI 활용 역량 점수는", 255, 48, 300, "#111", "Pretendard");
   drawCenteredText(ctx, `${result.total}점`, 338, 98, 800, "#000", "Unbounded");
-  drawTrack2RadarCanvas(ctx, result.axes, 390, 390, 300);
+  drawTrack2RadarCanvas(ctx, result.axes, 380, 378, 320);
 
   drawPill(ctx, result.grade, 326, 782, 428, 72, 36);
   drawCenteredMultilineText(ctx, result.summary, 936, 840, 42, 32, 300, "#111");
@@ -2149,8 +2184,8 @@ function drawTrack2RadarCanvas(ctx, axes, x, y, size) {
     critical_review: "비판적 검토",
   };
   const centerX = x + size / 2;
-  const centerY = y + size / 2 + 14;
-  const maxRadius = size * 0.32;
+  const centerY = y + size / 2;
+  const maxRadius = size * 0.28;
   const angles = [-90, -30, 30, 90, 150, 210];
   const point = (rate, index) => {
     const angle = (angles[index] * Math.PI) / 180;
@@ -2190,12 +2225,12 @@ function drawTrack2RadarCanvas(ctx, axes, x, y, size) {
   }
 
   const labelPositions = [
-    [centerX, y + 10, "center"],
-    [x + size - 10, y + 145, "right"],
-    [x + size - 10, y + 340, "right"],
-    [centerX, y + size - 4, "center"],
-    [x + 10, y + 340, "left"],
-    [x + 10, y + 145, "left"],
+    [centerX, y + 24, "center"],
+    [x + size - 8, y + 112, "right"],
+    [x + size - 8, y + 222, "right"],
+    [centerX, y + size - 8, "center"],
+    [x + 8, y + 222, "left"],
+    [x + 8, y + 112, "left"],
   ];
   ctx.font = "500 22px Pretendard";
   ctx.fillStyle = "#000";
