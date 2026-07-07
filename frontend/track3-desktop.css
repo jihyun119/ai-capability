@@ -1,0 +1,1623 @@
+@media (min-width: 1181px) {
+  :root {
+    --t3-black: #000;
+    --t3-white: #fff;
+    --t3-violet: #8037ee;
+    --t3-lime: #b7ff1a;
+    --t3-grey: #d9d9d9;
+    --t3-panel: #f2f2f2;
+  }
+
+  html,
+  body {
+    min-width: 1440px;
+    margin: 0;
+    background: var(--t3-white);
+  }
+
+  main#app.app-shell {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    background: var(--t3-white);
+  }
+
+  main#app.app-shell > .screen:not(.active) {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] {
+    position: relative !important;
+    display: block !important;
+    width: 1440px !important;
+    min-width: 1440px !important;
+    max-width: 1440px !important;
+    height: 1024px !important;
+    min-height: 1024px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+    font-family: "Pretendard", Arial, sans-serif !important;
+    box-shadow: none !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-result"] {
+    height: 1185px !important;
+    min-height: 1185px !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] *,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] *::before,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] *::after {
+    box-sizing: border-box !important;
+    letter-spacing: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .top-bar {
+    position: absolute !important;
+    left: 120px !important;
+    top: 65px !important;
+    z-index: 50 !important;
+    width: 1200px !important;
+    height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand {
+    width: 144px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    color: var(--t3-black) !important;
+    font: 700 24px/1 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand img,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .logo-img {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 6px !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .menu-button {
+    position: absolute !important;
+    right: 0 !important;
+    top: 1.5px !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .menu-button span {
+    display: block !important;
+    width: 28px !important;
+    height: 4px !important;
+    margin: 0 auto !important;
+    border-radius: 0 !important;
+    background: var(--t3-black) !important;
+    opacity: 1 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .cta {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--t3-black) !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+    font: 600 24px/1 "Pretendard", sans-serif !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .cta.secondary {
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .cta:hover,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .cta:focus-visible,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .cta:active,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] button:not(.brand, .menu-button):hover,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] button:not(.brand, .menu-button):focus-visible,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] button:not(.brand, .menu-button):active {
+    border-color: var(--t3-violet) !important;
+    background: var(--t3-violet) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand:hover,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand:focus,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand:focus-visible,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand:active {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--t3-black) !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .footer {
+    position: absolute !important;
+    left: 0 !important;
+    top: 884px !important;
+    width: 1440px !important;
+    height: 140px !important;
+    padding: 45px 120px 0 !important;
+    display: block !important;
+    border: 0 !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .footer p {
+    margin: 0 0 14px !important;
+    color: var(--t3-white) !important;
+    font: 400 20px/1.1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .footer strong {
+    margin-right: 14px !important;
+    font-weight: 800 !important;
+  }
+
+  main#app.app-shell > .screen.active:is([data-screen="t3-scenario"], [data-screen="t3-chat"], [data-screen="t3-loading"], [data-screen="t3-result"]) .footer {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-content {
+    position: absolute !important;
+    left: 120px !important;
+    top: 170px !important;
+    width: 1200px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-hero {
+    width: 100% !important;
+    margin: 0 0 70px !important;
+    text-align: center !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-hero h1 {
+    margin: 0 0 24px !important;
+    color: var(--t3-black) !important;
+    font: 800 60px/1.1 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-hero p {
+    margin: 0 !important;
+    color: var(--t3-black) !important;
+    font: 300 24px/1.35 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-form {
+    width: 1200px !important;
+    margin: 0 !important;
+    display: grid !important;
+    gap: 50px !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-field {
+    display: grid !important;
+    gap: 20px !important;
+    color: var(--t3-black) !important;
+    font: 700 24px/1.1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input,
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-field > input,
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-field > select {
+    height: 80px !important;
+    border: 1px solid var(--t3-black) !important;
+    border-radius: 10px !important;
+    background: var(--t3-white) !important;
+    box-shadow: none !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 25px !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input input {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 78px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--t3-black) !important;
+    font: 400 20px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input i {
+    color: #a6a6a6 !important;
+    font: 400 20px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-row-fields {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .birth-year-field input,
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .gender-field select {
+    width: 100% !important;
+    padding: 0 25px !important;
+    color: var(--t3-black) !important;
+    font: 400 20px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-next {
+    position: absolute !important;
+    left: 120px !important;
+    top: 737px !important;
+    width: 1200px !important;
+    height: 90px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    font: 600 24px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-layout {
+    position: absolute !important;
+    left: 120px !important;
+    top: 149px !important;
+    width: 1200px !important;
+    height: 545px !important;
+    display: grid !important;
+    grid-template-columns: 510px 600px !important;
+    gap: 90px !important;
+    margin: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy {
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy .eyebrow {
+    margin: 14px 0 24px !important;
+    color: var(--t3-black) !important;
+    font: 400 28px/1.2 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy h1 {
+    margin: 0 0 24px !important;
+    font: 800 60px/1.1 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy > p:not(.eyebrow) {
+    margin: 0 0 32px !important;
+    color: var(--t3-black) !important;
+    font: 400 24px/1.4 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-characters {
+    position: relative !important;
+    width: 510px !important;
+    height: 315px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-character {
+    position: absolute !important;
+    width: 255px !important;
+    height: 255px !important;
+    object-fit: contain !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-character-a {
+    left: 73px !important;
+    top: 20px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-character-b {
+    left: 286px !important;
+    top: 60px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards {
+    display: grid !important;
+    gap: 32px !important;
+    width: 600px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards article {
+    width: 600px !important;
+    height: 152px !important;
+    padding: 36px 40px !important;
+    border: 1.33px solid var(--t3-black) !important;
+    border-radius: 16px !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards strong {
+    display: block !important;
+    margin-bottom: 16px !important;
+    font: 800 36px/1 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards span {
+    display: block !important;
+    font: 400 20px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-wide-start {
+    position: absolute !important;
+    left: 120px !important;
+    top: 737px !important;
+    width: 1200px !important;
+    height: 88px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-layout {
+    position: absolute !important;
+    left: 120px !important;
+    top: 149px !important;
+    width: 1200px !important;
+    height: 800px !important;
+    display: grid !important;
+    grid-template-columns: 440px 721px !important;
+    gap: 39px !important;
+    margin: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide {
+    width: 440px !important;
+    height: 800px !important;
+    padding: 97px 41px !important;
+    border: 1.33px solid var(--t3-black) !important;
+    border-radius: 20px !important;
+    background: var(--t3-panel) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide h2 {
+    margin: 0 0 16px !important;
+    color: var(--t3-violet) !important;
+    font: 600 24px/1.2 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide p,
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide li {
+    color: var(--t3-black) !important;
+    font: 400 20px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide p {
+    margin: 0 0 32px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide ul {
+    margin: 0 !important;
+    padding-left: 28px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-list {
+    display: grid !important;
+    grid-template-rows: repeat(3, 212px) 64px !important;
+    gap: 28px !important;
+    width: 721px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card {
+    width: 721px !important;
+    height: 212px !important;
+    padding: 43px 36px !important;
+    border: 1.33px solid var(--t3-black) !important;
+    border-radius: 16px !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+    text-align: left !important;
+    box-shadow: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:hover,
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:focus-visible,
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
+    border-color: var(--t3-violet) !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+    box-shadow: inset 0 0 0 3px var(--t3-violet) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card span {
+    display: flex !important;
+    gap: 6px !important;
+    margin-bottom: 12px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 80px !important;
+    height: 24px !important;
+    padding: 0 14px !important;
+    border: .66px solid var(--t3-black) !important;
+    border-radius: 30px !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+    font: 400 14px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i:first-child,
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i.is-active {
+    background: var(--t3-lime) !important;
+    font-weight: 600 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card strong {
+    display: block !important;
+    margin-bottom: 12px !important;
+    font: 800 32px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card small {
+    display: block !important;
+    font: 300 18px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-next {
+    width: 721px !important;
+    height: 64px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-layout {
+    position: absolute !important;
+    left: 120px !important;
+    top: 149px !important;
+    width: 1200px !important;
+    height: 800px !important;
+    display: grid !important;
+    grid-template-columns: 351px 509px 340px !important;
+    gap: 0 !important;
+    border: 1.33px solid var(--t3-black) !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel {
+    height: 800px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief {
+    padding: 33px 25px !important;
+    border-right: 1.33px solid var(--t3-black) !important;
+    background: var(--t3-panel) !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace {
+    position: relative !important;
+    padding: 33px 32px !important;
+    border-right: 1.33px solid var(--t3-black) !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel {
+    position: relative !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header {
+    height: 83px !important;
+    padding: 33px 23px 0 !important;
+    border-bottom: 1.33px solid var(--t3-black) !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace h2,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel h2 {
+    margin: 0 0 28px !important;
+    font: 600 30px/1.1 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2 {
+    color: var(--t3-violet) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2:not(:first-child) {
+    margin-top: 34px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief p,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief li,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace p {
+    font: 400 18px/1.35 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief p {
+    margin: 0 0 22px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief ul {
+    margin: 0 0 22px 22px !important;
+    padding: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief li {
+    margin: 0 0 10px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics {
+    width: 100% !important;
+    margin: 0 0 24px !important;
+    border-collapse: collapse !important;
+    color: var(--t3-black) !important;
+    font: 400 14px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics th,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics td {
+    padding: 8px 6px !important;
+    border: 1px solid #bcbcbc !important;
+    text-align: left !important;
+    vertical-align: top !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics th {
+    font-weight: 800 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > div {
+    width: 408px !important;
+    height: 132px !important;
+    margin: 36px 0 0 !important;
+    border-radius: 10px !important;
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-submit {
+    position: absolute !important;
+    right: 37px !important;
+    bottom: 25px !important;
+    width: 216px !important;
+    height: 64px !important;
+    border: 0 !important;
+    background: #aaa !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header span {
+    display: flex !important;
+    width: 176px !important;
+    height: 16px !important;
+    margin-top: 5px !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header i {
+    display: block !important;
+    width: 36px !important;
+    height: 16px !important;
+    background: var(--t3-lime) !important;
+    border-right: 1px solid var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header i:nth-child(n+4) {
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble {
+    position: absolute !important;
+    width: 240px !important;
+    height: 80px !important;
+    border-radius: 10px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-user {
+    right: 25px !important;
+    background: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-ai {
+    left: 25px !important;
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(1) { top: 103px !important; }
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(2) { top: 198px !important; }
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(3) { top: 293px !important; }
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(4) { top: 389px !important; }
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(5) { top: 485px !important; }
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(6) { top: 580px !important; }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel label {
+    position: absolute !important;
+    left: 13px !important;
+    bottom: 26px !important;
+    width: 294px !important;
+    min-height: 64px !important;
+    height: auto !important;
+    max-height: 160px !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    padding: 15px 18px 15px 22px !important;
+    border: 1.33px solid var(--t3-black) !important;
+    border-radius: 20px !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel textarea {
+    width: 210px !important;
+    min-height: 24px !important;
+    max-height: 132px !important;
+    border: 0 !important;
+    outline: 0 !important;
+    resize: none !important;
+    overflow-y: auto !important;
+    background: transparent !important;
+    font: 400 20px/1.2 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel label button {
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    margin-bottom: 4px !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content {
+    position: absolute !important;
+    left: 50% !important;
+    top: 306px !important;
+    width: 440px !important;
+    transform: translateX(-50%) !important;
+    text-align: center !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content h1 {
+    margin: 0 !important;
+    font: 800 40px/1.25 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content img {
+    display: block !important;
+    width: 310px !important;
+    height: 310px !important;
+    margin: 88px auto 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-layout {
+    position: absolute !important;
+    left: 120px !important;
+    top: 149px !important;
+    width: 1200px !important;
+    height: 800px !important;
+    display: grid !important;
+    grid-template-columns: 609px 591px !important;
+    gap: 0 !important;
+    border: 1.33px solid var(--t3-black) !important;
+    border-radius: 20px !important;
+    background: var(--t3-white) !important;
+    overflow: hidden !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score,
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-report {
+    height: 800px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: var(--t3-white) !important;
+    box-shadow: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score {
+    padding: 72px 48px !important;
+    border-right: 1.33px solid var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-report {
+    padding: 55px 39px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-grade {
+    display: flex !important;
+    width: 176px !important;
+    height: 56px !important;
+    margin: 0 auto 58px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: .5px solid var(--t3-black) !important;
+    border-radius: 50px !important;
+    background: var(--t3-lime) !important;
+    color: var(--t3-black) !important;
+    font: 800 24px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score h1 {
+    margin: 0 0 42px !important;
+    text-align: center !important;
+    font: 700 72px/1 "Unbounded", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list {
+    display: grid !important;
+    gap: 24px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list p,
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list article > p {
+    display: grid !important;
+    grid-template-columns: 108px 54px 320px !important;
+    gap: 12px !important;
+    align-items: center !important;
+    margin: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list b,
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list b {
+    color: var(--t3-violet) !important;
+    font: 600 20px/1.15 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list strong,
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list strong {
+    color: var(--t3-black) !important;
+    font: 600 20px/1.15 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list i,
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list i {
+    display: block !important;
+    width: 320px !important;
+    height: 32px !important;
+    overflow: hidden !important;
+    border-radius: 30px !important;
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list i > span,
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list i > span {
+    display: block !important;
+    height: 32px !important;
+    border-radius: 30px 0 0 30px !important;
+    background: var(--t3-violet) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-report h2 {
+    margin: 0 0 24px !important;
+    font: 700 30px/1.25 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-report > p {
+    margin: 0 0 36px !important;
+    font: 400 20px/1.35 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list {
+    display: grid !important;
+    gap: 18px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list article > p {
+    grid-template-columns: 90px 54px 320px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-list article div {
+    width: 514px !important;
+    min-height: 112px !important;
+    padding: 24px 26px !important;
+    border-radius: 20px !important;
+    background: var(--t3-panel) !important;
+    color: #6c6c6c !important;
+    font: 400 16px/1.35 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav {
+    position: absolute !important;
+    left: 120px !important;
+    top: 994px !important;
+    width: 1200px !important;
+    display: grid !important;
+    grid-template-columns: 540px 540px !important;
+    gap: 120px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta {
+    width: 540px !important;
+    height: 88px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  :root {
+    --t3-black: #000;
+    --t3-white: #fff;
+    --t3-violet: #8037ee;
+    --t3-lime: #b7ff1a;
+    --t3-grey: #d9d9d9;
+    --t3-panel: #f2f2f2;
+    --t3-mobile-inner: 351px;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] {
+    width: 393px !important;
+    max-width: 100% !important;
+    min-height: 920px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+    font-family: "Pretendard", Arial, sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .top-bar {
+    width: var(--t3-mobile-inner) !important;
+    height: 24px !important;
+    margin: 64px auto 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand {
+    width: auto !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 11px !important;
+    color: var(--t3-black) !important;
+    font: 700 16px/1.2 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .brand img,
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .logo-img {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 4px !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .menu-button {
+    width: 24px !important;
+    height: 24px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .menu-button span {
+    display: block !important;
+    width: 18px !important;
+    height: 2px !important;
+    margin: 0 auto !important;
+    background: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .cta {
+    width: 228px !important;
+    min-height: 44px !important;
+    border: 1px solid var(--t3-black) !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+    font: 600 16px/1 "Pretendard", sans-serif !important;
+    text-decoration: none !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .cta.secondary {
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .footer {
+    width: 393px !important;
+    height: 136px !important;
+    min-height: 136px !important;
+    margin: 0 !important;
+    padding: 36px 20px !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .footer p {
+    width: var(--t3-mobile-inner) !important;
+    margin: 0 0 8px !important;
+    color: var(--t3-white) !important;
+    font: 400 16px/1.2 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen^="t3-"] .footer strong {
+    margin-right: 8px !important;
+    font-weight: 800 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-content {
+    width: var(--t3-mobile-inner) !important;
+    margin: 111px auto 0 !important;
+    padding: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-hero {
+    margin: 0 0 41px !important;
+    text-align: center !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-hero h1 {
+    margin: 0 0 18px !important;
+    font: 800 30px/1.2 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-hero p {
+    margin: 0 !important;
+    font: 300 16px/1.35 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-form {
+    display: grid !important;
+    gap: 36px !important;
+    margin: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-field {
+    display: grid !important;
+    gap: 12px !important;
+    font: 700 16px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input,
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-field > input,
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-field > select {
+    height: 58px !important;
+    padding: 0 18px !important;
+    border: 1px solid var(--t3-black) !important;
+    border-radius: 10px !important;
+    background: var(--t3-white) !important;
+    font: 600 16px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input input {
+    width: 245px !important;
+    height: 56px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .nickname-input i {
+    color: #9ca0aa !important;
+    font-style: normal !important;
+    font-weight: 400 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-row-fields {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .login-next {
+    width: 228px !important;
+    height: 44px !important;
+    margin: 109px auto 0 !important;
+  }
+
+  main#app.app-shell > .screen.active[data-screen="t3-login"] .footer {
+    margin-top: 45px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen {
+    min-height: 920px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-layout {
+    width: var(--t3-mobile-inner) !important;
+    margin: 36px auto 0 !important;
+    display: block !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy {
+    position: relative !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy .eyebrow {
+    margin: 0 0 12px !important;
+    font: 400 14px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy h1 {
+    width: 228px !important;
+    margin: 0 0 11px !important;
+    font: 800 45px/1.15 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-copy > p:not(.eyebrow) {
+    width: 250px !important;
+    margin: 0 !important;
+    font: 400 16px/1.45 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-characters {
+    position: absolute !important;
+    right: 0 !important;
+    top: 45px !important;
+    width: 118px !important;
+    height: 101px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-character {
+    position: absolute !important;
+    width: 92px !important;
+    height: auto !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-character-a {
+    left: 0 !important;
+    top: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-character-b {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards {
+    display: grid !important;
+    gap: 14px !important;
+    margin-top: 39px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards article {
+    min-height: 94px !important;
+    padding: 17px 22px !important;
+    border: 1px solid var(--t3-black) !important;
+    border-radius: 10px !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards strong {
+    display: block !important;
+    margin-bottom: 8px !important;
+    font: 800 26px/1.1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-intro-cards span {
+    display: block !important;
+    font: 400 14px/1.45 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .t3-wide-start {
+    margin: 41px auto 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-intro-screen .footer {
+    margin-top: 49px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen {
+    min-height: 852px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-layout {
+    width: var(--t3-mobile-inner) !important;
+    margin: 37px auto 0 !important;
+    display: block !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide {
+    margin: 0 0 24px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide h2 {
+    margin: 0 0 17px !important;
+    color: var(--t3-black) !important;
+    font: 800 30px/1.2 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide h2:not(:first-child),
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide ul {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide p {
+    margin: 0 0 16px !important;
+    font: 400 16px/1.38 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-list {
+    display: grid !important;
+    gap: 14px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card {
+    min-height: 130px !important;
+    padding: 15px 25px !important;
+    border: 1px solid var(--t3-black) !important;
+    border-radius: 10px !important;
+    background: var(--t3-white) !important;
+    text-align: left !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
+    box-shadow: inset 0 0 0 2px var(--t3-violet) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card span {
+    display: flex !important;
+    gap: 6px !important;
+    margin-bottom: 10px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i {
+    min-width: 62px !important;
+    height: 17px !important;
+    padding: 1px 10px !important;
+    border: .5px solid var(--t3-black) !important;
+    border-radius: 20px !important;
+    background: var(--t3-white) !important;
+    font: 400 10px/14px "Pretendard", sans-serif !important;
+    text-align: center !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i.is-active,
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i:first-child {
+    background: var(--t3-lime) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card strong {
+    display: block !important;
+    margin-bottom: 9px !important;
+    font: 800 23px/1.2 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card small {
+    display: block !important;
+    font: 300 12px/1.32 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-next {
+    margin: 25px auto 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen {
+    min-height: 852px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-flow-head {
+    width: var(--t3-mobile-inner) !important;
+    margin: 36px auto 0 !important;
+    display: block !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-flow-head h1 {
+    margin: 0 0 10px !important;
+    font: 800 30px/1.2 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress {
+    width: var(--t3-mobile-inner) !important;
+    height: 18px !important;
+    margin-bottom: 24px !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i {
+    background: var(--t3-grey) !important;
+    border-right: 1px solid var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i:nth-child(-n+3) {
+    background: var(--t3-lime) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    border-bottom: 1px solid #aaa !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-tabs button {
+    height: 36px !important;
+    border: 0 !important;
+    border-bottom: 2px solid transparent !important;
+    background: transparent !important;
+    color: #aaa !important;
+    font: 600 16px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-tabs button.is-active {
+    border-bottom-color: var(--t3-violet) !important;
+    color: var(--t3-violet) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-layout {
+    width: var(--t3-mobile-inner) !important;
+    height: auto !important;
+    margin: 25px auto 0 !important;
+    display: block !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel {
+    display: none !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="brief"] .t3-chat-brief,
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace,
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-panel {
+    display: block !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief {
+    max-height: 560px !important;
+    overflow-y: auto !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2 {
+    margin: 0 0 18px !important;
+    color: var(--t3-violet) !important;
+    font: 800 16px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2:not(:first-child) {
+    margin-top: 30px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief p,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief li {
+    font: 400 14px/1.28 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief p {
+    margin: 0 0 20px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief ul {
+    margin: 0 0 18px 18px !important;
+    padding: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics {
+    width: 100% !important;
+    margin: 10px 0 18px !important;
+    border-collapse: collapse !important;
+    font: 400 11px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics th,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics td {
+    padding: 6px 5px !important;
+    border: 1px solid #bbb !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace {
+    min-height: 560px !important;
+    position: relative !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace h2,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace p,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > div {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-submit {
+    position: absolute !important;
+    left: 62px !important;
+    bottom: 0 !important;
+    width: 228px !important;
+    height: 44px !important;
+    border: 0 !important;
+    background: #aaa !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel {
+    min-height: 560px !important;
+    padding-bottom: 82px !important;
+    position: relative !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble {
+    display: block !important;
+    width: 279px !important;
+    height: 75px !important;
+    margin: 0 0 21px !important;
+    border-radius: 8px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-user {
+    margin-left: auto !important;
+    background: var(--t3-violet) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-ai {
+    margin-right: auto !important;
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer {
+    position: absolute !important;
+    left: 2px !important;
+    right: 2px !important;
+    bottom: 0 !important;
+    min-height: 62px !important;
+    max-height: 156px !important;
+    padding: 16px 16px 16px 30px !important;
+    border: 1px solid var(--t3-black) !important;
+    border-radius: 19px !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 10px !important;
+    background: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
+    width: 260px !important;
+    min-height: 24px !important;
+    max-height: 116px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    resize: none !important;
+    overflow-y: auto !important;
+    background: transparent !important;
+    font: 400 18px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer button {
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+    font: 700 16px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content {
+    width: var(--t3-mobile-inner) !important;
+    margin: 168px auto 0 !important;
+    text-align: center !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content h1 {
+    margin: 0 !important;
+    font: 800 28px/1.32 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content img {
+    display: block !important;
+    width: 203px !important;
+    height: 203px !important;
+    margin: 58px auto 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen,
+  main#app.app-shell > .screen.active.t3-report-screen {
+    min-height: 852px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-layout {
+    width: var(--t3-mobile-inner) !important;
+    margin: 29px auto 0 !important;
+    display: block !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-report {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-grade {
+    width: 118px !important;
+    height: 36px !important;
+    margin: 0 auto 34px !important;
+    border: .5px solid var(--t3-black) !important;
+    border-radius: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--t3-lime) !important;
+    color: var(--t3-black) !important;
+    font: 800 16px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score h1 {
+    margin: 0 0 30px !important;
+    text-align: center !important;
+    font: 700 55px/1 "Unbounded", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list {
+    display: grid !important;
+    gap: 22px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list p,
+  main#app.app-shell > .screen.active.t3-report-screen .t3-detail-list article > p {
+    display: grid !important;
+    grid-template-columns: 66px 36px 236px !important;
+    gap: 5px !important;
+    align-items: center !important;
+    margin: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list b,
+  main#app.app-shell > .screen.active.t3-report-screen .t3-detail-list b {
+    color: var(--t3-violet) !important;
+    font: 600 14px/1.1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list strong,
+  main#app.app-shell > .screen.active.t3-report-screen .t3-detail-list strong {
+    color: var(--t3-black) !important;
+    font: 700 14px/1.1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list i {
+    display: block !important;
+    width: 236px !important;
+    height: 22px !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-score-list i > span {
+    display: block !important;
+    height: 22px !important;
+    border-radius: 20px 0 0 20px !important;
+    background: var(--t3-violet) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav {
+    width: 228px !important;
+    margin: 83px auto 0 !important;
+    display: grid !important;
+    gap: 18px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-open {
+    display: flex !important;
+    order: 1 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta.secondary {
+    order: 2 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary):not(.t3-detail-open) {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-report-mobile {
+    width: var(--t3-mobile-inner) !important;
+    margin: 31px auto 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-report-mobile h1 {
+    margin: 0 0 30px !important;
+    font: 800 23px/1.35 "Paperlogy", "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-report-summary {
+    margin: 0 0 35px !important;
+    font: 400 14px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-detail-list {
+    display: grid !important;
+    gap: 31px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-detail-list article > p {
+    grid-template-columns: 66px 36px 1fr !important;
+    margin-bottom: 13px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-detail-list article i {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-detail-list article div {
+    min-height: 80px !important;
+    padding: 18px 20px !important;
+    border-radius: 10px !important;
+    background: var(--t3-panel) !important;
+    color: #6c6c6c !important;
+    font: 400 12px/1.28 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-report-next {
+    margin: 49px auto 18px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-report-screen .t3-report-back {
+    margin: 0 auto !important;
+  }
+}
