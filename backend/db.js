@@ -144,6 +144,53 @@ export async function saveTrack2Result({ resultId = randomUUID(), respondentId, 
   return { resultId, shareSlug: resultId };
 }
 
+// ── Track 3 결과 저장 ─────────────────────────────────────────────────────────
+
+export async function saveTrack3Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, gender = null, scenario, turns, finalOutput, earlyFinish = false, evaluation }) {
+  const payload = {
+    result_id:          resultId,
+    respondent_id:      respondentId,
+    nickname_snapshot:  nicknameSnapshot,
+    birth_year:         toNumber(birthYear),
+    gender:             normalizeGender(gender),
+    version:            evaluation.version,
+    status:             "success",
+    scenario_id:        scenario?.scenario_id ?? evaluation.scenario?.scenario_id,
+    scenario_title:     scenario?.title ?? evaluation.scenario?.title,
+    scenario_role:      scenario?.role ?? evaluation.scenario?.role,
+    turns,
+    final_output:       finalOutput,
+    early_finish:       Boolean(earlyFinish),
+    axis_scores:        evaluation.axis_scores,
+    delta_score:        evaluation.delta_score,
+    code_checks:        evaluation.code_checks,
+    move_tagging:       evaluation.move_tagging,
+    sequence_valid:     Boolean(evaluation.sequence_valid),
+    best_intervention:  evaluation.best_intervention,
+    missed_intervention: evaluation.missed_intervention,
+    confidence:         evaluation.confidence,
+    total_score:        rounded(evaluation.total),
+    grade:              evaluation.grade,
+    feedback:           evaluation.feedback,
+    share_slug:         resultId,
+    created_at:         new Date().toISOString()
+  };
+
+  const error = await insertWithSchemaFallback("track3_results", payload);
+  if (error) throw new Error(`track3_results 저장 실패: ${error.message}`);
+
+  return { resultId, shareSlug: resultId };
+}
+
+// ── Track 3 결과 조회 ─────────────────────────────────────────────────────────
+
+export async function getTrack3Result(resultId) {
+  const { data, error } = await restSelectOne("track3_results", "*", { result_id: resultId });
+
+  if (error || !data) throw new Error("결과를 찾을 수 없습니다.");
+  return data;
+}
+
 // ── Track 1 결과 저장 ─────────────────────────────────────────────────────────
 
 export async function saveTrack1Result({ resultId = randomUUID(), respondentId, nicknameSnapshot, birthYear = null, gender = null, questionnaireVersion = "track1-12", questionnaire, llmResult, evaluationResult }) {
