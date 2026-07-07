@@ -185,6 +185,15 @@
         "t3-chat",
         "T3-03 인앱 채팅",
         `${header()}
+        <section class="t3-mobile-flow-head" style="display:none">
+          <h1 data-t3-mobile-title>${selectedT3Scenario().title} 시나리오</h1>
+          <div class="t3-mobile-progress"><i></i><i></i><i></i><i></i><i></i></div>
+          <nav class="t3-mobile-tabs" aria-label="Track 3 sections">
+            <button type="button" data-t3-tab="brief" class="is-active">상황 설명</button>
+            <button type="button" data-t3-tab="work">작업 영역</button>
+            <button type="button" data-t3-tab="chat">AI 채팅</button>
+          </nav>
+        </section>
         <section class="t3-chat-layout">
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
@@ -228,8 +237,21 @@
             <div class="t3-detail-list">${makeT3DetailRows()}</div>
           </article>
         </section>
-        <nav class="t3-result-nav">${button("공유하기", "t3-result", "secondary")}${button("다른 Track 도전", "home")}</nav>`,
+        <nav class="t3-result-nav"><button class="cta t3-detail-open" data-target="t3-report" style="display:none">상세 리포트 보기</button>${button("공유하기", "t3-result", "secondary")}${button("다른 Track 도전", "home")}</nav>`,
         "t3-screen t3-result-screen"
+      ),
+      screen(
+        "t3-report",
+        "T3-08 상세 리포트",
+        `${header()}
+        <section class="t3-report-mobile">
+          <h1>일을 맡기는 구조는 꽤 잘 잡혀 있어요</h1>
+          <p class="t3-report-summary">당신은 문제 상황을 빠르게 이해하고, AI에게 원하는 산출물의 방향을 비교적 명확하게 전달하는 편이에요. 다만 중간 대화에서 AI의 답변을 검증하거나, 빠진 조건을 다시 물어보는 과정은 조금 더 보완하면 좋아요.</p>
+          <div class="t3-detail-list">${makeT3DetailRows()}</div>
+          ${button("다른 Track 도전", "home", "primary", "t3-report-next")}
+          ${button("이전", "t3-result", "secondary", "t3-report-back")}
+        </section>`,
+        "t3-screen t3-report-screen"
       ),
     ].join("");
   };
@@ -242,7 +264,11 @@
   const originalShowScreen = showScreen;
   showScreen = function patchedShowScreen(name) {
     originalShowScreen(name);
-    if (name === "t3-chat") syncT3ChatScenario();
+    if (name === "t3-chat") {
+      syncT3ChatScenario();
+      const screen = document.querySelector('[data-screen="t3-chat"]');
+      if (screen && !screen.dataset.t3Tab) screen.dataset.t3Tab = "brief";
+    }
   };
 
   if (typeof render === "function") {
@@ -258,6 +284,19 @@
       .closest(".t3-scenario-list")
       ?.querySelectorAll("[data-t3-scenario]")
       .forEach((button) => button.classList.toggle("is-selected", button === scenarioButton));
+  }, true);
+
+  document.addEventListener("click", (event) => {
+    const tabButton = event.target.closest("[data-t3-tab]");
+    if (!tabButton) return;
+
+    const screen = tabButton.closest('[data-screen="t3-chat"]');
+    if (!screen) return;
+
+    screen.dataset.t3Tab = tabButton.dataset.t3Tab || "brief";
+    screen
+      .querySelectorAll("[data-t3-tab]")
+      .forEach((button) => button.classList.toggle("is-active", button === tabButton));
   }, true);
 
   document.addEventListener("input", (event) => {
