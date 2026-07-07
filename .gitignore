@@ -6,3 +6,8 @@ node_modules/
 **/.DS_Store
 *.code-workspace
 frontend/desktop-concept.html
+
+# 로컬 참고용 기획 문서 (레포에는 안 올림)
+/1_평가축_조작적정의.md
+/3_5턴_평가_플로우.md
+/(수정) 공통 스키마 정의.md
