@@ -13,6 +13,67 @@ node .\preview-server.cjs
 
 브라우저에서 `http://127.0.0.1:4173/`로 확인할 수 있습니다.
 
+## Track 3 Step 1 API demo
+
+Track 3 Step 1은 프론트 UI 없이도 API와 로컬 스크립트로 먼저 테스트할 수 있습니다.
+
+### 환경변수
+
+`.env.example`을 참고해 `.env`에 OpenAI 키를 설정합니다.
+
+```text
+OPENAI_API_KEY=sk-...
+```
+
+키가 없으면 Track 3 API는 fallback 모드로 동작합니다. 키가 있으면 기본적으로 OpenAI 모델을 사용합니다.
+
+모드 확인:
+
+```text
+GET /api/track3/health
+```
+
+응답의 `chatMode`, `judgeMode`가 `openai`이면 실제 모델 연결 상태이고, `fallback`이면 로컬 대체 로직 상태입니다.
+
+### 주요 API
+
+```text
+GET /api/track3/scenarios
+POST /api/track3/chat
+POST /api/track3/submit
+GET /api/track3/health
+```
+
+`POST /api/track3/chat` 요청 예:
+
+```json
+{
+  "scenarioId": "t3_growth_001",
+  "turns": [],
+  "userMessage": "헬스케어 앱 전환율 문제를 퍼널별로 나눠 분석안 구조를 잡아주세요.",
+  "artifact": ""
+}
+```
+
+`POST /api/track3/submit` 요청 예:
+
+```json
+{
+  "scenarioId": "t3_growth_001",
+  "turns": [
+    {"role": "user", "content": "전환율 문제를 분석하려고 합니다."},
+    {"role": "assistant", "content": "퍼널별로 나눠보겠습니다."}
+  ],
+  "finalOutput": "원인 가설, 확인 KPI, 필요한 데이터, 우선순위, 다음 액션이 포함된 최종 분석안입니다."
+}
+```
+
+로컬 데모:
+
+```powershell
+npm run track3:demo
+```
+
 # < AI 역량 테스트 개발 >
 
 ## 문제의식
