@@ -14,7 +14,10 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
   const nextTurns = [...validation.turns, { role: "user", content: validation.userMessage }];
   const userTurnCount = validation.currentTurnCount + 1;
   const result = await callChatModel({ scenario, turns: nextTurns, artifact })
-    .catch(() => buildFallbackChat({ scenario, turns: nextTurns, artifact }));
+    .catch((error) => {
+      console.error("[track3:chat] OpenAI 호출 실패, fallback으로 전환합니다:", error.message);
+      return buildFallbackChat({ scenario, turns: nextTurns, artifact });
+    });
 
   return {
     track: "track3",

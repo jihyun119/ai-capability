@@ -17,7 +17,10 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
   const scenario = getScenario(scenarioId);
   const codeChecks = runCodeChecks({ turns, earlyFinish });
   const judgeResult = await runLlmJudge({ scenario, turns, finalOutput })
-    .catch(() => buildHeuristicJudge({ scenario, turns, finalOutput }));
+    .catch((error) => {
+      console.error("[track3:judge] OpenAI 호출 실패, 휴리스틱 채점으로 전환합니다:", error.message);
+      return buildHeuristicJudge({ scenario, turns, finalOutput });
+    });
   const normalizedJudge = normalizeJudgeResult(judgeResult, { turns, finalOutput });
   const total = calculateTotalScore(normalizedJudge, codeChecks);
 
@@ -89,7 +92,7 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
   }));
 
   const axis_scores = [
-    axis("goal_definition", "목표 정의", scoreBySignals(first, [/문제|목표|전환율|개선|분석|만들/i, /산출물|분석안|보고서|표|결과/i]), quote(first)),
+    axis("goal_definition", "목표 정의", scoreBySignals(first, [/문제|목표|선정|결정|개선|분석|기획|계획|만들/i, /산출물|분석안|보고서|기획서|PRD|표|결과|초안/i]), quote(first)),
     axis("context", "맥락 제공", scoreByScenarioContext(allUser, scenario), quote(allUser)),
     axis("information_structure", "정보 구조화", scoreBySignals(allUser, [/\n|1\.|2\.|[-*]|:/, /조건|배경|목표|형식|제약/]), quote(allUser)),
     axis("task_decomposition", "작업 분해", scoreDecomposition(users, moves), `${users.length}턴 사용`),
