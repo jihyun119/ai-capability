@@ -16,20 +16,20 @@ const characters = {
 const characterGallery = [
   "ai-unknown.png",
   "friend.png",
+  "clingy-lover.png",
+  "boss.png",
   "boundary-love.png",
-  "cold-trainer.png",
-  "chatty.png",
   "searcher.png",
   "anxious-client.png",
   "partner.png",
-  "clingy-lover.png",
+  "chatty.png",
   "business.png",
   "nitpicker.png",
+  "cold-trainer.png",
   "minimal-request.png",
-  "boss.png",
   "emotion-bin.png",
-  "skeptic-regular.png",
   "warm-perfectionist.png",
+  "skeptic-regular.png",
 ];
 
 const characterFilesByType = {
@@ -703,7 +703,7 @@ function t2IntroScreen() {
     <section class="intro-hero t2-intro-hero">
       <div>
         <p class="eyebrow">Track 2 · 패턴 분석 · 약 8분</p>
-        <h1>AI 역량<br /> 평가 Lv.1</h1>
+        <h1>AI 활용 역량<br /> 테스트</h1>
         <p>자소서, 보고서, 과제, 기획처럼 실제 목적이 있는 상황에서 당신이 AI를 어떻게 활용하는지 분석합니다.</p>
       </div>
       ${charByType("프로 트집러형", "hero-character")}
@@ -1035,7 +1035,7 @@ function t3Screens() {
           <div class="t3-bubble t3-bubble-ai"></div>
           <div class="t3-bubble t3-bubble-user"></div>
           <div class="t3-bubble t3-bubble-ai"></div>
-          <label><input placeholder="메시지 입력" /><button type="button">↑</button></label>
+          <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력"></textarea><button type="button">↑</button></label>
         </aside>
       </section>`,
       "t3-screen t3-chat-screen"
@@ -1091,7 +1091,8 @@ function characterGalleryScreen() {
           })
           .join("")}
       </div>
-    </section>`,
+    </section>
+    ${footer()}`,
     "character-gallery-screen"
   );
 }
