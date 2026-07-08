@@ -1360,6 +1360,11 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  if (target.dataset.go === "t3-loading" && typeof window.__track3Submit === "function") {
+    await window.__track3Submit();
+    return;
+  }
+
   if (target.dataset.go === "home" || target.dataset.go === "track") {
     resetResults();
     render();
