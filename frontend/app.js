@@ -797,6 +797,51 @@ async function submitTrack1() {
   }
 }
 
+// ── Track 2 자유서술 검증 (Layer 1 + Layer 2) ────────────────────────────────
+
+const T2_FREQ_WORDS = ["always", "consistently", "frequently", "sometimes", "occasionally", "rarely", "never"];
+
+const T2_AXIS_KEYWORDS = {
+  task_clarity:    ["defin", "goal", "constraint", "scope", "specif", "open-end", "requirement", "condition", "parameter", "instruction", "task", "what should", "what not", "narrow", "explicit"],
+  context:         ["background", "context", "purpose", "audience", "upfront", "situation", "workflow", "surrounding", "intent", "explain", "before asking", "provide", "prior to", "setup"],
+  role:            ["role", "persona", "expert", "assign", "perspective", "title", "act as", "identity", "framed", "position", "specialist"],
+  output_format:   ["format", "length", "structure", "tone", "style", "layout", "wording", "ordering", "label", "citation", "visual", "table", "paragraph", "translation", "present", "deliver"],
+  iteration:       ["follow-up", "follow up", "revision", "unsatisfi", "fell short", "refine", "rework", "adjust", "incorrect", "missing", "misplaced", "repetitive", "overly", "not satisfied", "revise"],
+  critical_review: ["challeng", "push back", "pushback", "question", "verify", "incorrect", "unclear", "disagree", "dispute", "inaccurat", "inconsistent", "disconnected", "misalign", "without question", "accept", "rarely accept"]
+};
+
+function validateT2FreeText(text) {
+  if (!text || text.trim().length === 0) return "AI가 생성한 답변을 붙여넣어 주세요.";
+
+  const lower = text.toLowerCase();
+  const words = text.trim().split(/\s+/).filter((w) => w.length > 0);
+
+  // Layer 1: 기본 형식
+  if (words.length < 30)
+    return `최소 30단어 이상 작성해주세요. (현재 ${words.length}단어)`;
+
+  const sentenceCount = text.split(/[.!?]+/).filter((s) => s.trim().length > 0).length;
+  if (sentenceCount < 3)
+    return `최소 3문장 이상 작성해주세요. (현재 ${sentenceCount}문장)`;
+
+  const uniqueRatio = new Set(words.map((w) => w.toLowerCase())).size / words.length;
+  if (uniqueRatio < 0.4)
+    return "동일한 단어가 너무 많이 반복되었습니다.";
+
+  // Layer 2: 내용 관련성
+  const hasFreqWord = T2_FREQ_WORDS.some((fw) => new RegExp(`\\b${fw}\\b`).test(lower));
+  if (!hasFreqWord)
+    return "빈도를 나타내는 표현(always, sometimes, frequently 등)을 포함해주세요.";
+
+  const axisHits = Object.values(T2_AXIS_KEYWORDS).filter((keywords) =>
+    keywords.some((kw) => lower.includes(kw))
+  ).length;
+  if (axisHits < 2)
+    return "AI 활용 내용이 부족합니다. 목표 설정, 맥락 제공, 역할 지정, 출력 형식 등을 포함해주세요.";
+
+  return null;
+}
+
 async function submitTrack2() {
   state.t2Error = "";
   const missing = t2Questions
@@ -810,8 +855,9 @@ async function submitTrack2() {
     return;
   }
 
-  if (state.t2FreeText.trim().length < 10) {
-    state.t2Error = "AI가 생성한 답변을 10자 이상 붙여넣어 주세요.";
+  const freeTextError = validateT2FreeText(state.t2FreeText);
+  if (freeTextError) {
+    state.t2Error = freeTextError;
     render();
     showScreen("t2-paste");
     return;
