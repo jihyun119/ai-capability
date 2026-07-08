@@ -43,6 +43,32 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === "GET" && url.pathname === "/api/track3/scenarios") {
+    handleTrack3Scenarios(url)
+      .then((result) => writeJson(res, result.statusCode || 200, result.body))
+      .catch((error) => writeJson(res, 500, {
+        status: "error",
+        track: "track3",
+        error: { code: "INTERNAL_ERROR", message: error.message, retryable: true },
+      }));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/track3/chat") {
+    handleJson(req, res, handleTrack3Chat);
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/track3/submit") {
+    handleJson(req, res, handleTrack3Submit);
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/track3/save") {
+    handleJson(req, res, handleTrack3Save);
+    return;
+  }
+
   const pathname = decodeURIComponent(url.pathname);
   const safePath = pathname === "/" ? "/index.html" : pathname;
   const filePath = path.normalize(path.join(root, safePath));
@@ -269,6 +295,139 @@ function buildTrack2DemoResponse(scoringResult) {
         insight: `저는 AI를 활용할 때 ${scoringResult.strengths.join("과 ")}을 먼저 정리해 결과의 방향을 잡는 편입니다.`,
       },
     },
+  };
+}
+
+async function handleTrack3Scenarios(url) {
+  const { listScenarios, getScenario, TRACK3_VERSION } = await import("../src/track3/scenarios.js");
+  const scenarioId = url.searchParams.get("scenarioId");
+  return {
+    statusCode: 200,
+    body: {
+      status: "success",
+      track: "track3",
+      version: TRACK3_VERSION,
+      result: scenarioId ? getScenario(scenarioId) : listScenarios(),
+    },
+  };
+}
+
+async function handleTrack3Chat(payload) {
+  const { generateTrack3Chat } = await import("../src/track3/chat.js");
+  try {
+    const result = await generateTrack3Chat(payload || {});
+    return {
+      statusCode: 200,
+      body: { status: "success", track: "track3", version: result.version, scenarioId: result.scenarioId, result },
+    };
+  } catch (error) {
+    const isInvalid = error.code === "INVALID_INPUT";
+    return {
+      statusCode: isInvalid ? 400 : 500,
+      body: {
+        status: "error",
+        track: "track3",
+        error: { code: isInvalid ? "INVALID_INPUT" : "INTERNAL_ERROR", message: error.message, retryable: isInvalid },
+      },
+    };
+  }
+}
+
+async function handleTrack3Submit(payload) {
+  const { randomUUID } = await import("node:crypto");
+  const { getScenario } = await import("../src/track3/scenarios.js");
+  const { validateSubmitInput } = await import("../src/track3/codeChecks.js");
+  const { judgeTrack3 } = await import("../src/track3/judge.js");
+
+  const validation = validateSubmitInput(payload || {});
+  if (!validation.valid) {
+    return {
+      statusCode: 400,
+      body: {
+        status: "error",
+        track: "track3",
+        error: { code: "INVALID_INPUT", message: validation.errors.join(" "), retryable: true },
+      },
+    };
+  }
+
+  const scenario = getScenario(payload.scenarioId);
+  const evaluation = await judgeTrack3({
+    scenarioId: scenario.scenario_id,
+    turns: validation.turns,
+    finalOutput: validation.finalOutput,
+    earlyFinish: Boolean(payload.earlyFinish),
+  });
+  const resultId = `demo_${randomUUID()}`;
+
+  return {
+    statusCode: 200,
+    body: {
+      status: "success",
+      track: "track3",
+      version: evaluation.version,
+      resultId,
+      shareSlug: resultId,
+      createdAt: new Date().toISOString(),
+      result: evaluation,
+    },
+  };
+}
+
+async function handleTrack3Save(payload) {
+  const { randomUUID } = await import("node:crypto");
+  const { getScenario } = await import("../src/track3/scenarios.js");
+  const { validateSubmitInput } = await import("../src/track3/codeChecks.js");
+  const { judgeTrack3 } = await import("../src/track3/judge.js");
+  const { saveTrack3Result } = await import("../backend/db.js");
+
+  if (!payload?.respondentId) {
+    return {
+      statusCode: 400,
+      body: {
+        status: "error",
+        track: "track3",
+        error: { code: "INVALID_INPUT", message: "respondentId가 필요합니다.", retryable: true },
+      },
+    };
+  }
+
+  const validation = validateSubmitInput(payload);
+  if (!validation.valid) {
+    return {
+      statusCode: 400,
+      body: {
+        status: "error",
+        track: "track3",
+        error: { code: "INVALID_INPUT", message: validation.errors.join(" "), retryable: true },
+      },
+    };
+  }
+
+  const scenario = getScenario(payload.scenarioId);
+  const evaluation = payload.evaluation || await judgeTrack3({
+    scenarioId: scenario.scenario_id,
+    turns: validation.turns,
+    finalOutput: validation.finalOutput,
+    earlyFinish: Boolean(payload.earlyFinish),
+  });
+
+  const saved = await saveTrack3Result({
+    resultId: randomUUID(),
+    respondentId: payload.respondentId,
+    nicknameSnapshot: payload.nickname || "익명",
+    birthYear: payload.birthYear,
+    gender: payload.gender,
+    scenario,
+    turns: validation.turns,
+    finalOutput: validation.finalOutput,
+    earlyFinish: Boolean(payload.earlyFinish),
+    evaluation,
+  });
+
+  return {
+    statusCode: 200,
+    body: { status: "success", track: "track3", version: evaluation.version, resultId: saved.resultId, shareSlug: saved.shareSlug },
   };
 }
 

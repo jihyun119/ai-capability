@@ -45,9 +45,10 @@ async function callChatModel({ scenario, turns, artifact }) {
     messages: [
       { role: "system", content: TRACK3_CHAT_SYSTEM_PROMPT },
       {
+        // 시나리오는 의도적으로 전달하지 않는다. AI는 사용자가 대화에서 직접 말해준
+        // 정보만 알아야 하며(실제 ChatGPT처럼), 이를 통해 사용자의 맥락 제공 능력을 실제로 평가한다.
         role: "user",
         content: JSON.stringify({
-          scenario,
           previous_artifact: artifact || "",
           turns: normalizeTurns(turns)
         })
