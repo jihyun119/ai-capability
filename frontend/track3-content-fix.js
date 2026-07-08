@@ -134,8 +134,128 @@
       </article>`).join("");
   }
 
+  function escapeT3Html(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function ensureT3RuntimeState() {
+    if (!Array.isArray(state.t3Messages)) state.t3Messages = [];
+    if (!Number.isFinite(Number(state.t3TurnCount))) state.t3TurnCount = 0;
+    if (typeof state.t3Artifact !== "string") state.t3Artifact = "";
+  }
+
+  function getT3TurnCount() {
+    ensureT3RuntimeState();
+    const explicit = Number(state.t3TurnCount);
+    const fromMessages = state.t3Messages.filter((message) => message.role === "user").length;
+    return Math.max(0, Math.min(5, Number.isFinite(explicit) ? explicit : fromMessages));
+  }
+
+  function makeT3TurnProgress() {
+    const turnCount = getT3TurnCount();
+    return Array.from({ length: 5 }, (_, index) => `<i class="${index < turnCount ? "is-filled" : ""}"></i>`).join("");
+  }
+
+  function isT3TurnComplete() {
+    return getT3TurnCount() >= 5;
+  }
+
+  function makeT3ChatMessages() {
+    ensureT3RuntimeState();
+    if (!state.t3Messages.length) {
+      return `<div class="t3-chat-empty">메시지를 입력하면 AI와의 대화가 시작됩니다.</div>`;
+    }
+
+    return state.t3Messages.map((message) => `
+      <div class="t3-message t3-message-${message.role === "user" ? "user" : "assistant"}">
+        ${escapeT3Html(message.content).replace(/\n/g, "<br />")}
+      </div>`).join("");
+  }
+
+  function makeT3Artifact() {
+    ensureT3RuntimeState();
+    const value = state.t3Artifact.trim();
+    if (!value) {
+      return `<div class="t3-artifact-empty">AI와 대화하면 최종 제출물 초안이 이곳에 정리됩니다.</div>`;
+    }
+
+    return `<div class="t3-artifact-doc">${value
+      .split(/\n{2,}/)
+      .filter(Boolean)
+      .map((paragraph, index) => `
+        <article>
+          <h3>${index + 1}. ${index === 0 ? "후보 비교표" : index === 1 ? "선택안 & 선정 근거" : "PRD 초안"}</h3>
+          <p>${escapeT3Html(paragraph).replace(/\n/g, "<br />")}</p>
+        </article>`)
+      .join("")}</div>`;
+  }
+
+  function refreshT3ChatUi() {
+    const screen = document.querySelector('[data-screen="t3-chat"]');
+    if (!screen) return;
+
+    screen.querySelectorAll("[data-t3-turn-progress]").forEach((node) => {
+      node.innerHTML = makeT3TurnProgress();
+    });
+
+    const messages = screen.querySelector("[data-t3-chat-messages]");
+    if (messages) {
+      messages.innerHTML = makeT3ChatMessages();
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    const artifact = screen.querySelector("[data-t3-artifact]");
+    if (artifact) artifact.innerHTML = makeT3Artifact();
+
+    const input = screen.querySelector("[data-t3-chat-input]");
+    const sendButton = screen.querySelector("[data-t3-chat-send]");
+    const submitButton = screen.querySelector(".t3-submit");
+    const turnComplete = isT3TurnComplete();
+    if (input) {
+      input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
+    }
+    if (sendButton) sendButton.disabled = turnComplete;
+    if (submitButton) {
+      submitButton.disabled = !turnComplete;
+      submitButton.classList.toggle("is-ready", turnComplete);
+    }
+  }
+
+  function readT3ChatResponse(data) {
+    const message = data?.message || data?.reply || data?.answer || data?.assistantMessage || data?.content || "";
+    const artifact = data?.artifact || data?.draft || data?.workspace || data?.result?.artifact || "";
+    const turnCount = data?.turnCount ?? data?.turn_count ?? data?.currentTurn;
+    const remainingTurns = data?.remainingTurns ?? data?.remaining_turns;
+
+    return { message, artifact, turnCount, remainingTurns };
+  }
+
+  async function sendT3ChatMessage(message) {
+    const scenario = selectedT3Scenario();
+    const response = await fetch("/api/track3/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scenarioId: scenario.key,
+        scenario: scenario.key,
+        message,
+        messages: state.t3Messages,
+        turnCount: getT3TurnCount(),
+      }),
+    });
+
+    if (!response.ok) throw new Error(`Track3 chat failed: ${response.status}`);
+    return readT3ChatResponse(await response.json());
+  }
+
   t3Screens = function t3Screens() {
     state.t3Scenario = state.t3Scenario ?? 0;
+    ensureT3RuntimeState();
 
     return [
       loginScreen("t3-login", "t3-intro"),
@@ -187,7 +307,7 @@
         `${header()}
         <section class="t3-mobile-flow-head" style="display:none">
           <h1 data-t3-mobile-title>${selectedT3Scenario().title} 시나리오</h1>
-          <div class="t3-mobile-progress"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="t3-mobile-progress" data-t3-turn-progress>${makeT3TurnProgress()}</div>
           <nav class="t3-mobile-tabs" aria-label="Track 3 sections">
             <button type="button" data-t3-tab="brief" class="is-active">상황 설명</button>
             <button type="button" data-t3-tab="work">작업 영역</button>
@@ -199,18 +319,13 @@
           <section class="t3-workspace">
             <h2>최종 제출물 작업 영역</h2>
             <p>AI와 대화할수록 해당 영역이 채워집니다. 최대 5턴까지 대화 가능합니다.</p>
-            <div></div><div></div><div></div>
+            <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
             ${button("제출", "t3-loading", "primary", "t3-submit")}
           </section>
           <aside class="t3-chat-panel">
-            <header><h2>AI 채팅</h2><span><i></i><i></i><i></i><i></i><i></i></span></header>
-            <div class="t3-bubble t3-bubble-user"></div>
-            <div class="t3-bubble t3-bubble-ai"></div>
-            <div class="t3-bubble t3-bubble-user"></div>
-            <div class="t3-bubble t3-bubble-ai"></div>
-            <div class="t3-bubble t3-bubble-user"></div>
-            <div class="t3-bubble t3-bubble-ai"></div>
-            <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력"></textarea><button type="button">↑</button></label>
+            <header><h2>AI 채팅</h2><span data-t3-turn-progress>${makeT3TurnProgress()}</span></header>
+            <div class="t3-chat-messages" data-t3-chat-messages>${makeT3ChatMessages()}</div>
+            <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력"></textarea><button type="button" data-t3-chat-send>↑</button></label>
           </aside>
         </section>`,
         "t3-screen t3-chat-screen"
@@ -218,7 +333,7 @@
       screen(
         "t3-loading",
         "T3-04 분석 로딩",
-        `${header()}<section class="t3-loading-content"><h1>당신과 AI의 관계를<br />해석하는 중...</h1><img src="./Logo/Logo.v1.png" alt="" /></section>`,
+        `${header()}<section class="t3-loading-content"><h1>당신과 AI의 관계를<br />해석하는 중...</h1><div class="analysis-loading-mascot t3-loading-pookie" aria-hidden="true"></div></section>`,
         "t3-screen t3-loading-screen"
       ),
       screen(
@@ -237,7 +352,7 @@
             <div class="t3-detail-list">${makeT3DetailRows()}</div>
           </article>
         </section>
-        <nav class="t3-result-nav"><button class="cta t3-detail-open" data-target="t3-report" style="display:none">상세 리포트 보기</button>${button("공유하기", "t3-result", "secondary")}${button("다른 Track 도전", "home")}</nav>`,
+        <nav class="t3-result-nav">${button("공유하기", "t3-result", "secondary")}${button("다른 Track 도전", "home")}</nav>`,
         "t3-screen t3-result-screen"
       ),
       screen(
@@ -265,9 +380,11 @@
   showScreen = function patchedShowScreen(name) {
     originalShowScreen(name);
     if (name === "t3-chat") {
+      ensureT3RuntimeState();
       syncT3ChatScenario();
       const screen = document.querySelector('[data-screen="t3-chat"]');
       if (screen && !screen.dataset.t3Tab) screen.dataset.t3Tab = "brief";
+      refreshT3ChatUi();
     }
   };
 
@@ -280,6 +397,9 @@
     if (!scenarioButton) return;
 
     state.t3Scenario = Number(scenarioButton.dataset.t3Scenario) || 0;
+    state.t3Messages = [];
+    state.t3Artifact = "";
+    state.t3TurnCount = 0;
     scenarioButton
       .closest(".t3-scenario-list")
       ?.querySelectorAll("[data-t3-scenario]")
@@ -306,4 +426,46 @@
     field.style.height = "auto";
     field.style.height = `${Math.min(field.scrollHeight, 132)}px`;
   });
+
+  document.addEventListener("click", async (event) => {
+    const sendButton = event.target.closest("[data-t3-chat-send]");
+    if (!sendButton) return;
+
+    const composer = sendButton.closest(".t3-chat-composer");
+    const field = composer?.querySelector("[data-t3-chat-input]");
+    const message = field?.value.trim();
+    if (!message) return;
+
+    ensureT3RuntimeState();
+    if (isT3TurnComplete()) {
+      refreshT3ChatUi();
+      return;
+    }
+
+    state.t3Messages.push({ role: "user", content: message });
+    state.t3TurnCount = Math.min(5, getT3TurnCount() + 1);
+    field.value = "";
+    field.style.height = "auto";
+    refreshT3ChatUi();
+
+    sendButton.disabled = true;
+    try {
+      const reply = await sendT3ChatMessage(message);
+      if (Number.isFinite(Number(reply.turnCount))) {
+        state.t3TurnCount = Math.max(0, Math.min(5, Number(reply.turnCount)));
+      } else if (Number.isFinite(Number(reply.remainingTurns))) {
+        state.t3TurnCount = Math.max(0, Math.min(5, 5 - Number(reply.remainingTurns)));
+      }
+      if (reply.message) state.t3Messages.push({ role: "assistant", content: reply.message });
+      if (reply.artifact) state.t3Artifact = reply.artifact;
+    } catch (error) {
+      state.t3Messages.push({
+        role: "assistant",
+        content: "지금은 AI 응답을 불러오지 못했어요. 잠시 뒤 다시 시도해주세요.",
+      });
+    } finally {
+      sendButton.disabled = false;
+      refreshT3ChatUi();
+    }
+  }, true);
 })();
