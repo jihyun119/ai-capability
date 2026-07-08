@@ -617,6 +617,16 @@
     background: #aaa !important;
   }
 
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-submit.is-ready {
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-submit:disabled {
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+  }
+
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header span {
     display: flex !important;
     width: 176px !important;
@@ -863,6 +873,213 @@
   main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta {
     width: 540px !important;
     height: 88px !important;
+  }
+}
+
+@media (min-width: 1181px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header i,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header i:nth-child(n) {
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header i.is-filled,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header i.is-filled:nth-child(n) {
+    background: var(--t3-lime) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-messages {
+    position: absolute !important;
+    left: 25px !important;
+    right: 25px !important;
+    top: 103px !important;
+    bottom: 112px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    overflow-y: auto !important;
+    padding-right: 4px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-empty {
+    margin-top: auto !important;
+    padding: 18px !important;
+    border-radius: 10px !important;
+    background: var(--t3-panel) !important;
+    color: #777 !important;
+    font: 400 15px/1.35 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
+    max-width: 240px !important;
+    min-height: 64px !important;
+    padding: 16px 18px !important;
+    border-radius: 10px !important;
+    font: 600 15px/1.35 "Pretendard", sans-serif !important;
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message-user {
+    align-self: flex-end !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message-assistant {
+    align-self: flex-start !important;
+    background: var(--t3-grey) !important;
+    color: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > .t3-artifact {
+    width: auto !important;
+    height: auto !important;
+    min-height: 460px !important;
+    margin: 36px 0 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-empty {
+    min-height: 132px !important;
+    padding: 32px !important;
+    border-radius: 10px !important;
+    background: var(--t3-grey) !important;
+    color: #707070 !important;
+    font: 600 18px/1.4 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc {
+    display: grid !important;
+    gap: 18px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc article {
+    padding: 22px 24px !important;
+    border-radius: 10px !important;
+    background: var(--t3-panel) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc h3 {
+    margin: 0 0 12px !important;
+    font: 800 20px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc p {
+    margin: 0 !important;
+    font: 400 16px/1.5 "Pretendard", sans-serif !important;
+  }
+}
+
+main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
+  width: 310px !important;
+  height: 310px !important;
+  margin: 88px auto 0 !important;
+}
+
+@media (max-width: 1180px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i:nth-child(n) {
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i.is-filled,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i.is-filled:nth-child(n) {
+    background: var(--t3-lime) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > .t3-artifact {
+    display: block !important;
+    width: 100% !important;
+    min-height: 430px !important;
+    margin: 28px 0 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-empty {
+    min-height: 180px !important;
+    padding: 22px !important;
+    border-radius: 10px !important;
+    background: var(--t3-panel) !important;
+    color: #777 !important;
+    font: 600 14px/1.4 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc article {
+    padding: 16px !important;
+    border-radius: 10px !important;
+    background: var(--t3-panel) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc h3 {
+    margin: 0 0 8px !important;
+    font: 800 16px/1.25 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc p {
+    display: block !important;
+    margin: 0 !important;
+    font: 400 13px/1.45 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-messages {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 21px !important;
+    min-height: 430px !important;
+    padding-bottom: 84px !important;
+    overflow-y: auto !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-empty {
+    padding: 16px !important;
+    border-radius: 8px !important;
+    background: var(--t3-panel) !important;
+    color: #777 !important;
+    font: 400 13px/1.35 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
+    max-width: 279px !important;
+    min-height: 75px !important;
+    padding: 15px 18px !important;
+    border-radius: 8px !important;
+    font: 600 13px/1.35 "Pretendard", sans-serif !important;
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message-user {
+    align-self: flex-end !important;
+    background: var(--t3-violet) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message-assistant {
+    align-self: flex-start !important;
+    background: var(--t3-grey) !important;
+    color: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
+    width: 203px !important;
+    height: 203px !important;
+    margin: 58px auto 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta.secondary {
+    order: 1 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary) {
+    display: flex !important;
+    order: 2 !important;
   }
 }
 
@@ -1383,6 +1600,16 @@
     background: #aaa !important;
   }
 
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-submit.is-ready {
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-submit:disabled {
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+  }
+
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel {
     min-height: 560px !important;
     padding-bottom: 82px !important;
@@ -1619,5 +1846,39 @@
 
   main#app.app-shell > .screen.active.t3-report-screen .t3-report-back {
     margin: 0 auto !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i:nth-child(n) {
+    background: var(--t3-grey) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i.is-filled,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i.is-filled:nth-child(n) {
+    background: var(--t3-lime) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace > .t3-artifact {
+    display: block !important;
+    width: 100% !important;
+    min-height: 430px !important;
+    margin: 28px 0 0 !important;
+    background: transparent !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc p {
+    display: block !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta.secondary {
+    display: flex !important;
+    order: 1 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary) {
+    display: flex !important;
+    order: 2 !important;
   }
 }

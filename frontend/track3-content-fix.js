@@ -290,16 +290,67 @@
   function makeT3ChatMessages() {
     const turns = normalizedT3Turns();
     if (turns.length === 0) {
-      return `
-            <div class="t3-bubble t3-bubble-user"></div>
-            <div class="t3-bubble t3-bubble-ai"></div>
-            <div class="t3-bubble t3-bubble-user"></div>
-            <div class="t3-bubble t3-bubble-ai"></div>
-            <div class="t3-bubble t3-bubble-user"></div>
-            <div class="t3-bubble t3-bubble-ai"></div>`;
+      return `<div class="t3-chat-empty">메시지를 입력하면 AI와의 대화가 시작됩니다.</div>`;
     }
 
-    return turns.map((turn) => `<div class="t3-bubble ${turn.role === "assistant" ? "t3-bubble-ai" : "t3-bubble-user"}">${escapeHtml(turn.content)}</div>`).join("");
+    return turns.map((turn) => `<div class="t3-message t3-message-${turn.role === "assistant" ? "assistant" : "user"}">${escapeHtml(turn.content).replace(/\n/g, "<br />")}</div>`).join("");
+  }
+
+  function getT3TurnCount() {
+    return Math.max(0, Math.min(5, normalizedT3Turns().filter((turn) => turn.role === "user").length));
+  }
+
+  function isT3TurnComplete() {
+    return getT3TurnCount() >= 5;
+  }
+
+  function makeT3TurnProgress() {
+    const turnCount = getT3TurnCount();
+    return Array.from({ length: 5 }, (_, index) => `<i class="${index < turnCount ? "is-filled" : ""}"></i>`).join("");
+  }
+
+  function makeT3Artifact() {
+    const value = String(state.t3Artifact || state.t3FinalOutput || "").trim();
+    if (!value) {
+      return `<div class="t3-artifact-empty">AI와 대화하면 최종 제출물 초안이 이곳에 정리됩니다.</div>`;
+    }
+
+    const titles = ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"];
+    return `<div class="t3-artifact-doc">${value
+      .split(/\n{2,}/)
+      .filter(Boolean)
+      .map((paragraph, index) => `<article><h3>${index + 1}. ${titles[index] || "작성 내용"}</h3><p>${escapeHtml(paragraph).replace(/\n/g, "<br />")}</p></article>`)
+      .join("")}</div>`;
+  }
+
+  function refreshT3ChatUi() {
+    const screen = document.querySelector('[data-screen="t3-chat"]');
+    if (!screen) return;
+
+    screen.querySelectorAll("[data-t3-turn-progress], .t3-chat-panel header span").forEach((node) => {
+      node.innerHTML = makeT3TurnProgress();
+    });
+
+    const messages = screen.querySelector("[data-t3-chat-messages]");
+    if (messages) {
+      messages.innerHTML = makeT3ChatMessages();
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    const artifact = screen.querySelector("[data-t3-artifact]");
+    if (artifact) artifact.innerHTML = makeT3Artifact();
+
+    const input = screen.querySelector("[data-t3-chat-input]");
+    const sendButton = screen.querySelector("[data-t3-chat-send], .t3-chat-composer button");
+    const submitButton = screen.querySelector(".t3-submit");
+    const turnComplete = isT3TurnComplete();
+
+    if (input) input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
+    if (sendButton) sendButton.disabled = turnComplete;
+    if (submitButton) {
+      submitButton.disabled = !turnComplete;
+      submitButton.classList.toggle("is-ready", turnComplete);
+    }
   }
 
   function t3ResultGrade() {
@@ -386,6 +437,10 @@
     const input = document.querySelector('[data-screen="t3-chat"] [data-t3-chat-input]');
     const userMessage = input?.value.trim();
     if (!userMessage) return;
+    if (isT3TurnComplete()) {
+      refreshT3ChatUi();
+      return;
+    }
 
     const turnsBeforeRequest = normalizedT3Turns();
     state.t3Turns = [...turnsBeforeRequest, { role: "user", content: userMessage }];
@@ -414,6 +469,7 @@
       render();
       showScreen("t3-chat");
       syncT3ChatTab("chat");
+      refreshT3ChatUi();
     } catch (error) {
       console.error("[track3:chat]", error);
     }
@@ -527,12 +583,12 @@
           <section class="t3-workspace">
             <h2>최종 제출물 작업 영역</h2>
             <p>AI와 대화할수록 해당 영역이 채워집니다. 최대 5턴까지 대화 가능합니다.</p>
-            <div></div><div></div><div></div>
+            <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
             ${button("제출", "t3-loading", "primary", "t3-submit")}
           </section>
           <aside class="t3-chat-panel">
             <header><h2>AI 채팅</h2><span><i></i><i></i><i></i><i></i><i></i></span></header>
-            ${makeT3ChatMessages()}
+            <div class="t3-chat-messages" data-t3-chat-messages>${makeT3ChatMessages()}</div>
             <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력"></textarea><button type="button">↑</button></label>
           </aside>
         </section>`,
@@ -594,6 +650,12 @@
       syncT3ChatScenario();
       const screen = document.querySelector('[data-screen="t3-chat"]');
       if (screen && !screen.dataset.t3Tab) screen.dataset.t3Tab = "brief";
+      refreshT3ChatUi();
+    }
+    if (name === "t3-loading") {
+      document.querySelectorAll('[data-screen="t3-loading"] .t3-loading-content img').forEach((image) => {
+        image.classList.add("analysis-loading-mascot");
+      });
     }
   };
 
