@@ -202,7 +202,7 @@
   }
 
   function t3AxisLabel(key, value) {
-    return value?.label || ({
+    return value?.axis || value?.label || value?.name || ({
       goal_definition: "목표 정의",
       context: "맥락 제공",
       information_structure: "정보 구조화",
@@ -210,6 +210,7 @@
       output_design: "출력 설계",
       interaction_control: "상호작용 조율",
       verification: "검증 유도",
+      practical_application: "실무 적용",
     }[key] || key);
   }
 
@@ -218,22 +219,35 @@
     const axes = evaluation?.axes || evaluation?.axis_scores || evaluation?.scores;
     if (!axes || typeof axes !== "object") return null;
 
-    return Object.entries(axes).map(([key, value]) => {
+    const entries = Array.isArray(axes)
+      ? axes.map((value) => [value?.key || value?.axis || "", value])
+      : Object.entries(axes);
+
+    return entries.map(([key, value]) => {
       const score = typeof value === "number" ? value : Number(value?.score ?? value?.total ?? value?.value ?? 0);
       const max = typeof value === "object" ? Number(value.max || 100) : 100;
       const percent = typeof value === "object" && Number.isFinite(Number(value.rate))
         ? Number(value.rate) * 100
         : (max > 0 ? (score / max) * 100 : score);
+      const displayScore = max <= 5 ? percent : score;
       return {
         label: t3AxisLabel(key, value),
-        score: Math.round(score),
+        score: Math.round(displayScore),
         percent: Math.max(0, Math.min(100, percent)),
+        description: value?.comment || value?.evidence || "",
       };
     }).filter((row) => row.label && Number.isFinite(row.score));
   }
 
   function t3DetailRowsFromEvaluation() {
     const evaluation = currentT3Evaluation();
+    const scoreRows = t3ScoreRowsFromEvaluation() || [];
+    const axisDetails = scoreRows
+      .filter((row) => row.description)
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 3);
+    if (axisDetails.length > 0) return axisDetails;
+
     const feedback = evaluation?.feedback || evaluation?.details || evaluation?.report;
     const details = Array.isArray(feedback?.details) ? feedback.details
       : Array.isArray(feedback?.weaknesses) ? feedback.weaknesses
@@ -241,7 +255,6 @@
       : null;
     if (!details?.length) return null;
 
-    const scoreRows = t3ScoreRowsFromEvaluation() || [];
     return details.slice(0, 3).map((item, index) => ({
       label: item.name || item.label || scoreRows[index]?.label || "피드백",
       score: Math.round(Number(item.score ?? scoreRows[index]?.score ?? 78)),
@@ -251,25 +264,19 @@
   }
 
   function makeT3ScoreRows() {
-    const rows = t3ScoreRowsFromEvaluation() || [
-      { label: "목표 정의", score: 78, percent: 78 },
-      { label: "맥락 제공", score: 46, percent: 46 },
-      { label: "정보 구조화", score: 50, percent: 50 },
-      { label: "작업 분해", score: 78, percent: 78 },
-      { label: "출력 설계", score: 78, percent: 78 },
-      { label: "상호작용 조율", score: 78, percent: 78 },
-      { label: "검증 유도", score: 78, percent: 78 },
-    ];
+    const rows = t3ScoreRowsFromEvaluation();
+    if (!rows?.length) {
+      return `<p><b>평가 결과 없음</b><strong>-</strong><i><span style="width:0%"></span></i></p>`;
+    }
 
     return rows.map(({ label, score, percent }) => `<p><b>${escapeHtml(label)}</b><strong>${score}점</strong><i><span style="width:${percent}%"></span></i></p>`).join("");
   }
 
   function makeT3DetailRows() {
-    const details = t3DetailRowsFromEvaluation() || [
-      { label: "정보 구조화", score: 50, percent: 50, description: "AI 답변의 누락 지점이나 반대 근거를 확인하는 요청은 아직 보완이 필요해요. 최종 선택안을 받은 뒤 실패할 수 있는 이유, 반대 의견, 놓친 리스크를 물어보면 결과물이 더 탄탄해집니다." },
-      { label: "출력 설계", score: 78, percent: 78, description: "AI 답변의 누락 지점이나 반대 근거를 확인하는 요청은 아직 보완이 필요해요. 최종 선택안을 받은 뒤 실패할 수 있는 이유, 반대 의견, 놓친 리스크를 물어보면 결과물이 더 탄탄해집니다." },
-      { label: "검증 유도", score: 78, percent: 78, description: "AI 답변의 누락 지점이나 반대 근거를 확인하는 요청은 아직 보완이 필요해요. 최종 선택안을 받은 뒤 실패할 수 있는 이유, 반대 의견, 놓친 리스크를 물어보면 결과물이 더 탄탄해집니다." },
-    ];
+    const details = t3DetailRowsFromEvaluation();
+    if (!details?.length) {
+      return `<article><p><b>리포트 대기</b><strong>-</strong><i><span style="width:0%"></span></i></p><div>${escapeHtml(state.t3Error || "제출 후 평가 결과가 표시됩니다.")}</div></article>`;
+    }
 
     return details.map(({ label, score, percent, description }) => `
       <article>
@@ -355,23 +362,29 @@
 
   function t3ResultGrade() {
     const evaluation = currentT3Evaluation();
-    return evaluation?.grade || evaluation?.type || "실무 적용형";
+    return evaluation?.grade || evaluation?.type || "평가 대기";
   }
 
   function t3ResultScore() {
     const evaluation = currentT3Evaluation();
-    const score = Number(evaluation?.total ?? evaluation?.score ?? evaluation?.totalScore ?? 74);
-    return Number.isFinite(score) ? Math.round(score) : 74;
+    const score = Number(evaluation?.total ?? evaluation?.score ?? evaluation?.totalScore);
+    return Number.isFinite(score) ? Math.round(score) : "-";
   }
 
   function t3ResultHeadline() {
     const evaluation = currentT3Evaluation();
-    return evaluation?.headline || evaluation?.feedback?.headline || "일을 맡기는 구조는 꽤 잘 잡혀 있어요";
+    return evaluation?.headline || evaluation?.feedback?.headline || evaluation?.feedback?.summary_strengths || "평가 결과를 확인할 수 없어요";
   }
 
   function t3ResultSummary() {
     const evaluation = currentT3Evaluation();
-    return evaluation?.summary || evaluation?.feedback?.summary || evaluation?.comment || "당신은 문제 상황을 빠르게 이해하고, AI에게 원하는 산출물의 방향을 비교적 명확하게 전달하는 편이에요. 다만 중간 대화에서 AI의 답변을 검증하거나, 빠진 조건을 다시 물어보는 과정은 조금 더 보완하면 좋아요.";
+    const feedback = evaluation?.feedback || {};
+    return evaluation?.summary
+      || feedback.summary
+      || [feedback.summary_strengths, feedback.summary_weaknesses, feedback.recommendation].filter(Boolean).join(" ")
+      || evaluation?.comment
+      || state.t3Error
+      || "제출한 대화와 산출물을 바탕으로 평가를 생성하지 못했습니다.";
   }
 
   async function getT3Json(url) {

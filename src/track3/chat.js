@@ -66,17 +66,13 @@ function buildFallbackChat({ scenario, turns, artifact }) {
   const lastUser = [...turns].reverse().find((turn) => turn.role === "user")?.content || "";
   const turnCount = turns.filter((turn) => turn.role === "user").length;
   const baseArtifact = artifact || [
-    `# ${scenario.title}`,
+    "# 작업 초안",
     "",
-    `역할: ${scenario.role}`,
-    `상황: ${scenario.situation}`,
+    "아직 사용자가 제공한 정보가 충분하지 않습니다.",
+    "현재까지 사용자가 직접 전달한 내용을 바탕으로만 초안을 구성합니다.",
     "",
-    "## 현재 작업 초안",
-    "- 원인 가설: 아직 구체화 필요",
-    "- 확인 KPI: 아직 구체화 필요",
-    "- 필요한 데이터: 아직 구체화 필요",
-    "- 우선순위: 아직 구체화 필요",
-    "- 다음 액션: 아직 구체화 필요"
+    "## 사용자 제공 정보",
+    "- 구체적인 목표, 맥락, 제약, 산출물 형식을 추가로 알려주면 초안을 더 정확히 만들 수 있습니다."
   ].join("\n");
 
   const artifactText = updateArtifact(baseArtifact, lastUser, turnCount);
@@ -97,7 +93,7 @@ function updateArtifact(baseArtifact, lastUser, turnCount) {
     "",
     `## ${turnCount}턴 반영 메모`,
     `사용자 요청: ${lastUser.slice(0, 180)}`,
-    "- 산출물은 실제 구현 시 AI 응답 JSON의 artifact 필드로 갱신됩니다."
+    "- 위 요청에서 확인되는 정보만 반영했습니다."
   ].join("\n");
   return `${baseArtifact}${addition}`;
 }

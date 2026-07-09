@@ -21,7 +21,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
       console.error("[track3:judge] OpenAI 호출 실패, 휴리스틱 채점으로 전환합니다:", error.message);
       return buildHeuristicJudge({ scenario, turns, finalOutput });
     });
-  const normalizedJudge = normalizeJudgeResult(judgeResult, { turns, finalOutput });
+  const normalizedJudge = normalizeJudgeResult(judgeResult, { scenario, turns, finalOutput });
   const total = calculateTotalScore(normalizedJudge, codeChecks);
 
   return {
@@ -120,11 +120,13 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
   };
 }
 
-function normalizeJudgeResult(result, { turns, finalOutput }) {
+function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
+  const fallback = buildHeuristicJudge({ scenario, turns, finalOutput });
+  const fallbackByKey = new Map(fallback.axis_scores.map((item) => [item.key, item]));
   const byKey = new Map((Array.isArray(result.axis_scores) ? result.axis_scores : []).map((item) => [item.key || keyForAxis(item.axis), item]));
   const axis_scores = TRACK3_AXES.map(([key, label]) => {
-    const item = byKey.get(key) || {};
-    const score = clampScore(item.score);
+    const item = byKey.get(key) || fallbackByKey.get(key) || {};
+    const score = item.score == null ? clampScore(fallbackByKey.get(key)?.score) : clampScore(item.score);
     return {
       key,
       axis: label,
@@ -136,7 +138,6 @@ function normalizeJudgeResult(result, { turns, finalOutput }) {
     };
   });
 
-  const fallback = buildHeuristicJudge({ scenario: getScenario(), turns, finalOutput });
   return {
     move_tagging: Array.isArray(result.move_tagging) ? result.move_tagging : fallback.move_tagging,
     sequence_valid: Boolean(result.sequence_valid),
