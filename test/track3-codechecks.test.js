@@ -57,3 +57,38 @@ test("judgeTrack3 returns a demo evaluation without OpenAI", async () => {
   assert.equal(result.axis_scores.length, 8);
   assert.ok(result.total > 0);
 });
+
+test("judgeTrack3 gives different scores for weak and strong conversations", async () => {
+  const original = process.env.ENABLE_TRACK3_LLM_JUDGE;
+  process.env.ENABLE_TRACK3_LLM_JUDGE = "false";
+
+  const weakTurns = Array.from({ length: 5 }, () => ([
+    { role: "user", content: "아무거나 해줘" },
+    { role: "assistant", content: "요청을 반영했습니다." }
+  ])).flat();
+
+  const weak = await judgeTrack3({
+    scenarioId: "pm_001",
+    turns: weakTurns,
+    finalOutput: "작업 초안입니다. 아직 구체적인 목표, 맥락, 제약, 산출물 형식이 충분히 정리되지 않았습니다."
+  });
+
+  const strong = await judgeTrack3({
+    scenarioId: "pm_001",
+    turns: sampleTurns,
+    finalOutput: [
+      "기능 선정 결과: 위시리스트 공유 기능",
+      "선정 근거: 3주 안에 개발자 2명과 디자이너 1명으로 MVP 범위 구현 가능",
+      "목표: 선물 탐색과 공유 전환 개선",
+      "성공지표: 공유 클릭률, 공유 후 구매 전환율",
+      "범위: 위시리스트 생성, 공유 링크, 기본 상품 카드",
+      "제외범위: 추천 알고리즘 고도화, 쿠폰 정책 변경",
+      "일정: 1주차 설계, 2주차 구현, 3주차 QA 및 릴리즈"
+    ].join("\n")
+  });
+
+  process.env.ENABLE_TRACK3_LLM_JUDGE = original;
+
+  assert.ok(strong.total > weak.total);
+  assert.ok(strong.axis_scores.find((axis) => axis.key === "context").score > weak.axis_scores.find((axis) => axis.key === "context").score);
+});
