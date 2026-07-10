@@ -8,6 +8,7 @@ import {
   judgeTrack3
 } from "../src/track3/judge.js";
 import {
+  buildTrack3ChatMessages,
   generateTrack3Chat,
   normalizeTrack3Artifact,
   stripTrack3ChatMarkdown
@@ -99,6 +100,25 @@ test("stripTrack3ChatMarkdown converts assistant Markdown to readable plain text
     "검증 계획"
   ].join("\n"));
   assert.doesNotMatch(plainText, /[#*_`~>\[\]]/);
+});
+
+test("buildTrack3ChatMessages preserves roles and keeps the latest user request last", () => {
+  const turns = [
+    { role: "user", content: "먼저 핵심 문제를 정의해줘." },
+    { role: "assistant", content: "핵심 문제는 재구매율 하락입니다." },
+    { role: "user", content: "방금 답변에서 검증할 지표만 세 개 골라줘." }
+  ];
+
+  const messages = buildTrack3ChatMessages({
+    turns,
+    artifact: "# 현재 분석안\n재구매율 하락을 우선 분석한다."
+  });
+
+  assert.deepEqual(messages.map((message) => message.role), ["system", "user", "assistant", "user"]);
+  assert.equal(messages.at(-1).content, "방금 답변에서 검증할 지표만 세 개 골라줘.");
+  assert.match(messages[0].content, /current_artifact/);
+  assert.match(messages[0].content, /현재 분석안/);
+  assert.equal(messages.slice(1).some((message) => message.content.includes("previous_artifact")), false);
 });
 
 test("scenario restatement policy caps an otherwise inflated evaluation", () => {
