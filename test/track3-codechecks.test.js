@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { runCodeChecks, validateChatInput, validateSubmitInput } from "../src/track3/codeChecks.js";
-import { judgeTrack3 } from "../src/track3/judge.js";
+import {
+  TRACK3_AXES,
+  applyRestatementPolicy,
+  calculateTrack3TotalScore,
+  judgeTrack3
+} from "../src/track3/judge.js";
 
 const sampleTurns = [
   { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 PRD 초안을 만들려고 합니다." },
@@ -20,11 +25,42 @@ test("validateChatInput rejects short messages and max turns", () => {
   assert.equal(validateChatInput({ turns: sampleTurns, userMessage: "추가 요청입니다" }).valid, false);
 });
 
-test("runCodeChecks scores observable Track 3 signals", () => {
+test("runCodeChecks returns observable signals as diagnostics only", () => {
   const result = runCodeChecks({ turns: sampleTurns });
-  assert.equal(result.max, 20);
-  assert.ok(result.score >= 14);
+  assert.equal(result.max, 0);
+  assert.equal(result.score, 0);
+  assert.equal(result.diagnostic_max, 20);
+  assert.ok(result.diagnostic_score >= 14);
   assert.equal(result.checks.length, 6);
+  assert.ok(result.checks.every((check) => check.contributes_to_total === false));
+});
+
+test("scenario restatement policy caps an otherwise inflated evaluation", () => {
+  const inflatedAxes = TRACK3_AXES.map(([key, axis]) => ({
+    key,
+    axis,
+    score: 4,
+    max: 4,
+    rate: 1,
+    evidence: "시나리오 원문",
+    comment: ""
+  }));
+
+  const enforced = applyRestatementPolicy({
+    axisScores: inflatedAxes,
+    deltaScore: 4,
+    sequenceValid: true
+  });
+  const total = calculateTrack3TotalScore({
+    axis_scores: enforced.axisScores,
+    delta_score: { score: enforced.deltaScore }
+  });
+
+  assert.deepEqual(enforced.axisScores.slice(0, 7).map((axis) => axis.score), [1, 1, 1, 0, 1, 0, 0]);
+  assert.equal(enforced.axisScores[7].score, 4);
+  assert.equal(enforced.deltaScore, 0);
+  assert.equal(enforced.sequenceValid, false);
+  assert.equal(total, 28);
 });
 
 test("validateSubmitInput accepts a usable final output", () => {

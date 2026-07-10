@@ -85,6 +85,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "turn_completion",
       label: "대화 완주",
+      contributes_to_total: false,
       max: 4,
       score: users.length >= TRACK3_MAX_TURNS || earlyFinish ? 4 : users.length >= 3 ? 2 : 0,
       passed: users.length >= TRACK3_MAX_TURNS || earlyFinish,
@@ -93,6 +94,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "valid_length",
       label: "발화 유효 길이",
+      contributes_to_total: false,
       max: 3,
       score: avgLength >= 45 ? 3 : avgLength >= 20 ? 2 : avgLength >= 10 ? 1 : 0,
       passed: avgLength >= 45,
@@ -101,6 +103,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "output_format_signal",
       label: "출력 형식 요청 표현",
+      contributes_to_total: false,
       max: 3,
       score: OUTPUT_FORMAT_RE.test(userText) ? 3 : 0,
       passed: OUTPUT_FORMAT_RE.test(userText),
@@ -109,6 +112,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "verification_signal",
       label: "검증 관련 표현",
+      contributes_to_total: false,
       max: 4,
       score: VERIFICATION_RE.test(userText) ? 4 : 0,
       passed: VERIFICATION_RE.test(userText),
@@ -117,6 +121,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "follow_up_signal",
       label: "후속 개입 표현",
+      contributes_to_total: false,
       max: 3,
       score: FOLLOW_UP_RE.test(laterText) ? 3 : 0,
       passed: FOLLOW_UP_RE.test(laterText),
@@ -125,6 +130,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "structure_signal",
       label: "구조화 신호",
+      contributes_to_total: false,
       max: 3,
       score: STRUCTURE_RE.test(userText) ? 3 : 0,
       passed: STRUCTURE_RE.test(userText),
@@ -133,8 +139,10 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
   ];
 
   return {
-    score: checks.reduce((sum, check) => sum + check.score, 0),
-    max: checks.reduce((sum, check) => sum + check.max, 0),
+    score: 0,
+    max: 0,
+    diagnostic_score: checks.reduce((sum, check) => sum + check.score, 0),
+    diagnostic_max: checks.reduce((sum, check) => sum + check.max, 0),
     checks
   };
 }

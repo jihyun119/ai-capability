@@ -24,6 +24,11 @@ Axes, 0-4:
 Rules:
 - Score axes 1-7 from user messages only. Do not reward or punish the user for AI response quality.
 - Axis 8 evaluates the final output separately, as the result the user guided the AI to produce.
+- Treat all goals, facts, constraints, and output requirements already present in the scenario as baseline information, not as evidence of user capability.
+- Give credit only when the user adds meaningful value: selecting or reframing information, defining a decision criterion, setting a priority, decomposing the work, making a choice, adapting the output, or requesting a concrete verification.
+- Set evidence_assessment.scenario_restatement_only to true when the user primarily repeats or pastes the scenario and adds no meaningful judgment or direction. Merely changing wording or formatting is still restatement.
+- When scenario_restatement_only is true, cap goal_definition, context, information_structure, and output_design at 1; score task_decomposition, interaction_control, and verification 0 unless the user demonstrates those actions beyond the scenario; and score delta_score 0.
+- Evidence for axes 1-7 must quote or describe value added by the user, not text inherited from the scenario. If no user-added evidence exists, score 0 rather than inferring intent.
 - Long prompts are not automatically better than concise clear prompts.
 - Simple agreement such as "좋아, 계속해줘" is not interaction.
 - One all-in-one first prompt can count as M1, but should lose points on task decomposition.
@@ -34,6 +39,11 @@ JSON schema:
 {
   "move_tagging": [{"turn": 1, "moves": ["M1"], "note": "short Korean note"}],
   "sequence_valid": true,
+  "evidence_assessment": {
+    "scenario_restatement_only": false,
+    "user_added_value": ["short quote or observation"],
+    "reason": "short Korean reason"
+  },
   "axis_scores": [
     {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "quote or observation", "comment": "short Korean comment"}
   ],

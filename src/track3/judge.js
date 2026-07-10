@@ -22,7 +22,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
       return buildHeuristicJudge({ scenario, turns, finalOutput });
     });
   const normalizedJudge = normalizeJudgeResult(judgeResult, { scenario, turns, finalOutput });
-  const total = calculateTotalScore(normalizedJudge, codeChecks);
+  const total = calculateTrack3TotalScore(normalizedJudge);
 
   return {
     track: "track3",
@@ -36,6 +36,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
     grade: gradeForTotal(total),
     axis_scores: normalizedJudge.axis_scores,
     delta_score: normalizedJudge.delta_score,
+    evidence_assessment: normalizedJudge.evidence_assessment,
     code_checks: codeChecks,
     move_tagging: normalizedJudge.move_tagging,
     sequence_valid: normalizedJudge.sequence_valid,
@@ -105,6 +106,11 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
   return {
     move_tagging: moves,
     sequence_valid: moves.some((m) => m.moves.includes("M1")) && users.length >= 3,
+    evidence_assessment: {
+      scenario_restatement_only: false,
+      user_added_value: [],
+      reason: "휴리스틱 모드에서는 시나리오 재진술 여부를 의미적으로 판정하지 않습니다."
+    },
     axis_scores,
     delta_score: {
       score: users.length >= 4 && output.length > 250 ? 3 : users.length >= 2 ? 2 : 1,
@@ -122,9 +128,10 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
 
 function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
   const fallback = buildHeuristicJudge({ scenario, turns, finalOutput });
+  const evidenceAssessment = normalizeEvidenceAssessment(result.evidence_assessment, fallback.evidence_assessment);
   const fallbackByKey = new Map(fallback.axis_scores.map((item) => [item.key, item]));
   const byKey = new Map((Array.isArray(result.axis_scores) ? result.axis_scores : []).map((item) => [item.key || keyForAxis(item.axis), item]));
-  const axis_scores = TRACK3_AXES.map(([key, label]) => {
+  let axis_scores = TRACK3_AXES.map(([key, label]) => {
     const item = byKey.get(key) || fallbackByKey.get(key) || {};
     const score = item.score == null ? clampScore(fallbackByKey.get(key)?.score) : clampScore(item.score);
     return {
@@ -138,12 +145,22 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
     };
   });
 
+  let deltaScore = clampScore(result.delta_score?.score);
+  let sequenceValid = Boolean(result.sequence_valid);
+  if (evidenceAssessment.scenario_restatement_only) {
+    const enforced = applyRestatementPolicy({ axisScores: axis_scores, deltaScore, sequenceValid });
+    axis_scores = enforced.axisScores;
+    deltaScore = enforced.deltaScore;
+    sequenceValid = enforced.sequenceValid;
+  }
+
   return {
     move_tagging: Array.isArray(result.move_tagging) ? result.move_tagging : fallback.move_tagging,
-    sequence_valid: Boolean(result.sequence_valid),
+    sequence_valid: sequenceValid,
+    evidence_assessment: evidenceAssessment,
     axis_scores,
     delta_score: {
-      score: clampScore(result.delta_score?.score),
+      score: deltaScore,
       evidence: String(result.delta_score?.evidence || "").slice(0, 240),
       t1_expected_level: String(result.delta_score?.t1_expected_level || "").slice(0, 240),
       final_level: String(result.delta_score?.final_level || "").slice(0, 240)
@@ -156,16 +173,60 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
   };
 }
 
-function calculateTotalScore(judge, codeChecks) {
+export function calculateTrack3TotalScore(judge) {
   const processAvg = avg(judge.axis_scores.slice(0, 7).map((axis) => axis.score));
   const axis8 = judge.axis_scores[7]?.score || 0;
   const delta = judge.delta_score?.score || 0;
-  return Math.round(
+  const judgeScore =
     (processAvg * 12.5)
     + (delta * 3.75)
-    + (axis8 * 3.75)
-    + codeChecks.score
-  );
+    + (axis8 * 3.75);
+  return Math.round((judgeScore / 80) * 100);
+}
+
+function normalizeEvidenceAssessment(value, fallback) {
+  const assessment = value && typeof value === "object" ? value : fallback;
+  return {
+    scenario_restatement_only: assessment?.scenario_restatement_only === true,
+    user_added_value: Array.isArray(assessment?.user_added_value)
+      ? assessment.user_added_value.map((item) => String(item).slice(0, 160)).slice(0, 5)
+      : [],
+    reason: String(assessment?.reason || "").slice(0, 240)
+  };
+}
+
+export function applyRestatementPolicy({ axisScores, deltaScore, sequenceValid }) {
+  return {
+    axisScores: applyRestatementCaps(axisScores),
+    deltaScore: 0,
+    sequenceValid: false
+  };
+}
+
+function applyRestatementCaps(axisScores) {
+  const caps = {
+    goal_definition: 1,
+    context: 1,
+    information_structure: 1,
+    task_decomposition: 0,
+    output_design: 1,
+    interaction_control: 0,
+    verification: 0
+  };
+
+  return axisScores.map((axis) => {
+    const cap = caps[axis.key];
+    if (cap == null || axis.score <= cap) return axis;
+    const score = cap;
+    return {
+      ...axis,
+      score,
+      rate: Math.round((score / axis.max) * 100) / 100,
+      comment: axis.comment
+        ? `${axis.comment} 시나리오 재진술 상한을 적용했습니다.`
+        : "시나리오 재진술 상한을 적용했습니다."
+    };
+  });
 }
 
 function gradeForTotal(total) {
