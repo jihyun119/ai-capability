@@ -7,6 +7,7 @@ import {
   calculateTrack3TotalScore,
   judgeTrack3
 } from "../src/track3/judge.js";
+import { generateTrack3Chat, normalizeTrack3Artifact } from "../src/track3/chat.js";
 
 const sampleTurns = [
   { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 PRD 초안을 만들려고 합니다." },
@@ -33,6 +34,45 @@ test("runCodeChecks returns observable signals as diagnostics only", () => {
   assert.ok(result.diagnostic_score >= 14);
   assert.equal(result.checks.length, 6);
   assert.ok(result.checks.every((check) => check.contributes_to_total === false));
+});
+
+test("normalizeTrack3Artifact rejects user-message and meta-note contamination", () => {
+  const previousArtifact = "# 기존 분석안\n- AI가 정리한 핵심 분석";
+  const userMessage = "매출 감소 원인을 분석하고 다음 행동을 표로 정리해주세요.";
+
+  assert.equal(normalizeTrack3Artifact(userMessage, { previousArtifact, lastUserMessage: userMessage }), previousArtifact);
+  assert.equal(normalizeTrack3Artifact(
+    `# 2턴 반영 메모\n사용자 요청: ${userMessage}`,
+    { previousArtifact, lastUserMessage: userMessage }
+  ), previousArtifact);
+  assert.equal(normalizeTrack3Artifact(
+    "# 원인 분석\n- 재구매율 하락을 먼저 검증해야 합니다.",
+    { previousArtifact, lastUserMessage: userMessage }
+  ), "# 원인 분석\n- 재구매율 하락을 먼저 검증해야 합니다.");
+});
+
+test("Track 3 chat fallback preserves the prior artifact without copying user input", async () => {
+  const original = process.env.ENABLE_TRACK3_CHAT_MODEL;
+  process.env.ENABLE_TRACK3_CHAT_MODEL = "false";
+  const previousArtifact = "# 기존 산출물\n- AI가 작성한 내용";
+  const userMessage = "이 문장을 작업 영역에 그대로 넣지 마세요.";
+
+  let result;
+  try {
+    result = await generateTrack3Chat({
+      scenarioId: "pm_001",
+      turns: [],
+      userMessage,
+      artifact: previousArtifact
+    });
+  } finally {
+    if (original == null) delete process.env.ENABLE_TRACK3_CHAT_MODEL;
+    else process.env.ENABLE_TRACK3_CHAT_MODEL = original;
+  }
+
+  assert.equal(result.artifact, previousArtifact);
+  assert.equal(result.artifact.includes(userMessage), false);
+  assert.match(result.assistantMessage, /기존 최종 제출물 초안을 유지/);
 });
 
 test("scenario restatement policy caps an otherwise inflated evaluation", () => {

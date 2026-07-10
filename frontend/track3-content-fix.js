@@ -580,10 +580,11 @@
     try {
       await ensureRespondentReady();
       const turns = normalizedT3Turns();
+      const finalOutput = String(state.t3FinalOutput || state.t3Artifact || "").trim();
       const requestPayload = {
         scenarioId: activeT3ScenarioId(),
         turns,
-        finalOutput: state.t3FinalOutput || state.t3Artifact || turns.map((turn) => `${turn.role}: ${turn.content}`).join("\n"),
+        finalOutput,
         earlyFinish: false,
       };
       const response = await postJson("/api/track3/submit", requestPayload);
