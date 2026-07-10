@@ -22,7 +22,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
       return buildHeuristicJudge({ scenario, turns, finalOutput });
     });
   const normalizedJudge = normalizeJudgeResult(judgeResult, { scenario, turns, finalOutput });
-  const total = calculateTotalScore(normalizedJudge, codeChecks);
+  const total = calculateTrack3TotalScore(normalizedJudge);
 
   return {
     track: "track3",
@@ -36,6 +36,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
     grade: gradeForTotal(total),
     axis_scores: normalizedJudge.axis_scores,
     delta_score: normalizedJudge.delta_score,
+    evidence_assessment: normalizedJudge.evidence_assessment,
     code_checks: codeChecks,
     move_tagging: normalizedJudge.move_tagging,
     sequence_valid: normalizedJudge.sequence_valid,
@@ -105,6 +106,11 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
   return {
     move_tagging: moves,
     sequence_valid: moves.some((m) => m.moves.includes("M1")) && users.length >= 3,
+    evidence_assessment: {
+      scenario_restatement_only: false,
+      user_added_value: [],
+      reason: "휴리스틱 모드에서는 시나리오 재진술 여부를 의미적으로 판정하지 않습니다."
+    },
     axis_scores,
     delta_score: {
       score: users.length >= 4 && output.length > 250 ? 3 : users.length >= 2 ? 2 : 1,
@@ -122,28 +128,40 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
 
 function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
   const fallback = buildHeuristicJudge({ scenario, turns, finalOutput });
+  const evidenceAssessment = normalizeEvidenceAssessment(result.evidence_assessment, fallback.evidence_assessment);
   const fallbackByKey = new Map(fallback.axis_scores.map((item) => [item.key, item]));
   const byKey = new Map((Array.isArray(result.axis_scores) ? result.axis_scores : []).map((item) => [item.key || keyForAxis(item.axis), item]));
-  const axis_scores = TRACK3_AXES.map(([key, label]) => {
+  let axis_scores = TRACK3_AXES.map(([key, label]) => {
     const item = byKey.get(key) || fallbackByKey.get(key) || {};
     const score = item.score == null ? clampScore(fallbackByKey.get(key)?.score) : clampScore(item.score);
+    const evidence = String(item.evidence || "").slice(0, 240);
     return {
       key,
       axis: label,
       score,
       max: 4,
       rate: Math.round((score / 4) * 100) / 100,
-      evidence: String(item.evidence || "").slice(0, 240),
-      comment: String(item.comment || "").slice(0, 240)
+      evidence,
+      comment: safeAxisComment(item.comment, { key, score, evidence, turns })
     };
   });
 
+  let deltaScore = clampScore(result.delta_score?.score);
+  let sequenceValid = Boolean(result.sequence_valid);
+  if (evidenceAssessment.scenario_restatement_only) {
+    const enforced = applyRestatementPolicy({ axisScores: axis_scores, deltaScore, sequenceValid });
+    axis_scores = enforced.axisScores;
+    deltaScore = enforced.deltaScore;
+    sequenceValid = enforced.sequenceValid;
+  }
+
   return {
     move_tagging: Array.isArray(result.move_tagging) ? result.move_tagging : fallback.move_tagging,
-    sequence_valid: Boolean(result.sequence_valid),
+    sequence_valid: sequenceValid,
+    evidence_assessment: evidenceAssessment,
     axis_scores,
     delta_score: {
-      score: clampScore(result.delta_score?.score),
+      score: deltaScore,
       evidence: String(result.delta_score?.evidence || "").slice(0, 240),
       t1_expected_level: String(result.delta_score?.t1_expected_level || "").slice(0, 240),
       final_level: String(result.delta_score?.final_level || "").slice(0, 240)
@@ -156,16 +174,132 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
   };
 }
 
-function calculateTotalScore(judge, codeChecks) {
+export function calculateTrack3TotalScore(judge) {
   const processAvg = avg(judge.axis_scores.slice(0, 7).map((axis) => axis.score));
   const axis8 = judge.axis_scores[7]?.score || 0;
   const delta = judge.delta_score?.score || 0;
-  return Math.round(
+  const judgeScore =
     (processAvg * 12.5)
     + (delta * 3.75)
-    + (axis8 * 3.75)
-    + codeChecks.score
-  );
+    + (axis8 * 3.75);
+  return Math.round((judgeScore / 80) * 100);
+}
+
+function normalizeEvidenceAssessment(value, fallback) {
+  const assessment = value && typeof value === "object" ? value : fallback;
+  return {
+    scenario_restatement_only: assessment?.scenario_restatement_only === true,
+    user_added_value: Array.isArray(assessment?.user_added_value)
+      ? assessment.user_added_value.map((item) => String(item).slice(0, 160)).slice(0, 5)
+      : [],
+    reason: String(assessment?.reason || "").slice(0, 240)
+  };
+}
+
+function safeAxisComment(value, { key, score, evidence, turns }) {
+  const comment = String(value || "").replace(/\s+/g, " ").trim();
+  const userText = userTurns(turns).map((turn) => turn.content).join(" ");
+  const unsafe = !comment
+    || comment.length > 140
+    || normalizeComparable(comment) === normalizeComparable(evidence)
+    || sharesLongSequence(comment, userText);
+
+  return unsafe ? axisFeedbackFor(key, score) : comment;
+}
+
+function normalizeComparable(value) {
+  return String(value || "").toLowerCase().replace(/[^가-힣a-z0-9]/g, "");
+}
+
+function sharesLongSequence(left, right, size = 18) {
+  const source = normalizeComparable(left);
+  const target = normalizeComparable(right);
+  if (source.length < size || target.length < size) return false;
+  for (let index = 0; index <= source.length - size; index += 1) {
+    if (target.includes(source.slice(index, index + size))) return true;
+  }
+  return false;
+}
+
+function axisFeedbackFor(key, score) {
+  const level = score >= 3 ? "high" : score >= 2 ? "mid" : "low";
+  const feedback = {
+    goal_definition: {
+      high: "해결할 문제와 기대하는 결과물이 명확하게 연결되어 있어요.",
+      mid: "목표는 드러나지만 기대하는 결과물을 조금 더 구체화할 필요가 있어요.",
+      low: "해결할 문제와 최종 결과물을 먼저 명확하게 정해보세요."
+    },
+    context: {
+      high: "AI가 판단하는 데 필요한 배경과 제약 조건을 충분히 제공했어요.",
+      mid: "기본 맥락은 전달했지만 대상과 제약 조건을 더 보강하면 좋아요.",
+      low: "AI가 상황을 판단할 수 있도록 배경, 대상, 제약 조건을 추가해보세요."
+    },
+    information_structure: {
+      high: "지시와 배경, 조건이 구분되어 정보를 쉽게 파악할 수 있어요.",
+      mid: "핵심 정보는 있지만 지시와 배경을 더 분명하게 나누면 좋아요.",
+      low: "지시, 배경, 조건, 산출물 형식을 구분해서 전달해보세요."
+    },
+    task_decomposition: {
+      high: "복잡한 작업을 목적에 맞는 단계로 나누어 진행했어요.",
+      mid: "작업을 일부 나누었지만 단계별 목적을 더 선명하게 정하면 좋아요.",
+      low: "한 번에 완성하기보다 설계, 초안, 검증, 최종화로 나누어보세요."
+    },
+    output_design: {
+      high: "사용 목적에 맞게 결과물의 형식과 포함 항목을 구체적으로 설계했어요.",
+      mid: "결과물 형식은 제시했지만 분량과 포함 항목을 더 구체화하면 좋아요.",
+      low: "결과물의 형식, 분량, 포함 항목과 사용 목적을 함께 지정해보세요."
+    },
+    interaction_control: {
+      high: "AI의 답변을 바탕으로 방향과 우선순위를 능동적으로 조정했어요.",
+      mid: "후속 요청은 있었지만 선택과 제외의 근거를 더 분명히 제시하면 좋아요.",
+      low: "AI의 제안 중 선택할 것과 제외할 것을 직접 판단해보세요."
+    },
+    verification: {
+      high: "오류와 누락을 확인할 구체적인 검증 기준을 제시했어요.",
+      mid: "검토를 요청했지만 확인할 기준을 더 구체적으로 정하면 좋아요.",
+      low: "논리 비약, 누락, 실행 가능성처럼 구체적인 기준으로 검증을 요청해보세요."
+    },
+    practical_application: {
+      high: "최종 결과물이 실제 업무에서 바로 활용할 수 있는 형태로 완성됐어요.",
+      mid: "결과물의 기본 구조는 갖췄지만 실행 항목을 더 보완하면 좋아요.",
+      low: "담당자, 우선순위와 다음 행동을 포함해 실제 사용할 수 있게 완성해보세요."
+    }
+  };
+  return feedback[key]?.[level] || "이번 평가축에서 다음 행동을 더 구체적으로 보여주세요.";
+}
+
+export function applyRestatementPolicy({ axisScores, deltaScore, sequenceValid }) {
+  return {
+    axisScores: applyRestatementCaps(axisScores),
+    deltaScore: 0,
+    sequenceValid: false
+  };
+}
+
+function applyRestatementCaps(axisScores) {
+  const caps = {
+    goal_definition: 1,
+    context: 1,
+    information_structure: 1,
+    task_decomposition: 0,
+    output_design: 1,
+    interaction_control: 0,
+    verification: 0
+  };
+
+  return axisScores.map((axis) => {
+    const cap = caps[axis.key];
+    if (cap == null || axis.score <= cap) return axis;
+    const score = cap;
+    return {
+      ...axis,
+      score,
+      rate: Math.round((score / axis.max) * 100) / 100,
+      comment: axis.comment
+        ? `${axis.comment} 시나리오 재진술 상한을 적용했습니다.`
+        : "시나리오 재진술 상한을 적용했습니다."
+    };
+  });
 }
 
 function gradeForTotal(total) {

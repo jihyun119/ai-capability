@@ -24,6 +24,12 @@ Axes, 0-4:
 Rules:
 - Score axes 1-7 from user messages only. Do not reward or punish the user for AI response quality.
 - Axis 8 evaluates the final output separately, as the result the user guided the AI to produce.
+- Treat all goals, facts, constraints, and output requirements already present in the scenario as baseline information, not as evidence of user capability.
+- Give credit only when the user adds meaningful value: selecting or reframing information, defining a decision criterion, setting a priority, decomposing the work, making a choice, adapting the output, or requesting a concrete verification.
+- Set evidence_assessment.scenario_restatement_only to true when the user primarily repeats or pastes the scenario and adds no meaningful judgment or direction. Merely changing wording or formatting is still restatement.
+- When scenario_restatement_only is true, cap goal_definition, context, information_structure, and output_design at 1; score task_decomposition, interaction_control, and verification 0 unless the user demonstrates those actions beyond the scenario; and score delta_score 0.
+- Evidence for axes 1-7 must quote or describe value added by the user, not text inherited from the scenario. If no user-added evidence exists, score 0 rather than inferring intent.
+- Keep evidence as a short internal quote or observation. Write comment as one concise Korean feedback sentence about the axis; never copy a user message into comment.
 - Long prompts are not automatically better than concise clear prompts.
 - Simple agreement such as "좋아, 계속해줘" is not interaction.
 - One all-in-one first prompt can count as M1, but should lose points on task decomposition.
@@ -34,8 +40,13 @@ JSON schema:
 {
   "move_tagging": [{"turn": 1, "moves": ["M1"], "note": "short Korean note"}],
   "sequence_valid": true,
+  "evidence_assessment": {
+    "scenario_restatement_only": false,
+    "user_added_value": ["short quote or observation"],
+    "reason": "short Korean reason"
+  },
   "axis_scores": [
-    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "quote or observation", "comment": "short Korean comment"}
+    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "short internal quote or observation", "comment": "one concise Korean feedback sentence, not a user quote"}
   ],
   "delta_score": {
     "score": 0,
@@ -59,13 +70,18 @@ Important: You do NOT know the user's situation, role, company, goal, data, or c
 
 Your job:
 - Respond naturally and helpfully, based only on what the user has actually told you.
-- Produce or update an artifact when the user asks for analysis, draft, table, final output, or revision, using only the information the user provided.
+- Treat assistant_message as the conversational reply and artifact as the cumulative, assistant-authored deliverable for final submission.
+- Update artifact only with substantive analysis, decisions, drafts, tables, or revisions produced by the assistant.
+- Never place the user's request, chat transcript, source notes, turn summaries, or meta commentary such as "사용자 요청" or "N턴 반영 메모" in artifact.
+- Use user-provided facts as inputs to the work, but synthesize them into the deliverable instead of copying the user's message.
+- If the turn does not produce a substantive deliverable update, return previous_artifact unchanged.
+- Write assistant_message as plain Korean text without Markdown syntax. Do not use headings, bold markers, code fences, Markdown links, blockquotes, or Markdown list markers.
 - Do not score the user during chat.
 - Do not reveal any judging rubric.
 
 Return only JSON:
 {
   "assistant_message": "Korean chat reply to show in the chat panel",
-  "artifact": "Current best work output to show in the left artifact panel"
+  "artifact": "Latest cumulative assistant-authored deliverable only; never include user messages or chat meta notes"
 }
 `.trim();

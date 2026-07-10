@@ -13,29 +13,37 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
   const scenario = getScenario(scenarioId);
   const nextTurns = [...validation.turns, { role: "user", content: validation.userMessage }];
   const userTurnCount = validation.currentTurnCount + 1;
-  const result = await callChatModel({ scenario, turns: nextTurns, artifact })
+  const result = await callChatModel({ turns: nextTurns, artifact })
     .catch((error) => {
       console.error("[track3:chat] OpenAI 호출 실패, fallback으로 전환합니다:", error.message);
-      return buildFallbackChat({ scenario, turns: nextTurns, artifact });
+      return buildFallbackChat({ artifact });
     });
+  const assistantMessage = stripTrack3ChatMarkdown(result.assistant_message || result.assistantMessage);
+  const cleanedPriorTurns = nextTurns.map((turn) => turn.role === "assistant"
+    ? { ...turn, content: stripTrack3ChatMarkdown(turn.content) }
+    : turn);
+  const nextArtifact = normalizeTrack3Artifact(result.artifact, {
+    previousArtifact: artifact,
+    lastUserMessage: validation.userMessage
+  });
 
   return {
     track: "track3",
     version: TRACK3_VERSION,
     scenarioId: scenario.scenario_id,
-    assistantMessage: cleanText(result.assistant_message || result.assistantMessage),
-    artifact: cleanText(result.artifact) || cleanText(artifact),
+    assistantMessage,
+    artifact: nextArtifact,
     turnCount: userTurnCount,
     remainingTurns: Math.max(0, TRACK3_MAX_TURNS - userTurnCount),
     isComplete: userTurnCount >= TRACK3_MAX_TURNS,
-    turns: [...nextTurns, { role: "assistant", content: cleanText(result.assistant_message || result.assistantMessage) }]
+    turns: [...cleanedPriorTurns, { role: "assistant", content: assistantMessage }]
   };
 }
 
-async function callChatModel({ scenario, turns, artifact }) {
+async function callChatModel({ turns, artifact }) {
   const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_API_KEY;
   if (!apiKey || process.env.ENABLE_TRACK3_CHAT_MODEL === "false") {
-    return buildFallbackChat({ scenario, turns, artifact });
+    return buildFallbackChat({ artifact });
   }
 
   const { default: OpenAI } = await import("openai");
@@ -62,44 +70,58 @@ async function callChatModel({ scenario, turns, artifact }) {
   return JSON.parse(response.choices[0].message.content.trim());
 }
 
-function buildFallbackChat({ scenario, turns, artifact }) {
-  const lastUser = [...turns].reverse().find((turn) => turn.role === "user")?.content || "";
-  const turnCount = turns.filter((turn) => turn.role === "user").length;
-  const baseArtifact = artifact || [
-    "# 작업 초안",
-    "",
-    "아직 사용자가 제공한 정보가 충분하지 않습니다.",
-    "현재까지 사용자가 직접 전달한 내용을 바탕으로만 초안을 구성합니다.",
-    "",
-    "## 사용자 제공 정보",
-    "- 구체적인 목표, 맥락, 제약, 산출물 형식을 추가로 알려주면 초안을 더 정확히 만들 수 있습니다."
-  ].join("\n");
-
-  const artifactText = updateArtifact(baseArtifact, lastUser, turnCount);
+function buildFallbackChat({ artifact }) {
+  const currentArtifact = cleanText(artifact);
   return {
-    assistant_message: [
-      `${turnCount}턴 요청을 반영했습니다.`,
-      "왼쪽 산출물 초안을 업데이트했어요.",
-      turnCount >= TRACK3_MAX_TURNS
-        ? "이제 최종 제출 및 평가로 넘어갈 수 있습니다."
-        : "다음 턴에서는 방향 선택, 검증 기준, 최종화 요청 중 하나를 더 구체화하면 좋습니다."
-    ].join(" "),
-    artifact: artifactText
+    assistant_message: currentArtifact
+      ? "요청을 처리하지 못해 기존 최종 제출물 초안을 유지했어요. 잠시 후 다시 시도해주세요."
+      : "요청을 처리하지 못해 최종 제출물 초안을 만들지 못했어요. 잠시 후 다시 시도해주세요.",
+    artifact: currentArtifact
   };
 }
 
-function updateArtifact(baseArtifact, lastUser, turnCount) {
-  const addition = [
-    "",
-    `## ${turnCount}턴 반영 메모`,
-    `사용자 요청: ${lastUser.slice(0, 180)}`,
-    "- 위 요청에서 확인되는 정보만 반영했습니다."
-  ].join("\n");
-  return `${baseArtifact}${addition}`;
+export function normalizeTrack3Artifact(value, { previousArtifact = "", lastUserMessage = "" } = {}) {
+  const candidate = cleanText(value);
+  const previous = cleanText(previousArtifact);
+  if (!candidate) return previous;
+
+  const normalizedCandidate = normalizeComparable(candidate);
+  const normalizedUserMessage = normalizeComparable(lastUserMessage);
+  const containsArtifactMeta = /(^|\n)\s*(?:#{1,6}\s*)?\d+\s*턴\s*반영\s*메모|(^|\n)\s*(?:[-*]\s*)?사용자\s*요청\s*:/im.test(candidate);
+  const containsWholeUserMessage = normalizedUserMessage.length >= 12
+    && normalizedCandidate.includes(normalizedUserMessage);
+
+  return containsArtifactMeta || containsWholeUserMessage ? previous : candidate;
+}
+
+function normalizeComparable(value) {
+  return String(value || "").toLowerCase().replace(/[^가-힣a-z0-9]/g, "");
 }
 
 function cleanText(value) {
   return String(value || "").trim();
+}
+
+export function stripTrack3ChatMarkdown(value) {
+  return String(value || "")
+    .replace(/```[^\n]*\n?([\s\S]*?)```/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^\s*([-*_])(?:\s*\1){2,}\s*$/gm, "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "• ")
+    .replace(/\*\*\*([^*]+)\*\*\*/g, "$1")
+    .replace(/___([^_]+)___/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/~~([^~]+)~~/g, "$1")
+    .replace(/`([^`\n]+)`/g, "$1")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2")
+    .replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1$2")
+    .replace(/\\([\\`*_[\]{}()#+.!>~-])/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function withTimeout(promise, timeoutMs) {
