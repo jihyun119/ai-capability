@@ -29,6 +29,7 @@ Rules:
 - Set evidence_assessment.scenario_restatement_only to true when the user primarily repeats or pastes the scenario and adds no meaningful judgment or direction. Merely changing wording or formatting is still restatement.
 - When scenario_restatement_only is true, cap goal_definition, context, information_structure, and output_design at 1; score task_decomposition, interaction_control, and verification 0 unless the user demonstrates those actions beyond the scenario; and score delta_score 0.
 - Evidence for axes 1-7 must quote or describe value added by the user, not text inherited from the scenario. If no user-added evidence exists, score 0 rather than inferring intent.
+- Keep evidence as a short internal quote or observation. Write comment as one concise Korean feedback sentence about the axis; never copy a user message into comment.
 - Long prompts are not automatically better than concise clear prompts.
 - Simple agreement such as "좋아, 계속해줘" is not interaction.
 - One all-in-one first prompt can count as M1, but should lose points on task decomposition.
@@ -45,7 +46,7 @@ JSON schema:
     "reason": "short Korean reason"
   },
   "axis_scores": [
-    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "quote or observation", "comment": "short Korean comment"}
+    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "short internal quote or observation", "comment": "one concise Korean feedback sentence, not a user quote"}
   ],
   "delta_score": {
     "score": 0,

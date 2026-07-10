@@ -91,6 +91,8 @@ test("judgeTrack3 returns a demo evaluation without OpenAI", async () => {
 
   assert.equal(result.track, "track3");
   assert.equal(result.axis_scores.length, 8);
+  assert.ok(result.axis_scores.every((axis) => axis.comment.length > 0));
+  assert.ok(result.axis_scores.every((axis) => !axis.comment.includes("다음 분기 핵심 기능 하나를 선정")));
   assert.ok(result.total > 0);
 });
 
