@@ -15,6 +15,7 @@
         "선택과 선정 근거",
         "PRD 핵심 항목 (목표·성공지표·범위·일정 등)",
       ],
+      artifactSections: ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"],
     },
     {
       key: "marketing",
@@ -38,6 +39,7 @@
         "채널별 실행안과 예산배분",
         "기대효과 및 핵심 인사이트",
       ],
+      artifactSections: ["원인 가설 & 뉴스 근거", "타깃 & 핵심 메시지", "채널별 실행안 & 예산", "성과 지표 & 기대효과"],
     },
     {
       key: "data",
@@ -64,6 +66,7 @@
         "우선적으로 확인할 데이터와 분석 순서 작성",
         "가능한 원인과 가장 먼저 수행해야 할 추가 분석 또는 개선 과제 제안",
       ],
+      artifactSections: ["핵심 문제 & 지표 해석", "분석 가설 & 우선순위", "데이터 & 검증 계획", "경영진 제안 & 다음 액션"],
     },
   ];
 
@@ -112,6 +115,9 @@
       mission: asArray(item?.mission || item?.missionGuide || item?.mission_guide).length
         ? asArray(item?.mission || item?.missionGuide || item?.mission_guide)
         : (fallback.mission || []),
+      artifactSections: asArray(item?.artifactSections || item?.artifact_sections).length
+        ? asArray(item?.artifactSections || item?.artifact_sections)
+        : (fallback.artifactSections || []),
       newsTitle: item?.newsTitle || item?.news_title || fallback.newsTitle,
       news: asArray(item?.news).length ? asArray(item.news) : fallback.news,
       metricsTitle: item?.metricsTitle || item?.metrics_title || fallback.metricsTitle,
@@ -388,16 +394,37 @@
 
   function makeT3Artifact() {
     const value = String(state.t3Artifact || state.t3FinalOutput || "").trim();
-    if (!value) {
-      return `<div class="t3-artifact-empty">AI와 대화하면 최종 제출물 초안이 이곳에 정리됩니다.</div>`;
+    const sections = selectedT3Scenario().artifactSections || ["작성 내용"];
+    const contentBySection = parseT3ArtifactSections(value, sections);
+
+    return `<div class="t3-artifact-doc">${sections.map((title, index) => {
+      const content = contentBySection.get(title) || "";
+      return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(title)}</h3><p>${content ? escapeHtml(content).replace(/\n/g, "<br />") : "AI와 대화하면 이 영역이 채워집니다."}</p></article>`;
+    }).join("")}</div>`;
+  }
+
+  function parseT3ArtifactSections(value, sections) {
+    const result = new Map(sections.map((section) => [section, ""]));
+    if (!value) return result;
+
+    const markers = sections.flatMap((section) => {
+      const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = new RegExp(`(?:^|\\n)\\s*(?:#{1,6}\\s*)?(?:\\d+[.)]\\s*)?${escaped}\\s*(?:\\n|$)`, "i").exec(value);
+      return match ? [{ section, index: match.index, contentStart: match.index + match[0].length }] : [];
+    }).sort((a, b) => a.index - b.index);
+
+    if (markers.length) {
+      markers.forEach((marker, index) => {
+        const end = markers[index + 1]?.index ?? value.length;
+        result.set(marker.section, value.slice(marker.contentStart, end).trim());
+      });
+      return result;
     }
 
-    const titles = ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"];
-    return `<div class="t3-artifact-doc">${value
-      .split(/\n{2,}/)
-      .filter(Boolean)
-      .map((paragraph, index) => `<article><h3>${index + 1}. ${titles[index] || "작성 내용"}</h3><p>${escapeHtml(paragraph).replace(/\n/g, "<br />")}</p></article>`)
-      .join("")}</div>`;
+    value.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean).forEach((part, index) => {
+      if (sections[index]) result.set(sections[index], part);
+    });
+    return result;
   }
 
   function refreshT3ChatUi() {

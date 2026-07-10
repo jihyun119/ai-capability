@@ -9,10 +9,12 @@ import {
 } from "../src/track3/judge.js";
 import {
   buildTrack3ChatMessages,
+  compactTrack3AssistantMessage,
   generateTrack3Chat,
   normalizeTrack3Artifact,
   stripTrack3ChatMarkdown
 } from "../src/track3/chat.js";
+import { listScenarios } from "../src/track3/scenarios.js";
 
 const sampleTurns = [
   { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 PRD 초안을 만들려고 합니다." },
@@ -111,14 +113,34 @@ test("buildTrack3ChatMessages preserves roles and keeps the latest user request 
 
   const messages = buildTrack3ChatMessages({
     turns,
-    artifact: "# 현재 분석안\n재구매율 하락을 우선 분석한다."
+    artifact: "# 현재 분석안\n재구매율 하락을 우선 분석한다.",
+    artifactSections: ["핵심 문제 & 지표 해석", "데이터 & 검증 계획"]
   });
 
   assert.deepEqual(messages.map((message) => message.role), ["system", "user", "assistant", "user"]);
   assert.equal(messages.at(-1).content, "방금 답변에서 검증할 지표만 세 개 골라줘.");
   assert.match(messages[0].content, /current_artifact/);
   assert.match(messages[0].content, /현재 분석안/);
+  assert.match(messages[0].content, /## 핵심 문제 & 지표 해석/);
   assert.equal(messages.slice(1).some((message) => message.content.includes("previous_artifact")), false);
+});
+
+test("Track 3 scenarios expose three or four artifact sections", () => {
+  const scenarios = listScenarios();
+
+  assert.equal(scenarios.length, 3);
+  assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length >= 3));
+  assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length <= 4));
+  assert.deepEqual(scenarios[0].artifact_sections, ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"]);
+});
+
+test("compactTrack3AssistantMessage keeps chat concise while artifact holds details", () => {
+  const longReply = "알겠습니다. 요청하신 내용을 반영해 핵심 문제와 지표 해석을 정리하겠습니다. 이어서 재구매율, 평균 주문 금액, 고객 세그먼트별 차이와 검증 방법을 자세히 설명하고 실행 순서까지 모두 안내드리겠습니다.";
+  const compact = compactTrack3AssistantMessage(longReply);
+
+  assert.ok(compact.length <= 110);
+  assert.match(compact, /^알겠습니다\./);
+  assert.equal(compact.includes("실행 순서까지 모두 안내"), false);
 });
 
 test("scenario restatement policy caps an otherwise inflated evaluation", () => {
