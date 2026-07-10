@@ -13,12 +13,12 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
   const scenario = getScenario(scenarioId);
   const nextTurns = [...validation.turns, { role: "user", content: validation.userMessage }];
   const userTurnCount = validation.currentTurnCount + 1;
-  const result = await callChatModel({ turns: nextTurns, artifact })
+  const result = await callChatModel({ turns: nextTurns, artifact, artifactSections: scenario.artifact_sections })
     .catch((error) => {
       console.error("[track3:chat] OpenAI 호출 실패, fallback으로 전환합니다:", error.message);
       return buildFallbackChat({ artifact });
     });
-  const assistantMessage = stripTrack3ChatMarkdown(result.assistant_message || result.assistantMessage);
+  const assistantMessage = compactTrack3AssistantMessage(result.assistant_message || result.assistantMessage);
   const cleanedPriorTurns = nextTurns.map((turn) => turn.role === "assistant"
     ? { ...turn, content: stripTrack3ChatMarkdown(turn.content) }
     : turn);
@@ -40,7 +40,7 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
   };
 }
 
-async function callChatModel({ turns, artifact }) {
+async function callChatModel({ turns, artifact, artifactSections }) {
   const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_API_KEY;
   if (!apiKey || process.env.ENABLE_TRACK3_CHAT_MODEL === "false") {
     return buildFallbackChat({ artifact });
@@ -50,7 +50,7 @@ async function callChatModel({ turns, artifact }) {
   const openai = new OpenAI({ apiKey });
   const response = await withTimeout(openai.chat.completions.create({
     model: process.env.TRACK3_CHAT_MODEL || "gpt-4o-mini",
-    messages: buildTrack3ChatMessages({ turns, artifact }),
+    messages: buildTrack3ChatMessages({ turns, artifact, artifactSections }),
     temperature: 0.5,
     max_tokens: 1200,
     response_format: { type: "json_object" }
@@ -59,7 +59,7 @@ async function callChatModel({ turns, artifact }) {
   return JSON.parse(response.choices[0].message.content.trim());
 }
 
-export function buildTrack3ChatMessages({ turns = [], artifact = "" } = {}) {
+export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSections = [] } = {}) {
   const conversation = normalizeTurns(turns);
   const currentArtifact = cleanText(artifact);
   const artifactContext = currentArtifact
@@ -70,9 +70,17 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "" } = {}) {
       `<current_artifact>${JSON.stringify(currentArtifact)}</current_artifact>`
     ].join("\n")
     : "";
+  const sectionContext = Array.isArray(artifactSections) && artifactSections.length
+    ? [
+      "",
+      "The artifact must use these exact section headings and return the full cumulative artifact on every turn:",
+      ...artifactSections.map((section) => `## ${section}`),
+      "Update only the relevant content while preserving useful content in the other sections."
+    ].join("\n")
+    : "";
 
   return [
-    { role: "system", content: `${TRACK3_CHAT_SYSTEM_PROMPT}${artifactContext}` },
+    { role: "system", content: `${TRACK3_CHAT_SYSTEM_PROMPT}${sectionContext}${artifactContext}` },
     ...conversation
   ];
 }
@@ -129,6 +137,17 @@ export function stripTrack3ChatMarkdown(value) {
     .replace(/\\([\\`*_[\]{}()#+.!>~-])/g, "$1")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+export function compactTrack3AssistantMessage(value, maxLength = 110) {
+  const plainText = stripTrack3ChatMarkdown(value).replace(/\s+/g, " ").trim();
+  const sentences = plainText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+  const concise = sentences.slice(0, 2).join(" ").trim();
+  if (concise.length <= maxLength) return concise;
+
+  const shortened = concise.slice(0, maxLength - 1).trimEnd();
+  const boundary = Math.max(shortened.lastIndexOf(". "), shortened.lastIndexOf("! "), shortened.lastIndexOf("? "));
+  return `${boundary >= 30 ? shortened.slice(0, boundary + 1) : shortened}…`;
 }
 
 function withTimeout(promise, timeoutMs) {
