@@ -18,7 +18,10 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
       console.error("[track3:chat] OpenAI 호출 실패, fallback으로 전환합니다:", error.message);
       return buildFallbackChat({ artifact });
     });
-  const assistantMessage = cleanText(result.assistant_message || result.assistantMessage);
+  const assistantMessage = stripTrack3ChatMarkdown(result.assistant_message || result.assistantMessage);
+  const cleanedPriorTurns = nextTurns.map((turn) => turn.role === "assistant"
+    ? { ...turn, content: stripTrack3ChatMarkdown(turn.content) }
+    : turn);
   const nextArtifact = normalizeTrack3Artifact(result.artifact, {
     previousArtifact: artifact,
     lastUserMessage: validation.userMessage
@@ -33,7 +36,7 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
     turnCount: userTurnCount,
     remainingTurns: Math.max(0, TRACK3_MAX_TURNS - userTurnCount),
     isComplete: userTurnCount >= TRACK3_MAX_TURNS,
-    turns: [...nextTurns, { role: "assistant", content: assistantMessage }]
+    turns: [...cleanedPriorTurns, { role: "assistant", content: assistantMessage }]
   };
 }
 
@@ -97,6 +100,28 @@ function normalizeComparable(value) {
 
 function cleanText(value) {
   return String(value || "").trim();
+}
+
+export function stripTrack3ChatMarkdown(value) {
+  return String(value || "")
+    .replace(/```[^\n]*\n?([\s\S]*?)```/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^\s*([-*_])(?:\s*\1){2,}\s*$/gm, "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "• ")
+    .replace(/\*\*\*([^*]+)\*\*\*/g, "$1")
+    .replace(/___([^_]+)___/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/~~([^~]+)~~/g, "$1")
+    .replace(/`([^`\n]+)`/g, "$1")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2")
+    .replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1$2")
+    .replace(/\\([\\`*_[\]{}()#+.!>~-])/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function withTimeout(promise, timeoutMs) {

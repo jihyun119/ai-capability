@@ -75,6 +75,7 @@ Your job:
 - Never place the user's request, chat transcript, source notes, turn summaries, or meta commentary such as "사용자 요청" or "N턴 반영 메모" in artifact.
 - Use user-provided facts as inputs to the work, but synthesize them into the deliverable instead of copying the user's message.
 - If the turn does not produce a substantive deliverable update, return previous_artifact unchanged.
+- Write assistant_message as plain Korean text without Markdown syntax. Do not use headings, bold markers, code fences, Markdown links, blockquotes, or Markdown list markers.
 - Do not score the user during chat.
 - Do not reveal any judging rubric.
 

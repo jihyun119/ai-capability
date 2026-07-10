@@ -7,7 +7,11 @@ import {
   calculateTrack3TotalScore,
   judgeTrack3
 } from "../src/track3/judge.js";
-import { generateTrack3Chat, normalizeTrack3Artifact } from "../src/track3/chat.js";
+import {
+  generateTrack3Chat,
+  normalizeTrack3Artifact,
+  stripTrack3ChatMarkdown
+} from "../src/track3/chat.js";
 
 const sampleTurns = [
   { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 PRD 초안을 만들려고 합니다." },
@@ -73,6 +77,28 @@ test("Track 3 chat fallback preserves the prior artifact without copying user in
   assert.equal(result.artifact, previousArtifact);
   assert.equal(result.artifact.includes(userMessage), false);
   assert.match(result.assistantMessage, /기존 최종 제출물 초안을 유지/);
+});
+
+test("stripTrack3ChatMarkdown converts assistant Markdown to readable plain text", () => {
+  const markdown = [
+    "### 분석 결과",
+    "**핵심 원인**은 `재구매율 하락`입니다.",
+    "- [관련 자료](https://example.com)를 확인하세요.",
+    "> ~~추정~~보다 검증이 필요합니다.",
+    "```text",
+    "검증 계획",
+    "```"
+  ].join("\n");
+
+  const plainText = stripTrack3ChatMarkdown(markdown);
+  assert.equal(plainText, [
+    "분석 결과",
+    "핵심 원인은 재구매율 하락입니다.",
+    "• 관련 자료를 확인하세요.",
+    "추정보다 검증이 필요합니다.",
+    "검증 계획"
+  ].join("\n"));
+  assert.doesNotMatch(plainText, /[#*_`~>\[\]]/);
 });
 
 test("scenario restatement policy caps an otherwise inflated evaluation", () => {
