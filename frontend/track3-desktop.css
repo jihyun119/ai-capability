@@ -2077,3 +2077,62 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     order: 2 !important;
   }
 }
+
+/* Track 3 chat composer/action final placement */
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
+  width: calc(100% - 32px) !important;
+  max-width: 300px !important;
+  margin: 10px auto 0 !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  line-height: 1.35 !important;
+}
+
+@media (min-width: 1181px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions {
+    width: 1200px !important;
+    margin: 16px auto 0 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    position: static !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit {
+    position: static !important;
+    inset: auto !important;
+    width: 216px !important;
+    height: 62px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
+    width: calc(var(--t3-mobile-inner) - 24px) !important;
+    max-width: none !important;
+    padding: 0 12px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions {
+    width: var(--t3-mobile-inner) !important;
+    margin: 18px auto 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    position: static !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .t3-submit {
+    position: static !important;
+    inset: auto !important;
+    width: 228px !important;
+    height: 44px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}

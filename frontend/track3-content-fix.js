@@ -398,7 +398,7 @@
   }
 
   function canSubmitT3() {
-    return getT3TurnCount() > 0 && hasT3Artifact();
+    return getT3TurnCount() > 0;
   }
 
   function makeT3ChatMessages() {
