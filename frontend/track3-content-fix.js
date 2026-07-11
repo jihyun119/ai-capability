@@ -79,6 +79,9 @@
   state.t3Result = state.t3Result || null;
   state.t3SaveResult = state.t3SaveResult || null;
   state.t3Error = state.t3Error || "";
+  state.t3Draft = state.t3Draft || "";
+  let t3ChatPending = false;
+  let t3ChatWarning = "";
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -129,10 +132,26 @@
     };
   }
 
+  function t3ScenarioOrderRank(item, fallbackIndex = 0) {
+    const key = `${item?.key || ""} ${item?.scenarioId || ""} ${item?.title || ""}`.toLowerCase();
+    if (key.includes("marketing") || key.includes("마케팅")) return 0;
+    if (key.includes("data") || key.includes("데이터")) return 1;
+    if (key.includes("pm") || key.includes("prd")) return 2;
+    return 10 + fallbackIndex;
+  }
+
+  function orderedT3Scenarios(list) {
+    return list
+      .map((item, index) => ({ item, index, rank: t3ScenarioOrderRank(item, index) }))
+      .sort((a, b) => a.rank - b.rank || a.index - b.index)
+      .map(({ item }) => item);
+  }
+
   function activeT3Scenarios() {
-    return Array.isArray(state.t3Scenarios) && state.t3Scenarios.length > 0
+    const scenarios = Array.isArray(state.t3Scenarios) && state.t3Scenarios.length > 0
       ? state.t3Scenarios
       : t3ScenarioData;
+    return orderedT3Scenarios(scenarios);
   }
 
   function selectedT3Scenario() {
@@ -370,13 +389,29 @@
       : [];
   }
 
+  function formatT3MessageContent(value) {
+    return escapeHtml(String(value || "")).replace(/\n/g, "<br />");
+  }
+
+  function hasT3Artifact() {
+    return Boolean(String(state.t3Artifact || state.t3FinalOutput || "").trim());
+  }
+
+  function canSubmitT3() {
+    return getT3TurnCount() > 0 && hasT3Artifact();
+  }
+
   function makeT3ChatMessages() {
     const turns = normalizedT3Turns();
-    if (turns.length === 0) {
+    if (turns.length === 0 && !t3ChatPending) {
       return `<div class="t3-chat-empty">메시지를 입력하면 AI와의 대화가 시작됩니다.</div>`;
     }
 
-    return turns.map((turn) => `<div class="t3-message t3-message-${turn.role === "assistant" ? "assistant" : "user"}">${escapeHtml(turn.content).replace(/\n/g, "<br />")}</div>`).join("");
+    const messages = turns.map((turn) => `<div class="t3-message t3-message-${turn.role === "assistant" ? "assistant" : "user"}">${formatT3MessageContent(turn.content)}</div>`).join("");
+    const pending = t3ChatPending
+      ? `<div class="t3-message t3-message-assistant t3-message-pending" aria-live="polite"><span>•</span><span>•</span><span>•</span></div>`
+      : "";
+    return `${messages}${pending}`;
   }
 
   function getT3TurnCount() {
@@ -397,10 +432,10 @@
     const sections = selectedT3Scenario().artifactSections || ["작성 내용"];
     const contentBySection = parseT3ArtifactSections(value, sections);
 
-    return `<div class="t3-artifact-doc">${sections.map((title, index) => {
+    return `<div class="t3-artifact-doc"><div class="t3-artifact-body">${sections.map((title, index) => {
       const content = contentBySection.get(title) || "";
       return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(title)}</h3><p>${content ? escapeHtml(content).replace(/\n/g, "<br />") : "AI와 대화하면 이 영역이 채워집니다."}</p></article>`;
-    }).join("")}</div>`;
+    }).join("")}</div></div>`;
   }
 
   function parseT3ArtifactSections(value, sections) {
@@ -447,13 +482,22 @@
     const input = screen.querySelector("[data-t3-chat-input]");
     const sendButton = screen.querySelector("[data-t3-chat-send], .t3-chat-composer button");
     const submitButton = screen.querySelector(".t3-submit");
+    const warning = screen.querySelector("[data-t3-chat-warning]");
     const turnComplete = isT3TurnComplete();
+    const submitReady = canSubmitT3();
 
-    if (input) input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
-    if (sendButton) sendButton.disabled = turnComplete;
+    if (input) {
+      input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
+      if (state.t3Draft && input.value !== state.t3Draft) input.value = state.t3Draft;
+    }
+    if (warning) {
+      warning.textContent = t3ChatWarning;
+      warning.hidden = !t3ChatWarning;
+    }
+    if (sendButton) sendButton.disabled = t3ChatPending || turnComplete;
     if (submitButton) {
-      submitButton.disabled = !turnComplete;
-      submitButton.classList.toggle("is-ready", turnComplete);
+      submitButton.disabled = !submitReady;
+      submitButton.classList.toggle("is-ready", submitReady);
     }
   }
 
@@ -545,8 +589,16 @@
 
   async function sendTrack3Chat() {
     const input = document.querySelector('[data-screen="t3-chat"] [data-t3-chat-input]');
-    const userMessage = input?.value.trim();
+    const rawMessage = input?.value || "";
+    const userMessage = rawMessage.trim();
+    state.t3Draft = rawMessage;
     if (!userMessage) return;
+    if (userMessage.length === 1) {
+      t3ChatWarning = "내용을 조금 더 구체적으로 입력해주세요. 한 글자만 입력하면 AI 답변을 생성할 수 없습니다.";
+      refreshT3ChatUi();
+      return;
+    }
+    if (t3ChatPending) return;
     if (isT3TurnComplete()) {
       refreshT3ChatUi();
       return;
@@ -554,13 +606,17 @@
 
     const turnsBeforeRequest = normalizedT3Turns();
     state.t3Turns = [...turnsBeforeRequest, { role: "user", content: userMessage }];
-    if (input) {
-      input.value = "";
-      input.style.height = "auto";
-    }
+    t3ChatPending = true;
+    t3ChatWarning = "";
     render();
     showScreen("t3-chat");
     syncT3ChatTab("chat");
+    const pendingInput = document.querySelector('[data-screen="t3-chat"] [data-t3-chat-input]');
+    if (pendingInput) {
+      pendingInput.value = rawMessage;
+      pendingInput.style.height = "auto";
+      pendingInput.style.height = `${Math.min(pendingInput.scrollHeight, 132)}px`;
+    }
 
     try {
       const response = await postJson("/api/track3/chat", {
@@ -576,12 +632,17 @@
         ? responseTurns
         : [...state.t3Turns, ...(assistantMessage ? [{ role: "assistant", content: assistantMessage }] : [])];
       state.t3Artifact = payload.artifact || payload.finalOutput || state.t3Artifact || "";
+      state.t3Draft = "";
+    } catch (error) {
+      state.t3Turns = turnsBeforeRequest;
+      state.t3Draft = rawMessage;
+      console.error("[track3:chat]", error);
+    } finally {
+      t3ChatPending = false;
       render();
       showScreen("t3-chat");
       syncT3ChatTab("chat");
       refreshT3ChatUi();
-    } catch (error) {
-      console.error("[track3:chat]", error);
     }
   }
 
@@ -600,6 +661,10 @@
   }
 
   async function submitTrack3() {
+    if (!canSubmitT3()) {
+      refreshT3ChatUi();
+      return;
+    }
     const loadingStartedAt = Date.now();
     render();
     showScreen("t3-loading");
@@ -612,7 +677,7 @@
         scenarioId: activeT3ScenarioId(),
         turns,
         finalOutput,
-        earlyFinish: false,
+        earlyFinish: getT3TurnCount() < 5,
       };
       const response = await postJson("/api/track3/submit", requestPayload);
       state.t3Result = response;
@@ -689,20 +754,22 @@
             <button type="button" data-t3-tab="chat">AI 채팅</button>
           </nav>
         </section>
+        <button class="t3-chat-back" type="button" data-t3-back-scenario>이전</button>
         <section class="t3-chat-layout">
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
             <h2>최종 제출물 작업 영역</h2>
             <p>AI와 대화할수록 해당 영역이 채워집니다. 최대 5턴까지 대화 가능합니다.</p>
             <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
-            ${button("제출", "t3-loading", "primary", "t3-submit")}
           </section>
           <aside class="t3-chat-panel">
             <header><h2>AI 채팅</h2><span><i></i><i></i><i></i><i></i><i></i></span></header>
             <div class="t3-chat-messages" data-t3-chat-messages>${makeT3ChatMessages()}</div>
-            <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력"></textarea><button type="button">↑</button></label>
+            <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력">${escapeHtml(state.t3Draft || "")}</textarea><button type="button" data-t3-chat-send>↑</button></label>
+            <p class="t3-chat-warning" data-t3-chat-warning hidden></p>
           </aside>
-        </section>`,
+        </section>
+        <nav class="t3-chat-actions">${button("제출", "t3-loading", "primary", "t3-submit")}</nav>`,
         "t3-screen t3-chat-screen"
       ),
       screen(
@@ -775,6 +842,29 @@
   }
 
   document.addEventListener("click", (event) => {
+    const backButton = event.target.closest("[data-t3-back-scenario]");
+    if (backButton) {
+      event.preventDefault();
+      if (getT3TurnCount() > 0 && !window.confirm("다른 시나리오로 이동하면 현재 대화와 작업물이 초기화됩니다.")) return;
+
+      state.t3Turns = [];
+      state.t3Artifact = "";
+      state.t3FinalOutput = "";
+      state.t3Result = null;
+      state.t3SaveResult = null;
+      state.t3Error = "";
+      state.t3Draft = "";
+      t3ChatWarning = "";
+      t3ChatPending = false;
+      const scenarios = activeT3Scenarios();
+      const nextScenario = Math.max(0, Number(state.t3Scenario || 0));
+      state.t3Scenario = nextScenario;
+      state.t3ScenarioId = scenarioIdOf(scenarios[nextScenario], nextScenario);
+      render();
+      showScreen("t3-scenario");
+      return;
+    }
+
     const scenarioButton = event.target.closest("[data-t3-scenario]");
     if (!scenarioButton) return;
 
@@ -786,6 +876,10 @@
       state.t3Artifact = "";
       state.t3FinalOutput = "";
       state.t3Result = null;
+      state.t3SaveResult = null;
+      state.t3Draft = "";
+      t3ChatWarning = "";
+      t3ChatPending = false;
     }
     state.t3Scenario = nextScenario;
     state.t3ScenarioId = nextScenarioId;
@@ -820,6 +914,15 @@
     const field = event.target.closest("[data-t3-chat-input]");
     if (!field) return;
 
+    state.t3Draft = field.value;
+    if (t3ChatWarning) {
+      t3ChatWarning = "";
+      const warning = field.closest(".t3-chat-panel")?.querySelector("[data-t3-chat-warning]");
+      if (warning) {
+        warning.textContent = "";
+        warning.hidden = true;
+      }
+    }
     field.style.height = "auto";
     field.style.height = `${Math.min(field.scrollHeight, 132)}px`;
   });
