@@ -2639,7 +2639,7 @@ img {
   }
 
   .t1-question-screen .progress span {
-    width: calc(100% / 16) !important;
+    width: calc(100% / 12) !important;
     border-radius: 20px 0 0 20px;
     background: var(--lime);
   }
@@ -2958,14 +2958,14 @@ img {
 .track-card:focus-visible,
 .choice-card:hover,
 .choice-card:focus-visible {
-  border-color: var(--violet);
-  box-shadow: 0 0 0 2px var(--violet) inset;
+  border-color: var(--purple);
+  box-shadow: 0 0 0 2px var(--purple) inset;
 }
 
 .cta:active,
 .track-card:active,
 .choice-card:active {
-  background: var(--violet);
+  background: var(--purple);
   color: var(--white);
   transform: translateY(1px);
 }
@@ -3218,7 +3218,7 @@ img {
 
   .t1-question-screen .t1-scale-row button.is-selected {
     border-color: #000 !important;
-    background: var(--violet) !important;
+    background: var(--lime) !important;
   }
 
   .t1-question-screen .t1-scale-row button span,
