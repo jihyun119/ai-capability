@@ -727,7 +727,8 @@
     font: 800 40px/1.25 "Paperlogy", "Pretendard", sans-serif !important;
   }
 
-  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content img {
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content img,
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content .analysis-loading-mascot {
     display: block !important;
     width: 310px !important;
     height: 310px !important;
@@ -1884,7 +1885,8 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     font: 800 28px/1.32 "Paperlogy", "Pretendard", sans-serif !important;
   }
 
-  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content img {
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content img,
+  main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-content .analysis-loading-mascot {
     display: block !important;
     width: 203px !important;
     height: 203px !important;
@@ -1985,16 +1987,18 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   }
 
   main#app.app-shell > .screen.active.t3-result-screen .t3-detail-open {
-    display: flex !important;
+    display: none !important;
     order: 1 !important;
   }
 
   main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta.secondary {
-    order: 2 !important;
+    display: flex !important;
+    order: 1 !important;
   }
 
-  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary):not(.t3-detail-open) {
-    display: none !important;
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary) {
+    display: flex !important;
+    order: 2 !important;
   }
 
   main#app.app-shell > .screen.active.t3-report-screen .t3-report-mobile {

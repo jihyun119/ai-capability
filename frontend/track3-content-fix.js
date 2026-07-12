@@ -787,7 +787,7 @@
       screen(
         "t3-loading",
         "T3-04 분석 로딩",
-        `${header()}<section class="t3-loading-content"><h1>당신과 AI의 관계를<br />해석하는 중...</h1><img src="./Logo/Logo.v1.png" alt="" /></section>`,
+        `${header()}<section class="t3-loading-content"><h1>당신과 AI의 관계를<br />해석하는 중...</h1><div class="analysis-loading-mascot" aria-hidden="true"></div></section>`,
         "t3-screen t3-loading-screen"
       ),
       screen(
@@ -806,7 +806,7 @@
             <div class="t3-detail-list">${makeT3DetailRows()}</div>
           </article>
         </section>
-        <nav class="t3-result-nav"><button class="cta t3-detail-open" data-target="t3-report" style="display:none">상세 리포트 보기</button><button class="cta secondary t3-result-share" type="button">공유하기</button>${button("다른 Track 도전", "home")}</nav>`,
+        <nav class="t3-result-nav"><button class="cta secondary t3-result-share" type="button">공유하기</button>${button("다른 Track 도전", "home", "primary", "t3-result-home")}</nav>`,
         "t3-screen t3-result-screen"
       ),
       screen(
@@ -842,13 +842,6 @@
       if (screen && !screen.dataset.t3Tab) screen.dataset.t3Tab = "brief";
       refreshT3ChatUi();
     }
-    if (name === "t3-loading") {
-      document.querySelectorAll('[data-screen="t3-loading"] .t3-loading-content img').forEach((image) => {
-        if (!image.dataset.t3OriginalSrc) image.dataset.t3OriginalSrc = image.getAttribute("src") || "";
-        image.setAttribute("src", "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==");
-        image.classList.add("analysis-loading-mascot");
-      });
-    }
   };
 
   if (typeof render === "function") {
@@ -856,7 +849,7 @@
   }
 
   async function shareT3Result() {
-    const text = `푸키 Track 3 AI 실무 적용 테스트 결과: ${t3ResultScore()}점`;
+    const text = `푸키 Track 3 AI 실무 적용 테스트 결과: ${t3ResultScore()}점 (${t3ResultGrade()})`;
     const url = window.location.href;
     try {
       if (navigator.share) {
@@ -876,6 +869,17 @@
     if (shareButton) {
       event.preventDefault();
       shareT3Result();
+      return;
+    }
+
+    const resultHomeButton = event.target.closest(".t3-result-home");
+    if (resultHomeButton) {
+      event.preventDefault();
+      state.t3Result = null;
+      state.t3SaveResult = null;
+      state.t3Error = "";
+      render();
+      showScreen("home");
       return;
     }
 
