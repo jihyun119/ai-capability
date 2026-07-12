@@ -1083,6 +1083,201 @@ main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
   }
 }
 
+/* Track 3 interaction refinements */
+@keyframes t3TypingDot {
+  0%, 80%, 100% {
+    opacity: .4;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:hover,
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:focus-visible,
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
+  border-color: var(--t3-violet) !important;
+  box-shadow: inset 0 0 0 1px var(--t3-violet) !important;
+  background: var(--t3-white) !important;
+  color: var(--t3-black) !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
+  box-sizing: border-box !important;
+  width: fit-content !important;
+  height: auto !important;
+  min-height: 0 !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message-pending {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message-pending span {
+  display: inline-block !important;
+  animation: t3TypingDot 1.1s infinite ease-in-out;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message-pending span:nth-child(2) {
+  animation-delay: .16s;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message-pending span:nth-child(3) {
+  animation-delay: .32s;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-gutter: stable !important;
+  display: grid !important;
+  gap: 14px !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
+  margin: 8px 0 0 !important;
+  color: var(--t3-violet) !important;
+  font: 600 13px/1.35 "Pretendard", sans-serif !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning[hidden] {
+  display: none !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
+  overflow-y: auto !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+@media (min-width: 1181px) {
+  main#app.app-shell > .screen.active.t3-chat-screen {
+    padding-bottom: 72px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-layout {
+    margin-bottom: 24px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-back {
+    width: 1200px !important;
+    margin: 0 auto 14px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    display: block !important;
+    background: transparent !important;
+    color: var(--t3-violet) !important;
+    text-align: left !important;
+    font: 700 18px/1 "Pretendard", sans-serif !important;
+    cursor: pointer !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace {
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > .t3-artifact {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
+    max-width: 260px !important;
+    padding: 14px 18px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions {
+    width: 1200px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit {
+    position: static !important;
+    width: 216px !important;
+    height: 62px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-back {
+    width: var(--t3-mobile-inner) !important;
+    margin: 15px auto 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    display: block !important;
+    background: transparent !important;
+    color: var(--t3-violet) !important;
+    text-align: left !important;
+    font: 700 14px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
+    max-width: 279px !important;
+    padding: 14px 18px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace {
+    display: flex !important;
+    min-height: 520px !important;
+    flex-direction: column !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace h2,
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace p,
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace > .t3-artifact {
+    display: block !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace > .t3-artifact {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-chat-actions {
+    width: var(--t3-mobile-inner) !important;
+    margin: 22px auto 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit {
+    position: static !important;
+    width: 228px !important;
+    height: 44px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
+
 @media (max-width: 1180px) {
   :root {
     --t3-black: #000;
@@ -1880,5 +2075,178 @@ main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
   main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary) {
     display: flex !important;
     order: 2 !important;
+  }
+}
+
+/* Track 3 chat composer/action final placement */
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
+  width: calc(100% - 32px) !important;
+  max-width: 300px !important;
+  margin: 10px auto 0 !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  line-height: 1.35 !important;
+}
+
+@media (min-width: 1181px) {
+  main#app.app-shell > .screen.active.t3-chat-screen {
+    position: relative !important;
+    display: block !important;
+    width: 1440px !important;
+    min-width: 1440px !important;
+    max-width: 1440px !important;
+    height: 1100px !important;
+    min-height: 1100px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #fff !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen > .t3-chat-layout {
+    position: absolute !important;
+    left: 120px !important;
+    top: 149px !important;
+    width: 1200px !important;
+    height: 800px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    grid-template-columns: 351px 509px 340px !important;
+    gap: 0 !important;
+    border: 1.33px solid #000 !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    background: #fff !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel {
+    position: relative !important;
+    height: 800px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions {
+    position: absolute !important;
+    left: 120px !important;
+    top: 977px !important;
+    width: 1200px !important;
+    height: 88px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    grid-template-columns: 540px 540px !important;
+    gap: 120px !important;
+    justify-content: stretch !important;
+    inset: auto !important;
+    z-index: 10 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .cta {
+    position: static !important;
+    inset: auto !important;
+    width: 540px !important;
+    height: 88px !important;
+    min-height: 88px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    font: 600 24px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-chat-back {
+    border: 1.33px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
+    text-align: center !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit {
+    border: 1.33px solid #000 !important;
+    background: #000 !important;
+    color: #fff !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit:disabled {
+    border-color: #b5b5b5 !important;
+    background: #b5b5b5 !important;
+    color: #fff !important;
+    opacity: 1 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit.is-ready {
+    border-color: #000 !important;
+    background: #000 !important;
+    color: #fff !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-chat-back:hover,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-chat-back:focus-visible {
+    border-color: var(--t3-violet) !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit:hover,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit:focus-visible {
+    border-color: var(--t3-violet) !important;
+    background: var(--t3-violet) !important;
+    color: #fff !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
+    width: calc(var(--t3-mobile-inner) - 24px) !important;
+    max-width: none !important;
+    padding: 0 12px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions {
+    display: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions {
+    width: var(--t3-mobile-inner) !important;
+    margin: 18px auto 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px !important;
+    justify-content: stretch !important;
+    position: static !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .cta {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important;
+    transform: none !important;
+    border-radius: 10px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .t3-chat-back {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border: 1px solid var(--t3-black) !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .t3-submit {
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
   }
 }
