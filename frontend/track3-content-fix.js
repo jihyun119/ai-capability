@@ -160,6 +160,16 @@
     return scenarios[index] || scenarios[0] || t3ScenarioData[0];
   }
 
+  function t3ProjectName(item = selectedT3Scenario()) {
+    const explicit = item?.projectName || item?.project_name || item?.project || item?.serviceName || item?.service_name;
+    if (explicit) return explicit;
+    const id = String(item?.scenarioId || item?.id || item?.key || "").toLowerCase();
+    if (id.includes("marketing")) return "이모레 퍼시픽 스킨케어";
+    if (id.includes("data")) return "마켓쿨리";
+    if (id.includes("pm")) return "키키오 선물하기";
+    return item?.title || "Track 3";
+  }
+
   function makeT3IntroCards() {
     return [
       ["직무 시나리오", "기획, 데이터, 마케팅 등 실제 업무에 가까운 가상 상황을 선택해요."],
@@ -593,8 +603,8 @@
     const userMessage = rawMessage.trim();
     state.t3Draft = rawMessage;
     if (!userMessage) return;
-    if (userMessage.length === 1) {
-      t3ChatWarning = "내용을 조금 더 구체적으로 입력해주세요. 한 글자만 입력하면 AI 답변을 생성할 수 없습니다.";
+    if (userMessage.replace(/\s/g, "").length < 5) {
+      t3ChatWarning = "내용을 조금 더 구체적으로 입력해주세요. 최소 5글자 이상 입력해야 AI 답변을 생성할 수 있습니다.";
       refreshT3ChatUi();
       return;
     }
@@ -746,7 +756,7 @@
         "T3-03 인앱 채팅",
         `${header()}
         <section class="t3-mobile-flow-head" style="display:none">
-          <h1 data-t3-mobile-title>${selectedT3Scenario().title} 시나리오</h1>
+          <h1 data-t3-mobile-title>${escapeHtml(t3ProjectName())}</h1>
           <div class="t3-mobile-progress"><i></i><i></i><i></i><i></i><i></i></div>
           <nav class="t3-mobile-tabs" aria-label="Track 3 sections">
             <button type="button" data-t3-tab="brief" class="is-active">상황 설명</button>
@@ -796,7 +806,7 @@
             <div class="t3-detail-list">${makeT3DetailRows()}</div>
           </article>
         </section>
-        <nav class="t3-result-nav"><button class="cta t3-detail-open" data-target="t3-report" style="display:none">상세 리포트 보기</button>${button("공유하기", "t3-result", "secondary")}${button("다른 Track 도전", "home")}</nav>`,
+        <nav class="t3-result-nav"><button class="cta t3-detail-open" data-target="t3-report" style="display:none">상세 리포트 보기</button><button class="cta secondary t3-result-share" type="button">공유하기</button>${button("다른 Track 도전", "home")}</nav>`,
         "t3-screen t3-result-screen"
       ),
       screen(
@@ -834,6 +844,8 @@
     }
     if (name === "t3-loading") {
       document.querySelectorAll('[data-screen="t3-loading"] .t3-loading-content img').forEach((image) => {
+        if (!image.dataset.t3OriginalSrc) image.dataset.t3OriginalSrc = image.getAttribute("src") || "";
+        image.setAttribute("src", "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==");
         image.classList.add("analysis-loading-mascot");
       });
     }
@@ -843,7 +855,30 @@
     render();
   }
 
+  async function shareT3Result() {
+    const text = `푸키 Track 3 AI 실무 적용 테스트 결과: ${t3ResultScore()}점`;
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "푸키 Track 3 결과", text, url });
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+      }
+    } catch (error) {
+      console.warn("[track3:share]", error);
+    }
+  }
+
   document.addEventListener("click", (event) => {
+    const shareButton = event.target.closest(".t3-result-share");
+    if (shareButton) {
+      event.preventDefault();
+      shareT3Result();
+      return;
+    }
+
     const backButton = event.target.closest("[data-t3-back-scenario]");
     if (backButton) {
       event.preventDefault();

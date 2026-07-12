@@ -2143,7 +2143,8 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
     grid-template-columns: 540px 540px !important;
     gap: 120px !important;
     justify-content: stretch !important;
-    inset: auto !important;
+    right: auto !important;
+    bottom: auto !important;
     z-index: 10 !important;
   }
 
