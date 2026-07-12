@@ -648,35 +648,13 @@
     background: var(--t3-grey) !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble {
-    position: absolute !important;
-    width: 240px !important;
-    height: 80px !important;
-    border-radius: 10px !important;
-  }
-
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-user {
-    right: 25px !important;
-    background: var(--t3-black) !important;
-  }
-
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-ai {
-    left: 25px !important;
-    background: var(--t3-grey) !important;
-  }
-
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(1) { top: 103px !important; }
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(2) { top: 198px !important; }
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(3) { top: 293px !important; }
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(4) { top: 389px !important; }
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(5) { top: 485px !important; }
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble:nth-of-type(6) { top: 580px !important; }
-
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel label {
-    position: absolute !important;
-    left: 13px !important;
-    bottom: 26px !important;
-    width: 294px !important;
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel .t3-chat-composer {
+    position: static !important;
+    inset: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
     min-height: 64px !important;
     height: auto !important;
     max-height: 160px !important;
@@ -702,7 +680,7 @@
     font: 400 20px/1.2 "Pretendard", sans-serif !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel label button {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel .t3-chat-composer button {
     flex: 0 0 24px !important;
     width: 24px !important;
     height: 24px !important;
@@ -889,16 +867,20 @@
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-messages {
-    position: absolute !important;
-    left: 25px !important;
-    right: 25px !important;
-    top: 103px !important;
-    bottom: 112px !important;
+    position: relative !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 16px !important;
+    padding: 20px 14px !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
     overflow-y: auto !important;
-    padding-right: 4px !important;
+    scrollbar-gutter: stable !important;
+    overscroll-behavior: contain !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-empty {
@@ -912,12 +894,18 @@
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
     max-width: 240px !important;
+    height: auto !important;
+    max-height: none !important;
     min-height: 64px !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
     padding: 16px 18px !important;
     border-radius: 10px !important;
     font: 600 15px/1.35 "Pretendard", sans-serif !important;
-    word-break: keep-all !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
     overflow-wrap: anywhere !important;
+    overflow: visible !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-message-user {
@@ -1816,24 +1804,6 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     display: none !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble {
-    display: block !important;
-    width: 279px !important;
-    height: 75px !important;
-    margin: 0 0 21px !important;
-    border-radius: 8px !important;
-  }
-
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-user {
-    margin-left: auto !important;
-    background: var(--t3-violet) !important;
-  }
-
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-bubble-ai {
-    margin-right: auto !important;
-    background: var(--t3-grey) !important;
-  }
-
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer {
     position: absolute !important;
     left: 2px !important;
@@ -2254,4 +2224,141 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
     background: var(--t3-black) !important;
     color: var(--t3-white) !important;
   }
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel > header {
+  flex: 0 0 auto !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-messages {
+  position: relative !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  padding: 20px 14px !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-behavior: auto !important;
+  scrollbar-gutter: stable !important;
+  overscroll-behavior: contain !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-footer {
+  position: relative !important;
+  z-index: 1 !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px 13px 24px !important;
+  background: var(--t3-white, #fff) !important;
+  overflow: visible !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 18px) !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 12px 16px !important;
+  white-space: pre-wrap !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  line-height: 1.45 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message-user {
+  margin-left: auto !important;
+  align-self: flex-end !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-message-assistant {
+  margin-right: auto !important;
+  align-self: flex-start !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer {
+  position: static !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: flex-end !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 64px !important;
+  height: auto !important;
+  max-height: none !important;
+  padding: 12px 16px !important;
+  margin: 0 !important;
+  border: 1px solid var(--t3-black, #000) !important;
+  border-radius: 20px !important;
+  background: var(--t3-white, #fff) !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 24px !important;
+  max-height: 160px !important;
+  height: auto;
+  resize: none !important;
+  overflow-y: hidden;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  line-height: 1.45 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer button {
+  flex: 0 0 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  align-self: flex-end !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-footer .t3-chat-warning {
+  position: static !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  margin: 8px 0 0 !important;
+  padding: 0 10px !important;
+  color: var(--t3-violet, #8037ee) !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
 }

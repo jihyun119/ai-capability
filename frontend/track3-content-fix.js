@@ -424,6 +424,28 @@
     return `${messages}${pending}`;
   }
 
+  function scrollT3ChatToBottom(root = document) {
+    const messages = root.querySelector?.("[data-t3-chat-messages]");
+    if (!messages) return;
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function autoResizeTrack3Textarea(textarea) {
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+
+    const minHeight = 24;
+    const maxHeight = 160;
+    const nextHeight = Math.min(
+      Math.max(textarea.scrollHeight, minHeight),
+      maxHeight
+    );
+
+    textarea.style.height = `${nextHeight}px`;
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+  }
+
   function getT3TurnCount() {
     return Math.max(0, Math.min(5, normalizedT3Turns().filter((turn) => turn.role === "user").length));
   }
@@ -483,7 +505,7 @@
     const messages = screen.querySelector("[data-t3-chat-messages]");
     if (messages) {
       messages.innerHTML = makeT3ChatMessages();
-      messages.scrollTop = messages.scrollHeight;
+      scrollT3ChatToBottom(screen);
     }
 
     const artifact = screen.querySelector("[data-t3-artifact]");
@@ -499,6 +521,7 @@
     if (input) {
       input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
       if (state.t3Draft && input.value !== state.t3Draft) input.value = state.t3Draft;
+      autoResizeTrack3Textarea(input);
     }
     if (warning) {
       warning.textContent = t3ChatWarning;
@@ -624,9 +647,9 @@
     const pendingInput = document.querySelector('[data-screen="t3-chat"] [data-t3-chat-input]');
     if (pendingInput) {
       pendingInput.value = rawMessage;
-      pendingInput.style.height = "auto";
-      pendingInput.style.height = `${Math.min(pendingInput.scrollHeight, 132)}px`;
+      autoResizeTrack3Textarea(pendingInput);
     }
+    scrollT3ChatToBottom();
 
     try {
       const response = await postJson("/api/track3/chat", {
@@ -774,8 +797,10 @@
           <aside class="t3-chat-panel">
             <header><h2>AI 채팅</h2><span><i></i><i></i><i></i><i></i><i></i></span></header>
             <div class="t3-chat-messages" data-t3-chat-messages>${makeT3ChatMessages()}</div>
+            <div class="t3-chat-footer">
             <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력">${escapeHtml(state.t3Draft || "")}</textarea><button type="button" data-t3-chat-send>↑</button></label>
             <p class="t3-chat-warning" data-t3-chat-warning hidden></p>
+            </div>
           </aside>
         </section>
         <nav class="t3-chat-actions">
@@ -964,7 +989,6 @@
         warning.hidden = true;
       }
     }
-    field.style.height = "auto";
-    field.style.height = `${Math.min(field.scrollHeight, 132)}px`;
+    autoResizeTrack3Textarea(field);
   });
 })();
