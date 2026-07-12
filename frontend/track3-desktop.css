@@ -2090,21 +2090,46 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
 }
 
 @media (min-width: 1181px) {
+  main#app.app-shell > .screen.active.t3-chat-screen {
+    min-height: 1100px !important;
+    overflow: visible !important;
+  }
+
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions {
     width: 1200px !important;
-    margin: 16px auto 0 !important;
-    display: flex !important;
-    justify-content: flex-end !important;
+    margin: 28px auto 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 120px !important;
+    justify-content: stretch !important;
     position: static !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .cta {
     position: static !important;
     inset: auto !important;
-    width: 216px !important;
-    height: 62px !important;
+    width: 100% !important;
+    height: 64px !important;
     margin: 0 !important;
     transform: none !important;
+    border-radius: 12px !important;
+    font: 600 24px/1 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-chat-back {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border: 1px solid var(--t3-black) !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+    text-align: center !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .t3-submit {
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
   }
 }
 
@@ -2122,17 +2147,35 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
   main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions {
     width: var(--t3-mobile-inner) !important;
     margin: 18px auto 0 !important;
-    display: flex !important;
-    justify-content: center !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px !important;
+    justify-content: stretch !important;
     position: static !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .t3-submit {
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .cta {
     position: static !important;
     inset: auto !important;
-    width: 228px !important;
+    width: 100% !important;
     height: 44px !important;
     margin: 0 !important;
     transform: none !important;
+    border-radius: 10px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .t3-chat-back {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border: 1px solid var(--t3-black) !important;
+    background: var(--t3-white) !important;
+    color: var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-actions .t3-submit {
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
   }
 }

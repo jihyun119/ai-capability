@@ -754,7 +754,6 @@
             <button type="button" data-t3-tab="chat">AI 채팅</button>
           </nav>
         </section>
-        <button class="t3-chat-back" type="button" data-t3-back-scenario>이전</button>
         <section class="t3-chat-layout">
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
@@ -769,7 +768,10 @@
             <p class="t3-chat-warning" data-t3-chat-warning hidden></p>
           </aside>
         </section>
-        <nav class="t3-chat-actions">${button("제출", "t3-loading", "primary", "t3-submit")}</nav>`,
+        <nav class="t3-chat-actions">
+          <button class="cta secondary t3-chat-back" type="button" data-t3-back-scenario>이전</button>
+          ${button("제출", "t3-loading", "primary", "t3-submit")}
+        </nav>`,
         "t3-screen t3-chat-screen"
       ),
       screen(
