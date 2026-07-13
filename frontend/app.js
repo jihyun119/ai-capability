@@ -1744,11 +1744,21 @@ function fireAndForgetPostJson(url, payload) {
 
 function beginPrepareRespondent(screenNode) {
   const user = readRespondentInput(screenNode);
+  const previousUser = state.respondent || state.user;
+  const userChanged = Boolean(previousUser && !isSameUserIdentity(previousUser, user));
+
+  if (userChanged) {
+    state.respondent = null;
+    state.respondentPromise = null;
+    resetUserTrackProgress();
+  }
+
+  state.user = user;
+  if (userChanged) render();
 
   if (
-    state.respondent?.nickname === user.nickname
-    && state.respondent?.birthYear === user.birthYear
-    && state.respondent?.gender === user.gender
+    state.respondent
+    && isSameUserIdentity(state.respondent, user)
   ) {
     state.respondentPromise = null;
     return state.respondent;
@@ -1773,8 +1783,20 @@ function readRespondentInput(screenNode) {
   const gender = screenNode.querySelector("[data-gender-select]")?.value || "";
   const birth = birthYear;
 
-  state.user = { nickname, birth, birthYear: Number(birthYear) || null, gender: gender || null };
-  return state.user;
+  return { nickname, birth, birthYear: Number(birthYear) || null, gender: gender || null };
+}
+
+function isSameUserIdentity(left, right) {
+  if (!left || !right) return false;
+  return String(left.nickname || "").trim() === String(right.nickname || "").trim()
+    && Number(left.birthYear || 0) === Number(right.birthYear || 0)
+    && String(left.gender || "") === String(right.gender || "");
+}
+
+function resetUserTrackProgress() {
+  resetTrack1();
+  resetTrack2();
+  window.__resetTrack3Progress?.();
 }
 
 async function createRespondent(user) {
@@ -1787,16 +1809,20 @@ async function createRespondent(user) {
     throw new Error(respondent.error?.message || "응시자 정보를 생성하지 못했습니다.");
   }
 
-  state.respondent = {
+  const respondentState = {
     respondentId: respondent.respondentId,
     accessToken: respondent.accessToken,
     nickname: respondent.nickname || user.nickname,
     birthYear: respondent.birthYear || user.birthYear,
     gender: respondent.gender || user.gender,
   };
+
+  if (!isSameUserIdentity(state.user, user)) return null;
+
+  state.respondent = respondentState;
   state.respondentPromise = null;
 
-  return state.respondent;
+  return respondentState;
 }
 
 async function ensureRespondentReady() {

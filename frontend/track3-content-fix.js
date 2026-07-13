@@ -83,6 +83,22 @@
   let t3ChatPending = false;
   let t3ChatWarning = "";
 
+  function resetTrack3Progress() {
+    state.t3Scenario = 0;
+    state.t3ScenarioId = null;
+    state.t3Turns = [];
+    state.t3Artifact = "";
+    state.t3FinalOutput = "";
+    state.t3Result = null;
+    state.t3SaveResult = null;
+    state.t3Error = "";
+    state.t3Draft = "";
+    t3ChatPending = false;
+    t3ChatWarning = "";
+  }
+
+  window.__resetTrack3Progress = resetTrack3Progress;
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replace(/&/g, "&amp;")
