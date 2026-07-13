@@ -476,14 +476,47 @@
   }
 
   function makeT3Artifact() {
-    const value = String(state.t3Artifact || state.t3FinalOutput || "").trim();
+    const value = normalizeT3Markdown(state.t3Artifact || state.t3FinalOutput).trim();
     const sections = selectedT3Scenario().artifactSections || ["작성 내용"];
     const contentBySection = parseT3ArtifactSections(value, sections);
 
     return `<div class="t3-artifact-doc"><div class="t3-artifact-body">${sections.map((title, index) => {
       const content = contentBySection.get(title) || "";
-      return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(title)}</h3><p>${content ? escapeHtml(content).replace(/\n/g, "<br />") : "AI와 대화하면 이 영역이 채워집니다."}</p></article>`;
+      const body = content
+        ? renderT3Markdown(content)
+        : "AI와 대화하면 이 영역이 채워집니다.";
+      return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(title)}</h3><div class="t3-markdown">${body}</div></article>`;
     }).join("")}</div></div>`;
+  }
+
+  function normalizeT3Markdown(value) {
+    return String(value || "")
+      .replace(/\r\n?/g, "\n")
+      .replace(/[\u2028\u2029]/g, "\n");
+  }
+
+  function renderT3Markdown(value) {
+    const markdown = normalizeT3Markdown(value).trim();
+    if (!markdown) return "";
+
+    if (!window.marked?.parse || !window.DOMPurify?.sanitize) {
+      return escapeHtml(markdown).replace(/\n/g, "<br />");
+    }
+
+    const rendered = window.marked.parse(markdown, {
+      async: false,
+      breaks: true,
+      gfm: true,
+    });
+
+    return window.DOMPurify.sanitize(rendered, {
+      ALLOWED_TAGS: [
+        "a", "blockquote", "br", "code", "del", "em", "h1", "h2", "h3", "h4", "h5", "h6",
+        "hr", "li", "ol", "p", "pre", "strong", "table", "tbody", "td", "th", "thead", "tr", "ul",
+      ],
+      ALLOWED_ATTR: ["href", "title"],
+      ALLOW_DATA_ATTR: false,
+    });
   }
 
   function parseT3ArtifactSections(value, sections) {
