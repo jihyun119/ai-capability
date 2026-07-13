@@ -163,7 +163,10 @@ export async function saveTrack3Result({ resultId = randomUUID(), respondentId, 
     early_finish:       Boolean(earlyFinish),
     axis_scores:        evaluation.axis_scores,
     delta_score:        evaluation.delta_score,
-    code_checks:        evaluation.code_checks,
+    code_checks:        {
+      ...evaluation.code_checks,
+      score_breakdown: evaluation.score_breakdown
+    },
     move_tagging:       evaluation.move_tagging,
     sequence_valid:     Boolean(evaluation.sequence_valid),
     best_intervention:  evaluation.best_intervention,

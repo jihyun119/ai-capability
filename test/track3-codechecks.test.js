@@ -4,6 +4,7 @@ import { runCodeChecks, validateChatInput, validateSubmitInput } from "../src/tr
 import {
   TRACK3_AXES,
   applyRestatementPolicy,
+  calculateTrack3ScoreBreakdown,
   calculateTrack3TotalScore,
   judgeTrack3
 } from "../src/track3/judge.js";
@@ -33,14 +34,23 @@ test("validateChatInput rejects short messages and max turns", () => {
   assert.equal(validateChatInput({ turns: sampleTurns, userMessage: "추가 요청입니다" }).valid, false);
 });
 
-test("runCodeChecks returns observable signals as diagnostics only", () => {
+test("runCodeChecks contributes up to 20 points", () => {
   const result = runCodeChecks({ turns: sampleTurns });
-  assert.equal(result.max, 0);
-  assert.equal(result.score, 0);
+  assert.equal(result.max, 20);
+  assert.equal(result.score, 17);
   assert.equal(result.diagnostic_max, 20);
-  assert.ok(result.diagnostic_score >= 14);
+  assert.equal(result.diagnostic_score, result.score);
   assert.equal(result.checks.length, 6);
-  assert.ok(result.checks.every((check) => check.contributes_to_total === false));
+  assert.ok(result.checks.every((check) => check.contributes_to_total === true));
+});
+
+test("early finish does not count as completing all five turns", () => {
+  const result = runCodeChecks({ turns: sampleTurns.slice(0, 4), earlyFinish: true });
+  const completion = result.checks.find((check) => check.key === "turn_completion");
+
+  assert.equal(completion.score, 1);
+  assert.equal(completion.passed, false);
+  assert.match(completion.evidence, /2\/5턴 \(조기 제출\)/);
 });
 
 test("normalizeTrack3Artifact rejects user-message and meta-note contamination", () => {
@@ -162,13 +172,68 @@ test("scenario restatement policy caps an otherwise inflated evaluation", () => 
   const total = calculateTrack3TotalScore({
     axis_scores: enforced.axisScores,
     delta_score: { score: enforced.deltaScore }
-  });
+  }, { turnCount: 5 });
 
   assert.deepEqual(enforced.axisScores.slice(0, 7).map((axis) => axis.score), [1, 1, 1, 0, 1, 0, 0]);
   assert.equal(enforced.axisScores[7].score, 4);
   assert.equal(enforced.deltaScore, 0);
   assert.equal(enforced.sequenceValid, false);
-  assert.equal(total, 28);
+  assert.equal(total, 22);
+});
+
+test("Track 3 score combines LLM 80 and code 20", () => {
+  const perfectJudge = {
+    axis_scores: TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4 })),
+    delta_score: { score: 4 }
+  };
+  const breakdown = calculateTrack3ScoreBreakdown(perfectJudge, {
+    codeChecks: { score: 20 },
+    turnCount: 5
+  });
+
+  assert.deepEqual(breakdown.llm_judge, {
+    score: 80,
+    max: 80,
+    process: 50,
+    delta: 15,
+    result: 15
+  });
+  assert.deepEqual(breakdown.code_based, { score: 20, max: 20 });
+  assert.equal(breakdown.total, 100);
+});
+
+test("completion adjustment separates two-turn and five-turn answers", () => {
+  const twoTurnJudge = {
+    axis_scores: [4, 4, 3, 2, 3, 2, 2, 3].map((score, index) => ({
+      key: TRACK3_AXES[index][0],
+      axis: TRACK3_AXES[index][1],
+      score
+    })),
+    delta_score: { score: 2 }
+  };
+  const fiveTurnJudge = {
+    axis_scores: [4, 4, 4, 3, 3, 3, 3, 3].map((score, index) => ({
+      key: TRACK3_AXES[index][0],
+      axis: TRACK3_AXES[index][1],
+      score
+    })),
+    delta_score: { score: 3 }
+  };
+
+  const twoTurn = calculateTrack3ScoreBreakdown(twoTurnJudge, {
+    codeChecks: { score: 15 },
+    turnCount: 2,
+    earlyFinish: true
+  });
+  const fiveTurn = calculateTrack3ScoreBreakdown(fiveTurnJudge, {
+    codeChecks: { score: 20 },
+    turnCount: 5
+  });
+
+  assert.equal(twoTurn.total, 38);
+  assert.equal(twoTurn.completion.multiplier, 0.55);
+  assert.equal(fiveTurn.total, 85);
+  assert.equal(fiveTurn.completion.multiplier, 1);
 });
 
 test("validateSubmitInput accepts a usable final output", () => {

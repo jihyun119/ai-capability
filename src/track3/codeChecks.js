@@ -76,34 +76,32 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
   const normalizedTurns = normalizeTurns(turns);
   const users = userTurns(normalizedTurns);
   const userText = users.map((turn) => turn.content).join("\n");
-  const avgLength = users.length
-    ? users.reduce((sum, turn) => sum + turn.content.length, 0) / users.length
-    : 0;
+  const validTurnCount = users.filter((turn) => turn.content.length >= 10).length;
   const laterText = users.slice(1).map((turn) => turn.content).join("\n");
 
   const checks = [
     {
       key: "turn_completion",
       label: "대화 완주",
-      contributes_to_total: false,
+      contributes_to_total: true,
       max: 4,
-      score: users.length >= TRACK3_MAX_TURNS || earlyFinish ? 4 : users.length >= 3 ? 2 : 0,
-      passed: users.length >= TRACK3_MAX_TURNS || earlyFinish,
-      evidence: `${users.length}/${TRACK3_MAX_TURNS}턴`
+      score: completionCheckScore(users.length),
+      passed: users.length >= TRACK3_MAX_TURNS,
+      evidence: `${users.length}/${TRACK3_MAX_TURNS}턴${earlyFinish && users.length < TRACK3_MAX_TURNS ? " (조기 제출)" : ""}`
     },
     {
       key: "valid_length",
       label: "발화 유효 길이",
-      contributes_to_total: false,
+      contributes_to_total: true,
       max: 3,
-      score: avgLength >= 45 ? 3 : avgLength >= 20 ? 2 : avgLength >= 10 ? 1 : 0,
-      passed: avgLength >= 45,
-      evidence: `평균 ${Math.round(avgLength)}자`
+      score: validTurnCount >= 5 ? 3 : validTurnCount >= 3 ? 2 : validTurnCount >= 1 ? 1 : 0,
+      passed: validTurnCount >= TRACK3_MAX_TURNS,
+      evidence: `${validTurnCount}/${users.length}개 발화 10자 이상`
     },
     {
       key: "output_format_signal",
       label: "출력 형식 요청 표현",
-      contributes_to_total: false,
+      contributes_to_total: true,
       max: 3,
       score: OUTPUT_FORMAT_RE.test(userText) ? 3 : 0,
       passed: OUTPUT_FORMAT_RE.test(userText),
@@ -112,7 +110,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "verification_signal",
       label: "검증 관련 표현",
-      contributes_to_total: false,
+      contributes_to_total: true,
       max: 4,
       score: VERIFICATION_RE.test(userText) ? 4 : 0,
       passed: VERIFICATION_RE.test(userText),
@@ -121,7 +119,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "follow_up_signal",
       label: "후속 개입 표현",
-      contributes_to_total: false,
+      contributes_to_total: true,
       max: 3,
       score: FOLLOW_UP_RE.test(laterText) ? 3 : 0,
       passed: FOLLOW_UP_RE.test(laterText),
@@ -130,7 +128,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     {
       key: "structure_signal",
       label: "구조화 신호",
-      contributes_to_total: false,
+      contributes_to_total: true,
       max: 3,
       score: STRUCTURE_RE.test(userText) ? 3 : 0,
       passed: STRUCTURE_RE.test(userText),
@@ -138,13 +136,24 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     }
   ];
 
+  const score = checks.reduce((sum, check) => sum + check.score, 0);
+  const max = checks.reduce((sum, check) => sum + check.max, 0);
+
   return {
-    score: 0,
-    max: 0,
-    diagnostic_score: checks.reduce((sum, check) => sum + check.score, 0),
-    diagnostic_max: checks.reduce((sum, check) => sum + check.max, 0),
+    score,
+    max,
+    diagnostic_score: score,
+    diagnostic_max: max,
     checks
   };
+}
+
+function completionCheckScore(turnCount) {
+  if (turnCount >= TRACK3_MAX_TURNS) return 4;
+  if (turnCount === 4) return 3;
+  if (turnCount === 3) return 2;
+  if (turnCount === 2) return 1;
+  return 0;
 }
 
 function normalizeRole(role) {
