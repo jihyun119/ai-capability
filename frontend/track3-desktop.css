@@ -1146,6 +1146,134 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
   font: 600 13px/1.35 "Pretendard", sans-serif !important;
 }
 
+/* Track 3 artifact Markdown */
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  color: var(--t3-black) !important;
+  font: 400 15px/1.5 "Pretendard", sans-serif !important;
+  overflow-wrap: anywhere !important;
+  word-break: keep-all !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown > :first-child {
+  margin-top: 0 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown > :last-child {
+  margin-bottom: 0 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown p,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown ul,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown ol,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown blockquote,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown pre,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown table {
+  margin: 0 0 12px !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h1,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h2,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h3,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h4,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h5,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h6 {
+  margin: 18px 0 8px !important;
+  letter-spacing: 0 !important;
+  font: 700 16px/1.35 "Pretendard", sans-serif !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown ul,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown ol {
+  padding-left: 22px !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown li {
+  margin: 4px 0 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown table {
+  width: max-content !important;
+  min-width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown th,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown td {
+  min-width: 108px !important;
+  max-width: 240px !important;
+  padding: 9px 10px !important;
+  border: 1px solid #cfcfcf !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  white-space: normal !important;
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown th {
+  background: #e9e9e9 !important;
+  font-weight: 700 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown blockquote {
+  padding: 10px 12px !important;
+  border-left: 3px solid var(--t3-violet) !important;
+  background: #f2f2f2 !important;
+  color: #555 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown code {
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+  background: #e7e7e7 !important;
+  font: 500 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown pre {
+  overflow-x: auto !important;
+  padding: 12px !important;
+  border-radius: 6px !important;
+  background: #e7e7e7 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown pre code {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown a {
+  color: var(--t3-violet) !important;
+  text-decoration: underline !important;
+}
+
+@media (max-width: 1180px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown {
+    font-size: 13px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h1,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h2,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h3,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h4,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h5,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h6 {
+    font-size: 14px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown th,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown td {
+    min-width: 96px !important;
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+}
+
 main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning[hidden] {
   display: none !important;
 }

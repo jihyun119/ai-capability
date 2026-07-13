@@ -8,6 +8,7 @@
     { "source": "/track3-desktop.css", "destination": "/frontend/track3-desktop.css" },
     { "source": "/desktop-final.css", "destination": "/frontend/desktop-final.css" },
     { "source": "/assets/:path*", "destination": "/frontend/assets/:path*" },
+    { "source": "/vendor/:path*", "destination": "/frontend/vendor/:path*" },
     { "source": "/fonts/:path*", "destination": "/frontend/fonts/:path*" },
     { "source": "/Logo/:path*", "destination": "/frontend/Logo/:path*" },
     { "source": "/characters/:path*", "destination": "/frontend/characters/:path*" },
