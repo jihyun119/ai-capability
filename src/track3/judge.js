@@ -13,6 +13,8 @@ export const TRACK3_AXES = [
   ["practical_application", "실무 적용"]
 ];
 
+const TRACK3_COMPLETION_MULTIPLIERS = [0, 0.35, 0.55, 0.75, 0.9, 1];
+
 export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish = false } = {}) {
   const scenario = getScenario(scenarioId);
   const codeChecks = runCodeChecks({ turns, earlyFinish });
@@ -22,7 +24,12 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
       return buildHeuristicJudge({ scenario, turns, finalOutput });
     });
   const normalizedJudge = normalizeJudgeResult(judgeResult, { scenario, turns, finalOutput });
-  const total = calculateTrack3TotalScore(normalizedJudge);
+  const scoreBreakdown = calculateTrack3ScoreBreakdown(normalizedJudge, {
+    codeChecks,
+    turnCount: countUserTurns(turns),
+    earlyFinish
+  });
+  const total = scoreBreakdown.total;
 
   return {
     track: "track3",
@@ -33,6 +40,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
       role: scenario.role
     },
     total,
+    score_breakdown: scoreBreakdown,
     grade: gradeForTotal(total),
     axis_scores: normalizedJudge.axis_scores,
     delta_score: normalizedJudge.delta_score,
@@ -174,15 +182,48 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
   };
 }
 
-export function calculateTrack3TotalScore(judge) {
+export function calculateTrack3ScoreBreakdown(judge, {
+  codeChecks = {},
+  turnCount = TRACK3_COMPLETION_MULTIPLIERS.length - 1,
+  earlyFinish = false
+} = {}) {
   const processAvg = avg(judge.axis_scores.slice(0, 7).map((axis) => axis.score));
   const axis8 = judge.axis_scores[7]?.score || 0;
   const delta = judge.delta_score?.score || 0;
-  const judgeScore =
+  const llmJudgeScore =
     (processAvg * 12.5)
     + (delta * 3.75)
     + (axis8 * 3.75);
-  return Math.round((judgeScore / 80) * 100);
+  const codeScore = Math.max(0, Math.min(20, Number(codeChecks.score ?? codeChecks.diagnostic_score) || 0));
+  const normalizedTurnCount = Math.max(0, Math.min(5, Math.trunc(Number(turnCount) || 0)));
+  const completionMultiplier = TRACK3_COMPLETION_MULTIPLIERS[normalizedTurnCount];
+  const subtotal = llmJudgeScore + codeScore;
+
+  return {
+    llm_judge: {
+      score: round1(llmJudgeScore),
+      max: 80,
+      process: round1(processAvg * 12.5),
+      delta: round1(delta * 3.75),
+      result: round1(axis8 * 3.75)
+    },
+    code_based: {
+      score: round1(codeScore),
+      max: 20
+    },
+    completion: {
+      turn_count: normalizedTurnCount,
+      max_turns: 5,
+      multiplier: completionMultiplier,
+      early_finish: Boolean(earlyFinish)
+    },
+    subtotal: round1(subtotal),
+    total: Math.round(subtotal * completionMultiplier)
+  };
+}
+
+export function calculateTrack3TotalScore(judge, options) {
+  return calculateTrack3ScoreBreakdown(judge, options).total;
 }
 
 function normalizeEvidenceAssessment(value, fallback) {
@@ -391,6 +432,10 @@ function clampScore(value) {
 
 function avg(numbers) {
   return numbers.length ? numbers.reduce((sum, value) => sum + value, 0) / numbers.length : 0;
+}
+
+function round1(value) {
+  return Math.round(Number(value) * 10) / 10;
 }
 
 function quote(text) {

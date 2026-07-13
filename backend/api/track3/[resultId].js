@@ -33,6 +33,7 @@ export default async function handler(req, res) {
         axis_scores: record.axis_scores,
         delta_score: record.delta_score,
         code_checks: record.code_checks,
+        score_breakdown: record.code_checks?.score_breakdown || null,
         move_tagging: record.move_tagging,
         sequence_valid: record.sequence_valid,
         best_intervention: record.best_intervention,
