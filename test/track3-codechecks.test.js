@@ -14,6 +14,7 @@ import {
   generateTrack3Chat,
   normalizeArtifactText,
   normalizeTrack3Artifact,
+  stripTrack3ArtifactMeta,
   stripTrack3ChatMarkdown
 } from "../src/track3/chat.js";
 import { listScenarios } from "../src/track3/scenarios.js";
@@ -67,6 +68,43 @@ test("normalizeTrack3Artifact rejects user-message and meta-note contamination",
     "# 원인 분석\n- 재구매율 하락을 먼저 검증해야 합니다.",
     { previousArtifact, lastUserMessage: userMessage }
   ), "# 원인 분석\n- 재구매율 하락을 먼저 검증해야 합니다.");
+});
+
+test("stripTrack3ArtifactMeta removes feedback notes but preserves the deliverable", () => {
+  const artifact = [
+    "## 분석 가설 & 우선순위",
+    "- 재구매율 하락을 1순위로 검증합니다.",
+    "- 고객 피드백을 정성 분석합니다.",
+    "",
+    "## 피드백 반영",
+    "- 사용자가 LTV를 추가해달라고 요청함",
+    "- 수정 요청: KPI를 더 구체화",
+    "",
+    "## 데이터 & 검증 계획",
+    "- 코호트별 LTV를 비교합니다."
+  ].join("\n");
+
+  const sanitized = stripTrack3ArtifactMeta(artifact);
+
+  assert.match(sanitized, /재구매율 하락을 1순위로 검증/);
+  assert.match(sanitized, /고객 피드백을 정성 분석/);
+  assert.match(sanitized, /## 데이터 & 검증 계획/);
+  assert.equal(sanitized.includes("사용자가 LTV"), false);
+  assert.equal(sanitized.includes("수정 요청"), false);
+});
+
+test("stripTrack3ArtifactMeta removes labeled feedback lines inside a valid section", () => {
+  const artifact = [
+    "## PRD 초안",
+    "- 목표: 재구매율을 개선합니다.",
+    "- 피드백 반영: 알림 기능을 추가해달라는 요청",
+    "- 핵심 기능: 쿠폰 만료 알림"
+  ].join("\n");
+
+  assert.equal(
+    stripTrack3ArtifactMeta(artifact),
+    "## PRD 초안\n- 목표: 재구매율을 개선합니다.\n- 핵심 기능: 쿠폰 만료 알림"
+  );
 });
 
 test("normalizeArtifactText converts section objects to ordered Markdown", () => {

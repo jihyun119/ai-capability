@@ -105,13 +105,68 @@ export function normalizeTrack3Artifact(value, {
   const previous = normalizeArtifactText(previousArtifact, artifactSections);
   if (!candidate) return previous;
 
-  const normalizedCandidate = normalizeComparable(candidate);
+  const sanitizedCandidate = stripTrack3ArtifactMeta(candidate);
+  if (!sanitizedCandidate) return previous;
+
+  const normalizedCandidate = normalizeComparable(sanitizedCandidate);
   const normalizedUserMessage = normalizeComparable(lastUserMessage);
-  const containsArtifactMeta = /(^|\n)\s*(?:#{1,6}\s*)?\d+\s*턴\s*반영\s*메모|(^|\n)\s*(?:[-*]\s*)?사용자\s*요청\s*:/im.test(candidate);
   const containsWholeUserMessage = normalizedUserMessage.length >= 12
     && normalizedCandidate.includes(normalizedUserMessage);
 
-  return containsArtifactMeta || containsWholeUserMessage ? previous : candidate;
+  return containsWholeUserMessage ? previous : sanitizedCandidate;
+}
+
+export function stripTrack3ArtifactMeta(value) {
+  const lines = String(value || "").replace(/\r\n?/g, "\n").split("\n");
+  const output = [];
+  let skippedHeadingLevel = null;
+
+  for (const line of lines) {
+    const heading = line.match(/^\s*(#{1,6})\s+(.+?)\s*$/);
+    const headingLevel = heading?.[1].length ?? null;
+
+    if (skippedHeadingLevel !== null) {
+      if (headingLevel !== null && headingLevel <= skippedHeadingLevel) {
+        skippedHeadingLevel = null;
+      } else {
+        continue;
+      }
+    }
+
+    if (heading && isArtifactMetaLabel(heading[2])) {
+      skippedHeadingLevel = headingLevel;
+      continue;
+    }
+
+    if (isArtifactMetaLine(line)) continue;
+    output.push(line);
+  }
+
+  return output.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function isArtifactMetaLabel(value) {
+  const label = String(value || "")
+    .replace(/[*_`~]/g, "")
+    .replace(/^\d+[.)]\s*/, "")
+    .replace(/[:：]\s*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return /^(?:사용자\s*)?(?:요청|피드백|지시|의견)(?:\s*(?:사항|내용|요약|반영))?$/.test(label)
+    || /^(?:수정|변경|피드백)\s*(?:요청|사항|내용|내역|요약|반영)$/.test(label)
+    || /^반영\s*(?:사항|내용|내역|요약|메모)$/.test(label)
+    || /^\d+\s*턴\s*(?:반영|수정|변경|요약)(?:\s*(?:사항|내용|내역|메모))?$/.test(label)
+    || /^(?:대화|작업|응답)\s*(?:요약|메모)$/.test(label);
+}
+
+function isArtifactMetaLine(value) {
+  const line = String(value || "")
+    .replace(/^\s*(?:[-*+]\s*)?/, "")
+    .replace(/^\*\*(.*?)\*\*(?=\s*[:：])/, "$1")
+    .trim();
+  const label = line.match(/^([^:：]{1,30})\s*[:：]/)?.[1];
+  return Boolean(label && isArtifactMetaLabel(label));
 }
 
 export function normalizeArtifactText(value, artifactSections = []) {
