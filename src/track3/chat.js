@@ -2,7 +2,10 @@ import { TRACK3_CHAT_SYSTEM_PROMPT } from "./judgePrompt.js";
 import { TRACK3_MAX_TURNS, TRACK3_VERSION, getScenario } from "./scenarios.js";
 import { normalizeTurns, validateChatInput } from "./codeChecks.js";
 
-export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, artifact = "" } = {}) {
+export async function generateTrack3Chat(
+  { scenarioId, turns = [], userMessage, artifact = "" } = {},
+  { chatModel = callChatModel } = {}
+) {
   const validation = validateChatInput({ turns, userMessage });
   if (!validation.valid) {
     const error = new Error(validation.errors.join(" "));
@@ -13,15 +16,15 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
   const scenario = getScenario(scenarioId);
   const nextTurns = [...validation.turns, { role: "user", content: validation.userMessage }];
   const userTurnCount = validation.currentTurnCount + 1;
-  const result = await callChatModel({ turns: nextTurns, artifact, scenario })
+  const result = await chatModel({ turns: nextTurns, artifact, scenario })
     .catch((error) => {
       console.error("[track3:chat] OpenAI 호출 실패, fallback으로 전환합니다:", error.message);
       return buildFallbackChat({ artifact });
     });
-  const hasWorkRequest = hasTrack3WorkRequest(validation.userMessage);
-  const updatedSections = hasWorkRequest
-    ? normalizeUpdatedSections(result.updated_sections, scenario.artifact_sections)
-    : [];
+  const updatedSections = normalizeUpdatedSections(
+    result.updated_sections,
+    scenario.artifact_sections
+  );
   const assistantMessage = applyCanonicalTerms(
     buildTrack3AssistantMessage(result.assistant_message || result.assistantMessage, updatedSections),
     scenario.canonical_terms
@@ -119,17 +122,6 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
 export function normalizeUpdatedSections(value, artifactSections = []) {
   if (!Array.isArray(value) || !Array.isArray(artifactSections)) return [];
   return artifactSections.filter((section) => value.some((item) => String(item).trim() === section));
-}
-
-export function hasTrack3WorkRequest(value) {
-  const text = String(value || "").replace(/\s+/g, " ").trim();
-  if (!text) return false;
-
-  const explicitRequest = /(?:해\s*줘|해주세요|해줘|해\s*봐|해봐|하자|해보자|부탁해|만들어\s*줘|만들어줘|알려\s*줘|알려줘|보여\s*줘|보여줘|써\s*줘|써줘)/;
-  const taskEnding = /(?:작성|정리|분석|비교|검토|수정|보완|추가|제안|설계|선정|도출|평가|확인)(?:해|하자|부터|만)?[.!?]?$/;
-  const workQuestion = /(?:무엇|어떤|어떻게|왜|뭐).*(?:일까|인가|해야|좋을까|할까|해볼까)[?]?$/;
-
-  return explicitRequest.test(text) || taskEnding.test(text) || workQuestion.test(text);
 }
 
 export function buildTrack3AssistantMessage(value, updatedSections = []) {
