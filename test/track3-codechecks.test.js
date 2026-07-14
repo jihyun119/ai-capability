@@ -9,15 +9,19 @@ import {
   judgeTrack3
 } from "../src/track3/judge.js";
 import {
+  applyCanonicalTerms,
   buildTrack3ChatMessages,
+  buildTrack3AssistantMessage,
   compactTrack3AssistantMessage,
   generateTrack3Chat,
+  mergeTrack3ArtifactSections,
   normalizeArtifactText,
+  normalizeUpdatedSections,
   normalizeTrack3Artifact,
   stripTrack3ArtifactMeta,
   stripTrack3ChatMarkdown
 } from "../src/track3/chat.js";
-import { listScenarios } from "../src/track3/scenarios.js";
+import { getScenario, listScenarios } from "../src/track3/scenarios.js";
 
 const sampleTurns = [
   { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 PRD 초안을 만들려고 합니다." },
@@ -200,6 +204,78 @@ test("buildTrack3ChatMessages preserves roles and keeps the latest user request 
   assert.equal(messages.slice(1).some((message) => message.content.includes("previous_artifact")), false);
 });
 
+test("buildTrack3ChatMessages includes trusted scenario facts and progressive scope rules", () => {
+  const scenario = getScenario("marketing_001");
+  const messages = buildTrack3ChatMessages({
+    scenario,
+    turns: [{ role: "user", content: "원인 가설만 먼저 정리해주세요." }]
+  });
+  const system = messages[0].content;
+
+  assert.match(system, /이모레퍼시픽/);
+  assert.match(system, /300만원/);
+  assert.match(system, /Do not pre-fill untouched sections/);
+  assert.match(system, /user turn 1 of 5/);
+});
+
+test("mergeTrack3ArtifactSections applies only sections declared as updated", () => {
+  const sections = ["원인 가설", "타깃", "실행안"];
+  const previousArtifact = [
+    "## 타깃",
+    "기존 타깃을 유지합니다."
+  ].join("\n");
+  const candidateArtifact = [
+    "## 원인 가설",
+    "효과 체감 전 이탈을 검증합니다.",
+    "",
+    "## 타깃",
+    "AI가 요청 없이 바꾼 타깃입니다.",
+    "",
+    "## 실행안",
+    "AI가 미리 만든 실행안입니다."
+  ].join("\n");
+
+  assert.equal(mergeTrack3ArtifactSections({
+    candidateArtifact,
+    previousArtifact,
+    artifactSections: sections,
+    updatedSections: ["원인 가설"]
+  }), "## 원인 가설\n효과 체감 전 이탈을 검증합니다.\n\n## 타깃\n기존 타깃을 유지합니다.");
+});
+
+test("mergeTrack3ArtifactSections preserves prior content when an updated section is truncated", () => {
+  assert.equal(mergeTrack3ArtifactSections({
+    candidateArtifact: "## 원인 가설\n새 가설입니다.",
+    previousArtifact: "## 원인 가설\n기존 가설입니다.\n\n## 타깃\n기존 타깃입니다.",
+    artifactSections: ["원인 가설", "타깃"],
+    updatedSections: ["원인 가설", "타깃"]
+  }), "## 원인 가설\n새 가설입니다.\n\n## 타깃\n기존 타깃입니다.");
+});
+
+test("canonical terms correct user-substituted organization names", () => {
+  const scenario = getScenario("marketing_001");
+  const corrected = applyCanonicalTerms(
+    "아모레퍼시픽 캠페인과 이모레 퍼시픽의 예산안",
+    scenario.canonical_terms
+  );
+
+  assert.equal(corrected, "이모레퍼시픽 캠페인과 이모레퍼시픽의 예산안");
+});
+
+test("assistant message summarizes updated sections and falls back from casual speech", () => {
+  const sections = ["원인 가설 & 뉴스 근거"];
+
+  assert.deepEqual(normalizeUpdatedSections(["원인 가설 & 뉴스 근거", "허용되지 않은 섹션"], sections), sections);
+  assert.equal(
+    buildTrack3AssistantMessage("가설을 뉴스 근거와 연결했어", sections),
+    "‘원인 가설 & 뉴스 근거’ 영역을 업데이트했습니다."
+  );
+  assert.match(
+    buildTrack3AssistantMessage("뉴스 2를 근거로 초기 이탈 가설을 보강했습니다.", sections),
+    /업데이트했습니다.*보강했습니다/
+  );
+});
+
 test("Track 3 scenarios expose three or four artifact sections", () => {
   const scenarios = listScenarios();
 
@@ -207,6 +283,8 @@ test("Track 3 scenarios expose three or four artifact sections", () => {
   assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length >= 3));
   assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length <= 4));
   assert.deepEqual(scenarios[0].artifact_sections, ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"]);
+  assert.equal(getScenario("marketing_001").role, "이모레퍼시픽 스킨케어팀의 마케팅 담당자");
+  assert.equal(getScenario("da_001").role, "마켓쿨리의 데이터 분석 담당자");
 });
 
 test("compactTrack3AssistantMessage keeps chat concise while artifact holds details", () => {
@@ -216,6 +294,7 @@ test("compactTrack3AssistantMessage keeps chat concise while artifact holds deta
   assert.ok(compact.length <= 110);
   assert.match(compact, /^알겠습니다\./);
   assert.equal(compact.includes("실행 순서까지 모두 안내"), false);
+  assert.equal(compact.includes("  "), false);
 });
 
 test("scenario restatement policy caps an otherwise inflated evaluation", () => {
