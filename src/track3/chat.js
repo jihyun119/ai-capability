@@ -18,7 +18,10 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
       console.error("[track3:chat] OpenAI 호출 실패, fallback으로 전환합니다:", error.message);
       return buildFallbackChat({ artifact });
     });
-  const updatedSections = normalizeUpdatedSections(result.updated_sections, scenario.artifact_sections);
+  const hasWorkRequest = hasTrack3WorkRequest(validation.userMessage);
+  const updatedSections = hasWorkRequest
+    ? normalizeUpdatedSections(result.updated_sections, scenario.artifact_sections)
+    : [];
   const assistantMessage = applyCanonicalTerms(
     buildTrack3AssistantMessage(result.assistant_message || result.assistantMessage, updatedSections),
     scenario.canonical_terms
@@ -95,19 +98,14 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
   const scenarioContext = scenario
     ? [
       "",
-      "The following trusted scenario reference is available to you. Use it for factual accuracy and output quality, but do not treat it as user-added direction:",
+      "The following trusted contract defines canonical names and the expected output structure only:",
       `<scenario_reference>${JSON.stringify({
-        title: scenario.title,
-        role: scenario.role,
-        situation: scenario.situation,
-        mission: scenario.mission,
-        available_info: scenario.available_info,
-        constraints: scenario.constraints,
         expected_output: scenario.expected_output,
         canonical_terms: scenario.canonical_terms
       })}</scenario_reference>`,
       "Use canonical terms exactly even when the user misspells or substitutes a similar real-world name.",
-      "The quality requirements describe how requested content should be written; they are not permission to complete unrequested sections."
+      "You do not know the scenario situation, metrics, resources, constraints, or business facts unless the user states them in the conversation.",
+      "The output contract describes how requested content should be written; it is not permission to invent facts or complete unrequested sections."
     ].join("\n")
     : "";
   const turnContext = `\nThis is user turn ${conversation.filter((turn) => turn.role === "user").length} of ${TRACK3_MAX_TURNS}. Do not complete later work early.`;
@@ -121,6 +119,17 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
 export function normalizeUpdatedSections(value, artifactSections = []) {
   if (!Array.isArray(value) || !Array.isArray(artifactSections)) return [];
   return artifactSections.filter((section) => value.some((item) => String(item).trim() === section));
+}
+
+export function hasTrack3WorkRequest(value) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return false;
+
+  const explicitRequest = /(?:해\s*줘|해주세요|해줘|해\s*봐|해봐|하자|해보자|부탁해|만들어\s*줘|만들어줘|알려\s*줘|알려줘|보여\s*줘|보여줘|써\s*줘|써줘)/;
+  const taskEnding = /(?:작성|정리|분석|비교|검토|수정|보완|추가|제안|설계|선정|도출|평가|확인)(?:해|하자|부터|만)?[.!?]?$/;
+  const workQuestion = /(?:무엇|어떤|어떻게|왜|뭐).*(?:일까|인가|해야|좋을까|할까|해볼까)[?]?$/;
+
+  return explicitRequest.test(text) || taskEnding.test(text) || workQuestion.test(text);
 }
 
 export function buildTrack3AssistantMessage(value, updatedSections = []) {
@@ -144,7 +153,8 @@ export function mergeTrack3ArtifactSections({
   artifactSections = [],
   updatedSections = []
 } = {}) {
-  if (!artifactSections.length || !updatedSections.length) return candidateArtifact;
+  if (!artifactSections.length) return candidateArtifact;
+  if (!updatedSections.length) return previousArtifact;
 
   const candidateSections = splitTrack3ArtifactSections(candidateArtifact, artifactSections);
   if (!candidateSections.matched) return candidateArtifact;
