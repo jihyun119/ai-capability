@@ -23,7 +23,7 @@
       title: "마케팅",
       summary: "재구매율 저하 원인 가설과 캠페인 방향을 잡고, 바로 집행 가능한 캠페인 기획서를 만듭니다.",
       situation: [
-        "당신은 이모레 퍼시픽 스킨케어팀의 마케팅 담당자입니다. 신제품 라인이 출시된 지 2개월이 됐는데 재구매율이 8%로 업계 평균보다 낮습니다.",
+        "당신은 이모레퍼시픽 스킨케어팀의 마케팅 담당자입니다. 신제품 라인이 출시된 지 2개월이 됐는데 재구매율이 8%로 업계 평균보다 낮습니다.",
         "이번 달 마케팅 예산은 300만원이고, 운영 중인 채널은 Instagram과 카카오톡 채널 두 개뿐입니다.",
         "AI에게 재구매율 저하 원인 가설과 캠페인 방향을 요청하고, 최종적으로 다음 달에 바로 집행 가능한 캠페인 기획서를 만들어보세요.",
       ],
@@ -180,7 +180,7 @@
     const explicit = item?.projectName || item?.project_name || item?.project || item?.serviceName || item?.service_name;
     if (explicit) return explicit;
     const id = String(item?.scenarioId || item?.id || item?.key || "").toLowerCase();
-    if (id.includes("marketing")) return "이모레 퍼시픽 스킨케어";
+    if (id.includes("marketing")) return "이모레퍼시픽 스킨케어";
     if (id.includes("data")) return "마켓쿨리";
     if (id.includes("pm")) return "키키오 선물하기";
     return item?.title || "Track 3";
