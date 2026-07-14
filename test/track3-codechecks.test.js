@@ -12,6 +12,7 @@ import {
   buildTrack3ChatMessages,
   compactTrack3AssistantMessage,
   generateTrack3Chat,
+  normalizeArtifactText,
   normalizeTrack3Artifact,
   stripTrack3ChatMarkdown
 } from "../src/track3/chat.js";
@@ -66,6 +67,32 @@ test("normalizeTrack3Artifact rejects user-message and meta-note contamination",
     "# 원인 분석\n- 재구매율 하락을 먼저 검증해야 합니다.",
     { previousArtifact, lastUserMessage: userMessage }
   ), "# 원인 분석\n- 재구매율 하락을 먼저 검증해야 합니다.");
+});
+
+test("normalizeArtifactText converts section objects to ordered Markdown", () => {
+  const sections = ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"];
+  const artifact = {
+    "PRD 초안": { 목표: "재구매율 개선", 기능: ["쿠폰함", "알림"] },
+    "후보 비교표": "| 후보 | 점수 |\n| --- | ---: |\n| 쿠폰함 | 85 |",
+    "선택안 & 선정 근거": "쿠폰함을 우선합니다."
+  };
+
+  const normalized = normalizeArtifactText(artifact, sections);
+
+  assert.equal(normalized.includes("[object Object]"), false);
+  assert.ok(normalized.indexOf("## 후보 비교표") < normalized.indexOf("## 선택안 & 선정 근거"));
+  assert.ok(normalized.indexOf("## 선택안 & 선정 근거") < normalized.indexOf("## PRD 초안"));
+  assert.match(normalized, /\*\*목표\*\*: 재구매율 개선/);
+  assert.match(normalized, /- 쿠폰함/);
+});
+
+test("normalizeTrack3Artifact accepts object output without leaking object coercion", () => {
+  const normalized = normalizeTrack3Artifact(
+    { "핵심 문제 & 지표 해석": "신규 고객 증가가 매출로 연결되지 않습니다." },
+    { artifactSections: ["핵심 문제 & 지표 해석"] }
+  );
+
+  assert.equal(normalized, "## 핵심 문제 & 지표 해석\n신규 고객 증가가 매출로 연결되지 않습니다.");
 });
 
 test("Track 3 chat fallback preserves the prior artifact without copying user input", async () => {

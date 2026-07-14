@@ -88,4 +88,6 @@ Return only JSON:
   "assistant_message": "Korean chat reply to show in the chat panel",
   "artifact": "Latest cumulative assistant-authored deliverable only; never include user messages or chat meta notes"
 }
+
+The artifact field must always be one Markdown string. Never return artifact as an object, array, or section-keyed JSON structure.
 `.trim();
