@@ -14,6 +14,7 @@ import {
   buildTrack3AssistantMessage,
   compactTrack3AssistantMessage,
   generateTrack3Chat,
+  hasTrack3WorkRequest,
   mergeTrack3ArtifactSections,
   normalizeArtifactText,
   normalizeUpdatedSections,
@@ -204,7 +205,7 @@ test("buildTrack3ChatMessages preserves roles and keeps the latest user request 
   assert.equal(messages.slice(1).some((message) => message.content.includes("previous_artifact")), false);
 });
 
-test("buildTrack3ChatMessages includes trusted scenario facts and progressive scope rules", () => {
+test("buildTrack3ChatMessages includes only the output contract, not hidden scenario facts", () => {
   const scenario = getScenario("marketing_001");
   const messages = buildTrack3ChatMessages({
     scenario,
@@ -213,9 +214,18 @@ test("buildTrack3ChatMessages includes trusted scenario facts and progressive sc
   const system = messages[0].content;
 
   assert.match(system, /이모레퍼시픽/);
-  assert.match(system, /300만원/);
+  assert.match(system, /expected_output/);
+  assert.doesNotMatch(system, /300만원/);
+  assert.doesNotMatch(system, /재구매율 8%/);
   assert.match(system, /Do not pre-fill untouched sections/);
   assert.match(system, /user turn 1 of 5/);
+});
+
+test("hasTrack3WorkRequest distinguishes context from an actionable request", () => {
+  assert.equal(hasTrack3WorkRequest("난 마켓컬리의 데이터 분석 담당자야"), false);
+  assert.equal(hasTrack3WorkRequest("예산은 300만원이고 인스타그램만 쓸 수 있어"), false);
+  assert.equal(hasTrack3WorkRequest("원인 가설만 작성"), true);
+  assert.equal(hasTrack3WorkRequest("재구매율 하락 원인을 분석해주세요"), true);
 });
 
 test("mergeTrack3ArtifactSections applies only sections declared as updated", () => {
@@ -250,6 +260,15 @@ test("mergeTrack3ArtifactSections preserves prior content when an updated sectio
     artifactSections: ["원인 가설", "타깃"],
     updatedSections: ["원인 가설", "타깃"]
   }), "## 원인 가설\n새 가설입니다.\n\n## 타깃\n기존 타깃입니다.");
+});
+
+test("mergeTrack3ArtifactSections rejects unsolicited content when no section was updated", () => {
+  assert.equal(mergeTrack3ArtifactSections({
+    candidateArtifact: "## 핵심 문제\nAI가 요청 없이 만든 내용입니다.",
+    previousArtifact: "",
+    artifactSections: ["핵심 문제", "분석 계획"],
+    updatedSections: []
+  }), "");
 });
 
 test("canonical terms correct user-substituted organization names", () => {
