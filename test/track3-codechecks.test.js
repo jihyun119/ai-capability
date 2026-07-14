@@ -15,7 +15,6 @@ import {
   buildTrack3AssistantMessage,
   compactTrack3AssistantMessage,
   generateTrack3Chat,
-  hasTrack3WorkRequest,
   mergeTrack3ArtifactSections,
   normalizeArtifactText,
   normalizeUpdatedSections,
@@ -237,11 +236,47 @@ test("buildTrack3ChatMessages includes only the output contract, not hidden scen
   assert.match(system, /user turn 1 of 5/);
 });
 
-test("hasTrack3WorkRequest distinguishes context from an actionable request", () => {
-  assert.equal(hasTrack3WorkRequest("난 마켓컬리의 데이터 분석 담당자야"), false);
-  assert.equal(hasTrack3WorkRequest("예산은 300만원이고 인스타그램만 쓸 수 있어"), false);
-  assert.equal(hasTrack3WorkRequest("원인 가설만 작성"), true);
-  assert.equal(hasTrack3WorkRequest("재구매율 하락 원인을 분석해주세요"), true);
+test("Track 3 applies model-declared artifact updates regardless of command phrasing", async () => {
+  const phrases = [
+    "뉴스를 바탕으로 원인 가설을 세워줘.",
+    "가설별 적합성 우선순위를 매겨줘.",
+    "우선 원인 가설부터 정리하는 것으로."
+  ];
+  const chatModel = async () => ({
+    assistant_message: "원인 가설을 정리했습니다.",
+    updated_sections: ["원인 가설 & 뉴스 근거"],
+    artifact: "## 원인 가설 & 뉴스 근거\n효과 체감 전 이탈을 우선 검증합니다."
+  });
+
+  for (const userMessage of phrases) {
+    const result = await generateTrack3Chat({
+      scenarioId: "marketing_001",
+      turns: [],
+      userMessage,
+      artifact: ""
+    }, { chatModel });
+
+    assert.deepEqual(result.updatedSections, ["원인 가설 & 뉴스 근거"]);
+    assert.match(result.artifact, /효과 체감 전 이탈/);
+  }
+});
+
+test("Track 3 still rejects unsolicited artifact changes for context-only input", async () => {
+  const result = await generateTrack3Chat({
+    scenarioId: "marketing_001",
+    turns: [],
+    userMessage: "난 이모레퍼시픽 마케팅 담당자야.",
+    artifact: ""
+  }, {
+    chatModel: async () => ({
+      assistant_message: "역할을 확인했습니다.",
+      updated_sections: [],
+      artifact: "## 원인 가설 & 뉴스 근거\n요청하지 않은 가설입니다."
+    })
+  });
+
+  assert.deepEqual(result.updatedSections, []);
+  assert.equal(result.artifact, "");
 });
 
 test("mergeTrack3ArtifactSections applies only sections declared as updated", () => {
