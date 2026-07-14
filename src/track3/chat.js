@@ -24,7 +24,8 @@ export async function generateTrack3Chat({ scenarioId, turns = [], userMessage, 
     : turn);
   const nextArtifact = normalizeTrack3Artifact(result.artifact, {
     previousArtifact: artifact,
-    lastUserMessage: validation.userMessage
+    lastUserMessage: validation.userMessage,
+    artifactSections: scenario.artifact_sections
   });
 
   return {
@@ -61,7 +62,7 @@ async function callChatModel({ turns, artifact, artifactSections }) {
 
 export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSections = [] } = {}) {
   const conversation = normalizeTurns(turns);
-  const currentArtifact = cleanText(artifact);
+  const currentArtifact = normalizeArtifactText(artifact, artifactSections);
   const artifactContext = currentArtifact
     ? [
       "",
@@ -95,9 +96,13 @@ function buildFallbackChat({ artifact }) {
   };
 }
 
-export function normalizeTrack3Artifact(value, { previousArtifact = "", lastUserMessage = "" } = {}) {
-  const candidate = cleanText(value);
-  const previous = cleanText(previousArtifact);
+export function normalizeTrack3Artifact(value, {
+  previousArtifact = "",
+  lastUserMessage = "",
+  artifactSections = []
+} = {}) {
+  const candidate = normalizeArtifactText(value, artifactSections);
+  const previous = normalizeArtifactText(previousArtifact, artifactSections);
   if (!candidate) return previous;
 
   const normalizedCandidate = normalizeComparable(candidate);
@@ -107,6 +112,61 @@ export function normalizeTrack3Artifact(value, { previousArtifact = "", lastUser
     && normalizedCandidate.includes(normalizedUserMessage);
 
   return containsArtifactMeta || containsWholeUserMessage ? previous : candidate;
+}
+
+export function normalizeArtifactText(value, artifactSections = []) {
+  if (typeof value === "string") return value.trim();
+  if (value === null || value === undefined) return "";
+  if (typeof value !== "object") return String(value).trim();
+
+  if (!Array.isArray(value)) {
+    const nestedArtifact = value.artifact ?? value.markdown ?? value.content;
+    if (typeof nestedArtifact === "string") return nestedArtifact.trim();
+
+    const orderedKeys = [
+      ...artifactSections.filter((section) => Object.hasOwn(value, section)),
+      ...Object.keys(value).filter((key) => !artifactSections.includes(key))
+    ];
+
+    return orderedKeys
+      .map((key) => {
+        const content = formatArtifactValue(value[key]);
+        return content ? `## ${key}\n${content}` : "";
+      })
+      .filter(Boolean)
+      .join("\n\n")
+      .trim();
+  }
+
+  return formatArtifactValue(value).trim();
+}
+
+function formatArtifactValue(value, depth = 0) {
+  if (value === null || value === undefined || value === "") return "";
+  if (typeof value === "string") return value.trim();
+  if (typeof value !== "object") return String(value);
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        const content = formatArtifactValue(item, depth + 1);
+        if (!content) return "";
+        const indent = "  ".repeat(depth);
+        return `${indent}- ${content.replace(/\n/g, `\n${indent}  `)}`;
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  return Object.entries(value)
+    .map(([key, item]) => {
+      const content = formatArtifactValue(item, depth + 1);
+      if (!content) return "";
+      const indent = "  ".repeat(depth);
+      return `${indent}- **${key}**: ${content.replace(/\n/g, `\n${indent}  `)}`;
+    })
+    .filter(Boolean)
+    .join("\n");
 }
 
 function normalizeComparable(value) {
