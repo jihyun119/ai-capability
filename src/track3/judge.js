@@ -1,6 +1,6 @@
 import { TRACK3_JUDGE_SYSTEM_PROMPT } from "./judgePrompt.js";
 import { TRACK3_VERSION, getScenario } from "./scenarios.js";
-import { buildConversationText, countUserTurns, runCodeChecks, userTurns } from "./codeChecks.js";
+import { analyzeTrack3Integrity, buildConversationText, countUserTurns, runCodeChecks, userTurns } from "./codeChecks.js";
 
 export const TRACK3_AXES = [
   ["goal_definition", "목표 정의"],
@@ -17,16 +17,18 @@ const TRACK3_COMPLETION_MULTIPLIERS = [0, 0.35, 0.55, 0.75, 0.9, 1];
 
 export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish = false } = {}) {
   const scenario = getScenario(scenarioId);
-  const codeChecks = runCodeChecks({ turns, earlyFinish });
-  const judgeResult = await runLlmJudge({ scenario, turns, finalOutput })
+  const integrity = analyzeTrack3Integrity({ turns, scenario });
+  const codeChecks = runCodeChecks({ turns, earlyFinish, scenario });
+  const judgeResult = await runLlmJudge({ scenario, turns, finalOutput, integrity })
     .catch((error) => {
       console.error("[track3:judge] OpenAI 호출 실패, 휴리스틱 채점으로 전환합니다:", error.message);
       return buildHeuristicJudge({ scenario, turns, finalOutput });
     });
-  const normalizedJudge = normalizeJudgeResult(judgeResult, { scenario, turns, finalOutput });
+  const normalizedJudge = normalizeJudgeResult(judgeResult, { scenario, turns, finalOutput, integrity });
   const scoreBreakdown = calculateTrack3ScoreBreakdown(normalizedJudge, {
     codeChecks,
     turnCount: countUserTurns(turns),
+    effectiveTurnCount: integrity.effective_turn_count,
     earlyFinish
   });
   const total = scoreBreakdown.total;
@@ -45,6 +47,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
     axis_scores: normalizedJudge.axis_scores,
     delta_score: normalizedJudge.delta_score,
     evidence_assessment: normalizedJudge.evidence_assessment,
+    integrity,
     code_checks: codeChecks,
     move_tagging: normalizedJudge.move_tagging,
     sequence_valid: normalizedJudge.sequence_valid,
@@ -59,7 +62,7 @@ export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish 
   };
 }
 
-async function runLlmJudge({ scenario, turns, finalOutput }) {
+async function runLlmJudge({ scenario, turns, finalOutput, integrity }) {
   const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_API_KEY;
   if (!apiKey || process.env.ENABLE_TRACK3_LLM_JUDGE === "false") {
     return buildHeuristicJudge({ scenario, turns, finalOutput });
@@ -70,6 +73,7 @@ async function runLlmJudge({ scenario, turns, finalOutput }) {
   const payload = {
     scenario,
     turns,
+    integrity_analysis: integrity,
     final_output: finalOutput
   };
 
@@ -82,7 +86,7 @@ async function runLlmJudge({ scenario, turns, finalOutput }) {
     temperature: 0.1,
     max_tokens: 1600,
     response_format: { type: "json_object" }
-  }), Number(process.env.TRACK3_JUDGE_TIMEOUT_MS || 8000));
+  }), Number(process.env.TRACK3_JUDGE_TIMEOUT_MS || 20000));
 
   return JSON.parse(response.choices[0].message.content.trim());
 }
@@ -93,7 +97,8 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
   const later = users.slice(1).map((turn) => turn.content).join("\n");
   const allUser = users.map((turn) => turn.content).join("\n");
   const output = String(finalOutput || "");
-  const codeChecks = runCodeChecks({ turns });
+  const integrity = analyzeTrack3Integrity({ turns, scenario });
+  const codeChecks = runCodeChecks({ turns, scenario });
   const moves = users.map((turn, index) => ({
     turn: index + 1,
     moves: inferMoves(turn.content, index, output),
@@ -101,7 +106,7 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
   }));
 
   const axis_scores = [
-    axis("goal_definition", "목표 정의", scoreBySignals(first, [/문제|목표|선정|결정|개선|분석|기획|계획|만들/i, /산출물|분석안|보고서|기획서|PRD|표|결과|초안/i]), quote(first)),
+    axis("goal_definition", "목표 정의", scoreGoalDefinition(first), quote(first)),
     axis("context", "맥락 제공", scoreByScenarioContext(allUser, scenario), quote(allUser)),
     axis("information_structure", "정보 구조화", scoreBySignals(allUser, [/\n|1\.|2\.|[-*]|:/, /조건|배경|목표|형식|제약/]), quote(allUser)),
     axis("task_decomposition", "작업 분해", scoreDecomposition(users, moves), `${users.length}턴 사용`),
@@ -115,9 +120,11 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
     move_tagging: moves,
     sequence_valid: moves.some((m) => m.moves.includes("M1")) && users.length >= 3,
     evidence_assessment: {
-      scenario_restatement_only: false,
+      scenario_restatement_only: integrity.scenario_restatement_likely,
       user_added_value: [],
-      reason: "휴리스틱 모드에서는 시나리오 재진술 여부를 의미적으로 판정하지 않습니다."
+      reason: integrity.scenario_restatement_likely
+        ? "시나리오와 높은 비율로 겹치고 별도의 고유 후속 개입이 없습니다."
+        : "시나리오 복사 외의 고유한 사용자 개입이 확인됩니다."
     },
     axis_scores,
     delta_score: {
@@ -134,9 +141,9 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
   };
 }
 
-function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
+function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity }) {
   const fallback = buildHeuristicJudge({ scenario, turns, finalOutput });
-  const evidenceAssessment = normalizeEvidenceAssessment(result.evidence_assessment, fallback.evidence_assessment);
+  const evidenceAssessment = normalizeEvidenceAssessment(result.evidence_assessment, fallback.evidence_assessment, integrity);
   const fallbackByKey = new Map(fallback.axis_scores.map((item) => [item.key, item]));
   const byKey = new Map((Array.isArray(result.axis_scores) ? result.axis_scores : []).map((item) => [item.key || keyForAxis(item.axis), item]));
   let axis_scores = TRACK3_AXES.map(([key, label]) => {
@@ -150,7 +157,9 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
       max: 4,
       rate: Math.round((score / 4) * 100) / 100,
       evidence,
-      comment: safeAxisComment(item.comment, { key, score, evidence, turns })
+      comment: score <= 2
+        ? axisFeedbackFor(key, score)
+        : safeAxisComment(item.comment, { key, score, evidence, turns })
     };
   });
 
@@ -162,6 +171,19 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
     deltaScore = enforced.deltaScore;
     sequenceValid = enforced.sequenceValid;
   }
+  if (integrity.duplicate_turn_count > 0) {
+    const enforced = applyRepetitionPolicy({
+      axisScores: axis_scores,
+      deltaScore,
+      sequenceValid,
+      effectiveTurnCount: integrity.effective_turn_count,
+      duplicateTurnCount: integrity.duplicate_turn_count
+    });
+    axis_scores = enforced.axisScores;
+    deltaScore = enforced.deltaScore;
+    sequenceValid = enforced.sequenceValid;
+  }
+  axis_scores = ensureDistinctAxisComments(axis_scores);
 
   return {
     move_tagging: Array.isArray(result.move_tagging) ? result.move_tagging : fallback.move_tagging,
@@ -185,6 +207,7 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput }) {
 export function calculateTrack3ScoreBreakdown(judge, {
   codeChecks = {},
   turnCount = TRACK3_COMPLETION_MULTIPLIERS.length - 1,
+  effectiveTurnCount = codeChecks.integrity?.effective_turn_count ?? turnCount,
   earlyFinish = false
 } = {}) {
   const processAvg = avg(judge.axis_scores.slice(0, 7).map((axis) => axis.score));
@@ -196,7 +219,8 @@ export function calculateTrack3ScoreBreakdown(judge, {
     + (axis8 * 3.75);
   const codeScore = Math.max(0, Math.min(20, Number(codeChecks.score ?? codeChecks.diagnostic_score) || 0));
   const normalizedTurnCount = Math.max(0, Math.min(5, Math.trunc(Number(turnCount) || 0)));
-  const completionMultiplier = TRACK3_COMPLETION_MULTIPLIERS[normalizedTurnCount];
+  const normalizedEffectiveTurnCount = Math.max(0, Math.min(5, Math.trunc(Number(effectiveTurnCount) || 0)));
+  const completionMultiplier = TRACK3_COMPLETION_MULTIPLIERS[normalizedEffectiveTurnCount];
   const subtotal = llmJudgeScore + codeScore;
 
   return {
@@ -213,6 +237,7 @@ export function calculateTrack3ScoreBreakdown(judge, {
     },
     completion: {
       turn_count: normalizedTurnCount,
+      effective_turn_count: normalizedEffectiveTurnCount,
       max_turns: 5,
       multiplier: completionMultiplier,
       early_finish: Boolean(earlyFinish)
@@ -226,10 +251,11 @@ export function calculateTrack3TotalScore(judge, options) {
   return calculateTrack3ScoreBreakdown(judge, options).total;
 }
 
-function normalizeEvidenceAssessment(value, fallback) {
+function normalizeEvidenceAssessment(value, fallback, integrity = {}) {
   const assessment = value && typeof value === "object" ? value : fallback;
   return {
-    scenario_restatement_only: assessment?.scenario_restatement_only === true,
+    scenario_restatement_only: assessment?.scenario_restatement_only === true
+      || integrity.scenario_restatement_likely === true,
     user_added_value: Array.isArray(assessment?.user_added_value)
       ? assessment.user_added_value.map((item) => String(item).slice(0, 160)).slice(0, 5)
       : [],
@@ -246,6 +272,21 @@ function safeAxisComment(value, { key, score, evidence, turns }) {
     || sharesLongSequence(comment, userText);
 
   return unsafe ? axisFeedbackFor(key, score) : comment;
+}
+
+function ensureDistinctAxisComments(axisScores) {
+  const seen = new Set();
+  return axisScores.map((axis) => {
+    const normalized = normalizeComparable(axis.comment);
+    const generic = /(?:더|좀)구체|보완.*필요/.test(normalized);
+    if (!normalized || seen.has(normalized) || generic) {
+      const comment = axisFeedbackFor(axis.key, axis.score);
+      seen.add(normalizeComparable(comment));
+      return { ...axis, comment };
+    }
+    seen.add(normalized);
+    return axis;
+  });
 }
 
 function normalizeComparable(value) {
@@ -317,6 +358,32 @@ export function applyRestatementPolicy({ axisScores, deltaScore, sequenceValid }
   };
 }
 
+export function applyRepetitionPolicy({
+  axisScores,
+  deltaScore,
+  sequenceValid,
+  effectiveTurnCount,
+  duplicateTurnCount
+}) {
+  if (!duplicateTurnCount) return { axisScores, deltaScore, sequenceValid };
+  const cap = Math.max(0, Math.min(4, effectiveTurnCount - 1));
+  const cappedAxes = axisScores.map((axis) => {
+    if (!["task_decomposition", "interaction_control"].includes(axis.key) || axis.score <= cap) return axis;
+    return {
+      ...axis,
+      score: cap,
+      rate: Math.round((cap / axis.max) * 100) / 100,
+      comment: `${axisFeedbackFor(axis.key, cap)} 반복 발화는 새로운 개입으로 인정하지 않았어요.`
+    };
+  });
+
+  return {
+    axisScores: cappedAxes,
+    deltaScore: Math.min(deltaScore, cap),
+    sequenceValid: Boolean(sequenceValid && effectiveTurnCount >= 3)
+  };
+}
+
 function applyRestatementCaps(axisScores) {
   const caps = {
     goal_definition: 1,
@@ -379,6 +446,17 @@ function scoreBySignals(text, regexes) {
   const hits = regexes.filter((regex) => regex.test(text)).length;
   if (hits >= 2) return 4;
   if (hits === 1) return 2;
+  return 0;
+}
+
+function scoreGoalDefinition(text) {
+  const problem = /(문제|목표|저조|하락|감소|증가|성과|원인|개선|결정|선정)/i.test(text);
+  const outcome = /(가설|방향|우선순위|대안|선택|결정|개선안|캠페인|분석 프로젝트|기능)/i.test(text);
+  const deliverable = /(작업 계획|계획서|기획서|PRD|분석안|보고서|비교표|초안|최종본|산출물)/i.test(text);
+  const score = [problem, outcome, deliverable].filter(Boolean).length;
+  if (score === 3) return 4;
+  if (score === 2) return 3;
+  if (score === 1) return 1;
   return 0;
 }
 

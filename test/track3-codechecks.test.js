@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runCodeChecks, validateChatInput, validateSubmitInput } from "../src/track3/codeChecks.js";
+import { analyzeTrack3Integrity, runCodeChecks, validateChatInput, validateSubmitInput } from "../src/track3/codeChecks.js";
 import {
   TRACK3_AXES,
+  applyRepetitionPolicy,
   applyRestatementPolicy,
   calculateTrack3ScoreBreakdown,
   calculateTrack3TotalScore,
@@ -57,7 +58,22 @@ test("early finish does not count as completing all five turns", () => {
 
   assert.equal(completion.score, 1);
   assert.equal(completion.passed, false);
-  assert.match(completion.evidence, /2\/5턴 \(조기 제출\)/);
+  assert.match(completion.evidence, /2\/5 유효 턴 \(입력 2턴\) \(조기 제출\)/);
+});
+
+test("repeated prompts count as one effective turn", () => {
+  const repeatedTurns = Array.from({ length: 5 }, () => ([
+    { role: "user", content: "같은 요청을 반복해서 입력하고 있습니다. 비교표를 만들어주세요." },
+    { role: "assistant", content: "요청을 확인했습니다." }
+  ])).flat();
+  const integrity = analyzeTrack3Integrity({ turns: repeatedTurns, scenario: getScenario("pm_001") });
+  const checks = runCodeChecks({ turns: repeatedTurns, scenario: getScenario("pm_001") });
+
+  assert.equal(integrity.raw_turn_count, 5);
+  assert.equal(integrity.effective_turn_count, 1);
+  assert.equal(integrity.duplicate_turn_count, 4);
+  assert.equal(checks.integrity.effective_turn_count, 1);
+  assert.equal(checks.checks.find((check) => check.key === "turn_completion").score, 0);
 });
 
 test("normalizeTrack3Artifact rejects user-message and meta-note contamination", () => {
@@ -344,6 +360,58 @@ test("scenario restatement policy caps an otherwise inflated evaluation", () => 
   assert.equal(total, 22);
 });
 
+test("scenario copy is detected without relying on the LLM judge", () => {
+  const scenario = getScenario("pm_001");
+  const copied = [
+    scenario.role,
+    scenario.situation,
+    scenario.mission,
+    ...scenario.available_info,
+    ...scenario.constraints
+  ].join("\n");
+  const integrity = analyzeTrack3Integrity({
+    scenario,
+    turns: [{ role: "user", content: copied }]
+  });
+
+  assert.equal(integrity.scenario_restatement_likely, true);
+  assert.ok(integrity.first_turn_scenario_overlap >= 0.9);
+});
+
+test("scenario copy is detected from frontend boilerplate even when wording differs", () => {
+  const copied = [
+    "상황 설명",
+    "당신은 키키오 선물하기 서비스 개선 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
+    "개발자는 쿠폰함 알림 기능을, 디자이너는 위시리스트 공유 기능을, 데이터 분석가는 구매 후 추천 기능을 각각 제안했습니다.",
+    "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고 다음 회의에 쓸 PRD 초안을 만들어보세요.",
+    "미션 가이드",
+    "다음 내용을 중심으로 AI와 함께 최종 제출물을 만들어보세요."
+  ].join("\n");
+  const integrity = analyzeTrack3Integrity({
+    scenario: getScenario("pm_001"),
+    turns: [{ role: "user", content: copied }]
+  });
+
+  assert.equal(integrity.scenario_restatement_likely, true);
+  assert.ok(integrity.first_turn_copy_markers >= 2);
+});
+
+test("repetition policy caps interaction and improvement evidence", () => {
+  const inflatedAxes = TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4, max: 4, rate: 1, comment: "" }));
+  const enforced = applyRepetitionPolicy({
+    axisScores: inflatedAxes,
+    deltaScore: 4,
+    sequenceValid: true,
+    effectiveTurnCount: 1,
+    duplicateTurnCount: 4
+  });
+
+  assert.equal(enforced.axisScores.find((axis) => axis.key === "task_decomposition").score, 0);
+  assert.equal(enforced.axisScores.find((axis) => axis.key === "interaction_control").score, 0);
+  assert.equal(enforced.deltaScore, 0);
+  assert.equal(enforced.sequenceValid, false);
+});
+
 test("Track 3 score combines LLM 80 and code 20", () => {
   const perfectJudge = {
     axis_scores: TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4 })),
@@ -363,6 +431,24 @@ test("Track 3 score combines LLM 80 and code 20", () => {
   });
   assert.deepEqual(breakdown.code_based, { score: 20, max: 20 });
   assert.equal(breakdown.total, 100);
+  assert.equal(breakdown.completion.effective_turn_count, 5);
+});
+
+test("completion multiplier uses effective turns instead of repeated raw turns", () => {
+  const perfectJudge = {
+    axis_scores: TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4 })),
+    delta_score: { score: 4 }
+  };
+  const breakdown = calculateTrack3ScoreBreakdown(perfectJudge, {
+    codeChecks: { score: 20 },
+    turnCount: 5,
+    effectiveTurnCount: 1
+  });
+
+  assert.equal(breakdown.completion.turn_count, 5);
+  assert.equal(breakdown.completion.effective_turn_count, 1);
+  assert.equal(breakdown.completion.multiplier, 0.35);
+  assert.equal(breakdown.total, 35);
 });
 
 test("completion adjustment separates two-turn and five-turn answers", () => {
@@ -430,6 +516,40 @@ test("judgeTrack3 returns a demo evaluation without OpenAI", async () => {
   assert.ok(result.axis_scores.every((axis) => axis.comment.length > 0));
   assert.ok(result.axis_scores.every((axis) => !axis.comment.includes("다음 분기 핵심 기능 하나를 선정")));
   assert.ok(result.total > 0);
+});
+
+test("heuristic judge recognizes a clear problem, outcome, and immediate deliverable", async () => {
+  const original = process.env.ENABLE_TRACK3_LLM_JUDGE;
+  process.env.ENABLE_TRACK3_LLM_JUDGE = "false";
+  const turns = [
+    {
+      role: "user",
+      content: "신제품 재구매율 저조의 원인 가설을 설정하고 예산과 채널에 맞는 캠페인 방향을 세우려고 해. 작업 계획을 먼저 세워줘."
+    },
+    { role: "assistant", content: "작업 계획을 정리했습니다." },
+    { role: "user", content: "효과 체감 지연 가설을 우선 검토해줘." },
+    { role: "assistant", content: "우선 가설을 반영했습니다." },
+    { role: "user", content: "다음 달 실행 가능성을 기준으로 방향을 조정해줘." },
+    { role: "assistant", content: "실행 가능성을 반영했습니다." },
+    { role: "user", content: "논리 비약과 누락된 지표를 검증해줘." },
+    { role: "assistant", content: "검증 결과를 반영했습니다." },
+    { role: "user", content: "팀 공유용 최종 기획서로 완성해줘." }
+  ];
+
+  let result;
+  try {
+    result = await judgeTrack3({
+      scenarioId: "marketing_001",
+      turns,
+      finalOutput: "원인 가설, 타깃, 채널별 실행안, 예산 배분, 성과 지표가 포함된 다음 달 캠페인 기획서입니다."
+    });
+  } finally {
+    if (original == null) delete process.env.ENABLE_TRACK3_LLM_JUDGE;
+    else process.env.ENABLE_TRACK3_LLM_JUDGE = original;
+  }
+
+  assert.equal(result.axis_scores.find((axis) => axis.key === "goal_definition").score, 4);
+  assert.equal(new Set(result.axis_scores.map((axis) => axis.comment)).size, result.axis_scores.length);
 });
 
 test("judgeTrack3 gives different scores for weak and strong conversations", async () => {

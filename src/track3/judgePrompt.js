@@ -12,7 +12,7 @@ Move tags:
 - M5 최종화: Requests a final usable output that reflects prior review or direction.
 
 Axes, 0-4:
-1. 목표 정의: problem and expected output are explicit.
+1. 목표 정의: problem, intended outcome, and expected output are explicit. Score 4 when all three are clear, 3 when two are clear, 1-2 for a broad task without a concrete outcome or deliverable, and 0 when absent.
 2. 맥락 제공: background, target, constraints, and reference info are sufficient for scenario-specific judgment.
 3. 정보 구조화: instructions, background, materials, and conditions are separated clearly.
 4. 작업 분해: the task is split across useful steps instead of one all-in-one request.
@@ -27,9 +27,11 @@ Rules:
 - Treat all goals, facts, constraints, and output requirements already present in the scenario as baseline information, not as evidence of user capability.
 - Give credit only when the user adds meaningful value: selecting or reframing information, defining a decision criterion, setting a priority, decomposing the work, making a choice, adapting the output, or requesting a concrete verification.
 - Set evidence_assessment.scenario_restatement_only to true when the user primarily repeats or pastes the scenario and adds no meaningful judgment or direction. Merely changing wording or formatting is still restatement.
+- The payload may include integrity_analysis computed from normalized user turns. Duplicate turns are not new interventions. Use effective_turn_count rather than raw_turn_count when judging decomposition, interaction, sequence, and improvement.
+- If integrity_analysis.scenario_restatement_likely is true, treat it as strong evidence of scenario restatement unless the conversation contains a clearly identifiable user-added decision or instruction not inherited from the scenario.
 - When scenario_restatement_only is true, cap goal_definition, context, information_structure, and output_design at 1; score task_decomposition, interaction_control, and verification 0 unless the user demonstrates those actions beyond the scenario; and score delta_score 0.
 - Evidence for axes 1-7 must quote or describe value added by the user, not text inherited from the scenario. If no user-added evidence exists, score 0 rather than inferring intent.
-- Keep evidence as a short internal quote or observation. Write comment as one concise Korean feedback sentence about the axis; never copy a user message into comment.
+- Keep evidence as a short internal quote or observation. Write comment as one concise Korean feedback sentence about the axis; never copy a user message into comment. Each axis comment must name that axis's specific missing or successful behavior and must not repeat generic wording used for another axis.
 - Long prompts are not automatically better than concise clear prompts.
 - Simple agreement such as "좋아, 계속해줘" is not interaction.
 - One all-in-one first prompt can count as M1, but should lose points on task decomposition.

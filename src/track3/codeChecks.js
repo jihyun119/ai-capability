@@ -72,12 +72,14 @@ export function validateSubmitInput({ turns = [], finalOutput }) {
   };
 }
 
-export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
+export function runCodeChecks({ turns = [], earlyFinish = false, scenario = null } = {}) {
   const normalizedTurns = normalizeTurns(turns);
   const users = userTurns(normalizedTurns);
-  const userText = users.map((turn) => turn.content).join("\n");
-  const validTurnCount = users.filter((turn) => turn.content.length >= 10).length;
-  const laterText = users.slice(1).map((turn) => turn.content).join("\n");
+  const integrity = analyzeTrack3Integrity({ turns: normalizedTurns, scenario });
+  const effectiveUsers = integrity.unique_turn_indices.map((index) => users[index]).filter(Boolean);
+  const userText = effectiveUsers.map((turn) => turn.content).join("\n");
+  const validTurnCount = effectiveUsers.filter((turn) => turn.content.length >= 10).length;
+  const laterText = effectiveUsers.slice(1).map((turn) => turn.content).join("\n");
 
   const checks = [
     {
@@ -85,9 +87,9 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
       label: "대화 완주",
       contributes_to_total: true,
       max: 4,
-      score: completionCheckScore(users.length),
-      passed: users.length >= TRACK3_MAX_TURNS,
-      evidence: `${users.length}/${TRACK3_MAX_TURNS}턴${earlyFinish && users.length < TRACK3_MAX_TURNS ? " (조기 제출)" : ""}`
+      score: completionCheckScore(integrity.effective_turn_count),
+      passed: integrity.effective_turn_count >= TRACK3_MAX_TURNS,
+      evidence: `${integrity.effective_turn_count}/${TRACK3_MAX_TURNS} 유효 턴 (입력 ${users.length}턴)${earlyFinish && users.length < TRACK3_MAX_TURNS ? " (조기 제출)" : ""}`
     },
     {
       key: "valid_length",
@@ -96,7 +98,7 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
       max: 3,
       score: validTurnCount >= 5 ? 3 : validTurnCount >= 3 ? 2 : validTurnCount >= 1 ? 1 : 0,
       passed: validTurnCount >= TRACK3_MAX_TURNS,
-      evidence: `${validTurnCount}/${users.length}개 발화 10자 이상`
+      evidence: `${validTurnCount}/${effectiveUsers.length}개 고유 발화 10자 이상`
     },
     {
       key: "output_format_signal",
@@ -144,7 +146,43 @@ export function runCodeChecks({ turns = [], earlyFinish = false } = {}) {
     max,
     diagnostic_score: score,
     diagnostic_max: max,
-    checks
+    checks,
+    integrity
+  };
+}
+
+export function analyzeTrack3Integrity({ turns = [], scenario = null } = {}) {
+  const users = userTurns(turns);
+  const unique = [];
+  const duplicateTurnIndices = [];
+
+  users.forEach((turn, index) => {
+    const normalized = normalizeComparable(turn.content);
+    const duplicate = unique.some((entry) => textSimilarity(normalized, entry.normalized) >= 0.9);
+    if (duplicate) duplicateTurnIndices.push(index);
+    else unique.push({ index, normalized, content: turn.content });
+  });
+
+  const baseline = scenario ? scenarioBaselineText(scenario) : "";
+  const scenarioCoverage = baseline
+    ? unique.map((entry) => ngramContainment(entry.normalized, baseline, 3))
+    : unique.map(() => 0);
+  const firstCopyMarkerCount = countScenarioCopyMarkers(unique[0]?.content);
+  const firstLooksCopied = unique[0]?.normalized.length >= 80
+    && (scenarioCoverage[0] >= 0.62 || firstCopyMarkerCount >= 2);
+  const hasNovelFollowUp = unique.slice(1).some((entry, index) => (
+    entry.normalized.length >= 8 && scenarioCoverage[index + 1] < 0.55
+  ));
+
+  return {
+    raw_turn_count: users.length,
+    effective_turn_count: unique.length,
+    duplicate_turn_count: duplicateTurnIndices.length,
+    duplicate_turn_indices: duplicateTurnIndices.map((index) => index + 1),
+    unique_turn_indices: unique.map((entry) => entry.index),
+    scenario_restatement_likely: Boolean(firstLooksCopied && !hasNovelFollowUp),
+    first_turn_scenario_overlap: round2(scenarioCoverage[0] || 0),
+    first_turn_copy_markers: firstCopyMarkerCount
   };
 }
 
@@ -165,4 +203,66 @@ function normalizeRole(role) {
 function firstMatch(text, regex) {
   const match = String(text || "").match(regex);
   return match ? match[0] : null;
+}
+
+function scenarioBaselineText(scenario) {
+  return normalizeComparable([
+    scenario?.role,
+    scenario?.situation,
+    scenario?.mission,
+    ...(scenario?.available_info || []),
+    ...(scenario?.constraints || [])
+  ].filter(Boolean).join(" "));
+}
+
+function countScenarioCopyMarkers(value) {
+  const text = String(value || "");
+  return [
+    /상황\s*설명/,
+    /미션\s*가이드/,
+    /다음\s*내용을\s*중심으로\s*AI와\s*함께\s*최종\s*제출물을\s*만들어보세요/,
+    /최근\s*(?:주요\s*)?지표/,
+    /현재\s*이용\s*가능한\s*데이터/
+  ].filter((pattern) => pattern.test(text)).length;
+}
+
+function normalizeComparable(value) {
+  return String(value || "").toLowerCase().replace(/[^가-힣a-z0-9]/g, "");
+}
+
+function textSimilarity(left, right) {
+  if (!left || !right) return 0;
+  if (left === right) return 1;
+  const leftGrams = ngrams(left, 3);
+  const rightGrams = ngrams(right, 3);
+  if (!leftGrams.size || !rightGrams.size) return 0;
+  let intersection = 0;
+  for (const gram of leftGrams) if (rightGrams.has(gram)) intersection += 1;
+  return intersection / (leftGrams.size + rightGrams.size - intersection);
+}
+
+function ngramContainment(source, target, size) {
+  const sourceGrams = ngrams(source, size);
+  const targetGrams = ngrams(target, size);
+  if (!sourceGrams.size || !targetGrams.size) return 0;
+  let matches = 0;
+  for (const gram of sourceGrams) if (targetGrams.has(gram)) matches += 1;
+  return matches / sourceGrams.size;
+}
+
+function ngrams(value, size) {
+  const text = String(value || "");
+  const grams = new Set();
+  if (text.length < size) {
+    if (text) grams.add(text);
+    return grams;
+  }
+  for (let index = 0; index <= text.length - size; index += 1) {
+    grams.add(text.slice(index, index + size));
+  }
+  return grams;
+}
+
+function round2(value) {
+  return Math.round(Number(value) * 100) / 100;
 }
