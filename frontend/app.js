@@ -294,7 +294,7 @@ function trackScreen() {
     <section class="track-list">
       ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
         ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "t3-login")}
     </section>
     <p class="track-note">처음이라면 AI 관계 유형 테스트로 시작해보세요.<br />결과를 확인한 뒤 다른 테스트로<br />자연스럽게 이어갈 수 있습니다.</p>
     ${footer()}`,
@@ -997,7 +997,7 @@ function legacyDesktopHomeTracks() {
       <div class="desktop-track-list">
         ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
         ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "t3-login")}
       </div>
     </section>`;
 }
@@ -1019,7 +1019,7 @@ function desktopHomeTracks() {
       <div class="desktop-track-list">
         ${desktopHomeTrackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
         ${desktopHomeTrackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${desktopHomeTrackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에서 직접 프롬프트를 작성하고, CREATE 기준으로 실전 역량을 평가받습니다.", "t3-login")}
+        ${desktopHomeTrackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "t3-login")}
       </div>
     </section>`;
 }

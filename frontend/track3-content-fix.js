@@ -164,6 +164,8 @@
   }
 
   function activeT3Scenarios() {
+    if (!state.t3ScenariosLoaded) return [];
+
     const scenarios = Array.isArray(state.t3Scenarios) && state.t3Scenarios.length > 0
       ? state.t3Scenarios
       : t3ScenarioData;
@@ -194,13 +196,51 @@
     ].map(([title, desc]) => `<article><strong>${title}</strong><span>${desc}</span></article>`).join("");
   }
 
+  function t3ScenarioRole(item) {
+    const explicit = item?.role || item?.jobRole || item?.job_role;
+    if (explicit) return String(explicit);
+
+    const id = String(item?.scenarioId || item?.id || item?.key || "").toLowerCase();
+    if (id.includes("marketing")) return "마케팅";
+    if (id.includes("data")) return "데이터 분석";
+    if (id.includes("pm") || id.includes("prd")) return "PM";
+    return String(item?.title || "");
+  }
+
+  function t3ScenarioCardTitle(item) {
+    const explicit = item?.projectTitle || item?.project_title || item?.projectName || item?.project_name;
+    if (explicit) return String(explicit);
+
+    const id = String(item?.scenarioId || item?.id || item?.key || "").toLowerCase();
+    if (id.includes("marketing")) return "재구매율 개선 캠페인 기획";
+    if (id.includes("data")) return "신규 고객 성과 분석 프로젝트";
+    if (id.includes("pm") || id.includes("prd")) return "핵심 기능 우선순위 및 PRD 초안";
+    return String(item?.summary || "Track 3 프로젝트");
+  }
+
   function makeT3ScenarioCards() {
-    return activeT3Scenarios().map((item, index) => `
-      <button class="t3-scenario-card ${Number(state.t3Scenario || 0) === index ? "is-selected" : ""}" type="button" data-t3-scenario="${index}">
-        <span>${(item.tags || []).map((tag, tagIndex) => `<i class="${tagIndex === 0 ? "is-active" : ""}">${escapeHtml(tag)}</i>`).join("")}</span>
-        <strong>${escapeHtml(item.title)}</strong>
-        <small>${escapeHtml(item.summary)}</small>
-      </button>`).join("");
+    const scenarios = activeT3Scenarios();
+    if (scenarios.length === 0) {
+      return `<div class="t3-scenario-loading">시나리오를 불러오는 중...</div>`;
+    }
+
+    return scenarios.map((item, index) => {
+      const role = t3ScenarioRole(item);
+      const tags = (item.tags || [])
+        .map((tag) => String(tag).trim())
+        .filter((tag) => tag && tag !== role)
+        .slice(0, 3);
+
+      return `
+        <button class="t3-scenario-card ${Number(state.t3Scenario || 0) === index ? "is-selected" : ""}" type="button" data-t3-scenario="${index}">
+          <span class="t3-scenario-tags">
+            <i class="t3-scenario-tag t3-scenario-role">${escapeHtml(role)}</i>
+            ${tags.map((tag) => `<i class="t3-scenario-tag">${escapeHtml(tag)}</i>`).join("")}
+          </span>
+          <strong class="t3-scenario-title">${escapeHtml(t3ScenarioCardTitle(item))}</strong>
+          <small class="t3-scenario-description">${escapeHtml(item.summary)}</small>
+        </button>`;
+    }).join("");
   }
 
   function makeT3ScenarioExtras(item) {
@@ -628,18 +668,26 @@
       const list = Array.isArray(response.result) ? response.result : [];
       if (list.length > 0) {
         state.t3Scenarios = list.map((item, index) => adaptT3Scenario(item, t3ScenarioData[index], index));
-        const selected = selectedT3Scenario();
-        state.t3ScenarioId = selected.scenarioId || selected.key;
+      } else {
+        state.t3Scenarios = t3ScenarioData;
       }
       state.t3ScenariosLoaded = true;
+      const selected = selectedT3Scenario();
+      state.t3ScenarioId = selected.scenarioId || selected.key;
       const current = state.currentScreen;
       if (current === "t3-scenario" || current === "t3-chat") {
         render();
         showScreen(current);
       }
     } catch (error) {
-      state.t3ScenariosLoaded = false;
+      state.t3Scenarios = t3ScenarioData;
+      state.t3ScenariosLoaded = true;
       console.error("[track3:scenarios]", error);
+      const current = state.currentScreen;
+      if (current === "t3-scenario" || current === "t3-chat") {
+        render();
+        showScreen(current);
+      }
     } finally {
       state.t3ScenariosLoading = false;
     }

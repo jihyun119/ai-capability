@@ -443,19 +443,21 @@
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:hover,
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:focus-visible,
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
-    border-color: var(--t3-violet) !important;
+    border: 2px solid var(--t3-violet) !important;
     background: var(--t3-white) !important;
     color: var(--t3-black) !important;
-    box-shadow: inset 0 0 0 3px var(--t3-violet) !important;
+    box-shadow: none !important;
   }
 
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card span {
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-tags {
     display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
     gap: 6px !important;
     margin-bottom: 12px !important;
   }
 
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i {
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-tag {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -469,8 +471,7 @@
     font: 400 14px/1 "Pretendard", sans-serif !important;
   }
 
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i:first-child,
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i.is-active {
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-role {
     background: var(--t3-lime) !important;
     font-weight: 600 !important;
   }
@@ -1087,8 +1088,8 @@ main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
 main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:hover,
 main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:focus-visible,
 main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
-  border-color: var(--t3-violet) !important;
-  box-shadow: inset 0 0 0 1px var(--t3-violet) !important;
+  border: 2px solid var(--t3-violet) !important;
+  box-shadow: none !important;
   background: var(--t3-white) !important;
   color: var(--t3-black) !important;
 }
@@ -1724,16 +1725,20 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   }
 
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
-    box-shadow: inset 0 0 0 2px var(--t3-violet) !important;
+    border: 2px solid var(--t3-violet) !important;
+    box-shadow: none !important;
+    background: var(--t3-white) !important;
   }
 
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card span {
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-tags {
     display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
     gap: 6px !important;
     margin-bottom: 10px !important;
   }
 
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i {
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-tag {
     min-width: 62px !important;
     height: 17px !important;
     padding: 1px 10px !important;
@@ -1744,9 +1749,9 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     text-align: center !important;
   }
 
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i.is-active,
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card i:first-child {
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-role {
     background: var(--t3-lime) !important;
+    font-weight: 600 !important;
   }
 
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card strong {
