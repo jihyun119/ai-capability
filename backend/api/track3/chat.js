@@ -21,7 +21,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await generateTrack3Chat(req.body || {});
+    const payload = req.body || {};
+    const compactMessage = String(payload.userMessage || "").replace(/\s/g, "");
+
+    if (compactMessage.length < 5) {
+      return res.status(400).json({
+        status: "error",
+        track: "track3",
+        error: {
+          code: "INVALID_INPUT",
+          message: "userMessage는 공백 제외 최소 5자 이상이어야 합니다.",
+          retryable: true
+        }
+      });
+    }
+
+    const result = await generateTrack3Chat(payload);
     return res.status(200).json({
       status: "success",
       track: "track3",

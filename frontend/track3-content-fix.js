@@ -198,12 +198,12 @@
 
   function t3ScenarioRole(item) {
     const explicit = item?.role || item?.jobRole || item?.job_role;
-    if (explicit) return String(explicit);
-
     const id = String(item?.scenarioId || item?.id || item?.key || "").toLowerCase();
-    if (id.includes("marketing")) return "마케팅";
-    if (id.includes("data")) return "데이터 분석";
-    if (id.includes("pm") || id.includes("prd")) return "PM";
+    const role = String(explicit || "").toLowerCase();
+    if (id.includes("marketing") || role.includes("마케팅")) return "마케팅";
+    if (id.includes("data") || role.includes("데이터 분석")) return "데이터 분석";
+    if (id.includes("pm") || id.includes("prd") || role.includes("pm")) return "PM";
+    if (explicit) return String(explicit);
     return String(item?.title || "");
   }
 
@@ -213,7 +213,7 @@
 
     const id = String(item?.scenarioId || item?.id || item?.key || "").toLowerCase();
     if (id.includes("marketing")) return "재구매율 개선 캠페인 기획";
-    if (id.includes("data")) return "신규 고객 성과 분석 프로젝트";
+    if (id.includes("data")) return "데이터 분석";
     if (id.includes("pm") || id.includes("prd")) return "핵심 기능 우선순위 및 PRD 초안";
     return String(item?.summary || "Track 3 프로젝트");
   }
@@ -226,6 +226,12 @@
 
     return scenarios.map((item, index) => {
       const role = t3ScenarioRole(item);
+      const title = role === "데이터 분석"
+        ? "성과 부진 원인 분석"
+        : t3ScenarioCardTitle(item);
+      const description = role === "데이터 분석"
+        ? "신규 고객은 증가했지만 매출은 개선되지 않았습니다. 제공된 지표와 로그 데이터를 바탕으로 경영진 회의용 분석 계획을 세워야 합니다."
+        : item.summary;
       const tags = (item.tags || [])
         .map((tag) => String(tag).trim())
         .filter((tag) => tag && tag !== role)
@@ -237,8 +243,8 @@
             <i class="t3-scenario-tag t3-scenario-role">${escapeHtml(role)}</i>
             ${tags.map((tag) => `<i class="t3-scenario-tag">${escapeHtml(tag)}</i>`).join("")}
           </span>
-          <strong class="t3-scenario-title">${escapeHtml(t3ScenarioCardTitle(item))}</strong>
-          <small class="t3-scenario-description">${escapeHtml(item.summary)}</small>
+          <strong class="t3-scenario-title">${escapeHtml(title)}</strong>
+          <small class="t3-scenario-description">${escapeHtml(description)}</small>
         </button>`;
     }).join("");
   }
@@ -909,7 +915,7 @@
       screen(
         "t3-loading",
         "T3-04 분석 로딩",
-        `${header()}<section class="t3-loading-content"><h1>당신과 AI의 관계를<br />해석하는 중...</h1><div class="analysis-loading-mascot" aria-hidden="true"></div></section>`,
+        `${header()}<section class="t3-loading-content"><h1>AI와 협업한 과정을<br />분석하는 중...</h1><div class="analysis-loading-mascot" aria-hidden="true"></div></section>`,
         "t3-screen t3-loading-screen"
       ),
       screen(
