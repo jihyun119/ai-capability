@@ -380,24 +380,24 @@ img {
 
 .character-cluster .c1 {
   left: 0;
-  bottom: 57px;
+  bottom: 76px;
   width: 131px;
 }
 
 .character-cluster .c2 {
-  left: 105px;
+  left: 89px;
   top: 0;
   width: 131px;
 }
 
 .character-cluster .c3 {
   right: 0;
-  bottom: 49px;
+  bottom: 72px;
   width: 131px;
 }
 
 .character-cluster .c4 {
-  left: 111px;
+  left: 94px;
   bottom: 0;
   width: 120px;
 }
@@ -1686,6 +1686,10 @@ img {
     font-size: 16px;
   }
 
+  .home-start-v2 .cta:nth-child(n + 2) {
+    display: none;
+  }
+
   .h02-screen .track-hero {
     width: var(--mobile-inner);
     margin-top: 31px;
@@ -2291,26 +2295,26 @@ img {
   }
 
   .character-cluster .c1 {
-    left: 32px;
-    bottom: 24px;
+    left: 0;
+    bottom: 100px;
     width: 187px;
   }
 
   .character-cluster .c2 {
-    left: 159px;
+    left: 119px;
     top: 0;
     width: 203px;
   }
 
   .character-cluster .c3 {
-    right: -32px;
-    bottom: 0;
+    right: 0;
+    bottom: 96px;
     width: 187px;
   }
 
   .character-cluster .c4 {
-    left: 132px;
-    bottom: 0;
+    left: 102px;
+    bottom: -8px;
     width: 236px;
   }
 

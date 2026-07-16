@@ -1041,7 +1041,7 @@ function homeScreen() {
       </div>
     </main>
     <div class="cta-stack home-start-v2">
-      ${button("내 AI 유형 알아보기", "track")}
+      ${button("내 AI 활용 역량 알아보기", "track")}
       ${button("실전 역량 평가하기", "track")}
     </div>
     ${desktopHomeTracks()}
