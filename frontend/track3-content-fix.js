@@ -1007,7 +1007,10 @@
       state.t3SaveResult = null;
       state.t3Error = "";
       render();
-      showScreen("home");
+      const targetScreen = window.matchMedia("(max-width: 1180px)").matches
+        ? "track"
+        : "home";
+      showScreen(targetScreen);
       return;
     }
 
