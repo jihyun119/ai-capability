@@ -1069,6 +1069,21 @@
     sendTrack3Chat();
   }, true);
 
+  document.addEventListener("keydown", (event) => {
+    const field = event.target.closest("[data-t3-chat-input]");
+    if (
+      !field
+      || event.key !== "Enter"
+      || event.shiftKey
+      || event.ctrlKey
+      || event.isComposing
+      || event.repeat
+    ) return;
+
+    event.preventDefault();
+    sendTrack3Chat();
+  });
+
   document.addEventListener("click", (event) => {
     const tabButton = event.target.closest("[data-t3-tab]");
     if (!tabButton) return;

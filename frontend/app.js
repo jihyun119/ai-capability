@@ -680,16 +680,17 @@ function t1ResultScreen() {
         <strong>${mainDescription}</strong>
         <span>${subDescription}</span>
       </article>
+      <article class="t1-result-info">
+        <h2>왜 이 유형이 나왔나요?</h2>
+        <p>${reasonStory.length ? reasonStory.map(escapeHtml).join("<br />") : "AI 사용 패턴과 답변 근거를 종합해 유형을 분류했습니다."}</p>
+      </article>
+      <p class="t1-result-note">확인된 대화 기록 기반 결과입니다.</p>
       <section class="scores t1-score-bars">
         ${axisEntries.map(([key, axis]) => {
           const score = Math.round(Number(axis.score) || 0);
           return `<p><span><b>${axisDisplayLabels[key]}</b> <strong>${score}점 ${axis.level}</strong></span><i style="--score:${score}%"></i></p>`;
         }).join("")}
       </section>
-      <article class="t1-result-info">
-        <h2>왜 이 유형이 나왔나요?</h2>
-        <p>${reasonStory.length ? reasonStory.map(escapeHtml).join("<br />") : "AI 사용 패턴과 답변 근거를 종합해 유형을 분류했습니다."}</p>
-      </article>
     </section>
     <nav class="nav-buttons t1-result-nav">
       <button class="cta secondary" type="button" data-share-open="track1">공유하기</button>
@@ -1123,7 +1124,7 @@ function loginScreen(id, nextScreen) {
         <div class="login-row-fields">
           <label class="login-field birth-year-field">
             <span>출생년도</span>
-            <input type="text" inputmode="numeric" maxlength="4" placeholder="입력" data-birth-year />
+            <input type="text" inputmode="numeric" maxlength="4" placeholder="예: 2003" data-birth-year />
           </label>
           <label class="login-field gender-field">
             <span>성별</span>
