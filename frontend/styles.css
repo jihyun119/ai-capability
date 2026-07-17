@@ -3288,7 +3288,7 @@ img {
     position: relative;
     display: block;
     width: min(1440px, 100%);
-    min-height: 1095px;
+    min-height: 100vh;
     margin: 0 auto;
     padding: 0;
   }
@@ -3303,16 +3303,14 @@ img {
   }
 
   .t2-result-screen .t2-result-content {
-    position: absolute;
-    left: var(--pc-content-left);
-    top: 149px;
+    position: relative;
     display: grid;
     grid-template-columns: 540px 560px;
     grid-template-rows: auto auto auto auto;
     gap: 26px 80px;
     align-items: start;
     width: min(var(--pc-inner), calc(100% - 80px));
-    margin: 0;
+    margin: 149px auto 32px;
   }
 
   .t2-result-screen .t2-score-card {
@@ -3421,9 +3419,7 @@ img {
   }
 
   .t2-result-screen > .footer {
-    position: absolute;
-    left: 0;
-    top: 960px;
+    position: static;
     width: 100%;
     min-height: 135px;
     margin: 0;

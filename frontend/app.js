@@ -359,6 +359,9 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
 }
 
 function t1QuestionScreen(question, index, total, prev, next) {
+  const currentQuestionIndex = index - 1;
+  const totalQuestions = t1Questions.length;
+  const progressPercent = ((currentQuestionIndex + 1) / totalQuestions) * 100;
   const questionError = state.t1QuestionError?.question === `Q${index}`
     ? state.t1QuestionError.message
     : "";
@@ -367,7 +370,10 @@ function t1QuestionScreen(question, index, total, prev, next) {
     `Track 1 객관식 질문 ${index}`,
     `${header()}
     <section class="t1-question-area">
-      ${progress(index, total)}
+      <p class="progress-label progress-label-desktop">${currentQuestionIndex + 1}/${totalQuestions}</p>
+      <div class="progress" aria-hidden="true">
+        <span class="progress-fill-desktop" style="width:${progressPercent}% !important"></span>
+      </div>
       <h1>${question.heading}</h1>
       <p class="t1-question-guide">아래 두 문장을 비교한 뒤,<br />현재 나와 더 가까운 정도를 선택해주세요.</p>
       ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
