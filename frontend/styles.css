@@ -1674,6 +1674,22 @@ img {
     margin-top: 18px;
   }
 
+  .character-cluster .c1 {
+    width: 42%;
+  }
+
+  .character-cluster .c2 {
+    width: 44%;
+  }
+
+  .character-cluster .c3 {
+    width: 42%;
+  }
+
+  .character-cluster .c4 {
+    width: 45%;
+  }
+
   .home-start-v2 {
     width: 228px;
     gap: 13px;
@@ -2099,7 +2115,8 @@ img {
   .screen.active {
     --pc-content-left: max(40px, calc((100% - var(--pc-inner)) / 2));
     width: min(1440px, 100%);
-    min-height: 1024px;
+    min-height: 100vh;
+    height: auto;
     margin-left: auto;
     margin-right: auto;
   }
@@ -2107,7 +2124,7 @@ img {
   .top-bar {
     width: min(var(--pc-inner), calc(100% - 80px));
     height: 39px;
-    margin-top: 65px;
+    margin-top: 56px;
   }
 
   .brand {
@@ -2168,7 +2185,8 @@ img {
   .screen.active.t1-question-screen {
     position: relative;
     display: block;
-    min-height: 1024px;
+    min-height: 100vh;
+    height: auto;
   }
 
   .h01-screen-v2 .top-bar,
@@ -2178,7 +2196,7 @@ img {
   .t1-question-screen .top-bar {
     position: absolute;
     left: var(--pc-content-left);
-    top: 65px;
+    top: 56px;
     width: min(var(--pc-inner), calc(100% - 80px));
     margin: 0;
   }
@@ -2197,7 +2215,7 @@ img {
   .t2-intro-screen .intro-hero {
     position: absolute;
     left: var(--pc-content-left);
-    top: 162px;
+    top: 153px;
     margin: 0;
   }
 
@@ -3416,7 +3434,8 @@ img {
   .screen.active.t2-share-screen {
     display: flex;
     width: min(1440px, 100%);
-    min-height: 1024px;
+    min-height: 100vh;
+    height: auto;
     margin: 0 auto;
     padding: 0;
     align-items: center;
