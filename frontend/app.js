@@ -230,7 +230,7 @@ function menuOverlay() {
         <h2>더보기</h2>
         <button type="button" data-go="t1-login">Track 1</button>
         <button type="button" data-go="t2-login">Track 2</button>
-        <button type="button" data-go="t3-login">Track 3</button>
+        <button type="button" data-go="track3-login">Track 3</button>
         <button type="button" data-go="pooky-characters">푸키 캐릭터</button>
       </nav>
     </aside>`;
@@ -294,7 +294,7 @@ function trackScreen() {
     <section class="track-list">
       ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
         ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "t3-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "track3-login")}
     </section>
     <p class="track-note">처음이라면 AI 관계 유형 테스트로 시작해보세요.<br />결과를 확인한 뒤 다른 테스트로<br />자연스럽게 이어갈 수 있습니다.</p>
     ${footer()}`,
@@ -475,7 +475,7 @@ function t1CopyScreen() {
     <section class="t1-copy-mission">
       ${progress(t1Questions.length, t1Questions.length)}
       <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
-      <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
+      <p>아래 문장을 복사해 평소 사용하는 AI 채팅창에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t1UserPrompt}</textarea>
         <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
@@ -789,7 +789,7 @@ function t2PromptScreen() {
     <section class="t2-copy-mission">
       ${progress(4, 4)}
       <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
-      <p>아래 문장을 복사해 평소 사용하는 AI에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
+      <p>아래 문장을 복사해 평소 사용하는 AI 채팅창에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t2UserPromptClean}</textarea>
         <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
@@ -977,7 +977,7 @@ function mapScreen() {
     ["T2-02", "AI 활용 역량 테스트 객관식 4문항", "t2-q-1"],
     ["T2-03", "AI 답변 제출", "t2-paste"],
     ["T2-04", "AI 활용 역량 테스트 결과", "t2-result"],
-    ["T3", "AI 실무 적용 테스트", "t3-login"],
+    ["T3", "AI 실무 적용 테스트", "track3-login"],
     ["M01", "마이 리포트", "my-report"],
   ];
 
@@ -1003,7 +1003,7 @@ function legacyDesktopHomeTracks() {
       <div class="desktop-track-list">
         ${trackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
         ${trackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "t3-login")}
+        ${trackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "track3-login")}
       </div>
     </section>`;
 }
@@ -1025,7 +1025,7 @@ function desktopHomeTracks() {
       <div class="desktop-track-list">
         ${desktopHomeTrackCard("Track 1", ["3분 소요", "대학생 추천"], "AI 관계 유형 테스트", "나는 AI를 집사처럼 쓰는 사람일까, 검색창처럼 쓰는 사람일까? MBTI처럼 가볍게 확인하는 재미용 테스트", "t1-login")}
         ${desktopHomeTrackCard("Track 2", ["5분 소요", "100점 만점"], "AI 활용 역량 테스트", "평소 AI 사용 패턴을 분석해 내가 어떤 방식으로 질문하고 활용하는 사람인지 확인합니다.", "t2-login")}
-        ${desktopHomeTrackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "t3-login")}
+        ${desktopHomeTrackCard("Track 3", ["10분 소요", "인앱 채팅"], "AI 실무 적용 테스트", "직무별 가상 시나리오에 직접 프롬프트를 작성하고, OpenAI 공식 가이드라인 기준으로 실전 역량을 평가받습니다.", "track3-login")}
       </div>
     </section>`;
 }

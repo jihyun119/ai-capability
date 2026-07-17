@@ -658,7 +658,7 @@
     width: 100% !important;
     min-height: 64px !important;
     height: auto !important;
-    max-height: 160px !important;
+    max-height: none !important;
     display: flex !important;
     align-items: flex-end !important;
     justify-content: space-between !important;
@@ -676,7 +676,6 @@
     border: 0 !important;
     outline: 0 !important;
     resize: none !important;
-    overflow-y: auto !important;
     background: transparent !important;
     font: 400 20px/1.2 "Pretendard", sans-serif !important;
   }
@@ -1961,7 +1960,6 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     border: 0 !important;
     outline: 0 !important;
     resize: none !important;
-    overflow-y: auto !important;
     background: transparent !important;
     font: 400 18px/1.25 "Pretendard", sans-serif !important;
   }
@@ -2463,10 +2461,9 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   width: auto !important;
   min-width: 0 !important;
   min-height: 24px !important;
-  max-height: 160px !important;
+  max-height: 220px !important;
   height: auto;
   resize: none !important;
-  overflow-y: hidden;
   border: 0 !important;
   outline: 0 !important;
   background: transparent !important;

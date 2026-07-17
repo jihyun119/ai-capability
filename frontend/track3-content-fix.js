@@ -498,7 +498,7 @@
     textarea.style.height = "auto";
 
     const minHeight = 24;
-    const maxHeight = 160;
+    const maxHeight = 220;
     const nextHeight = Math.min(
       Math.max(textarea.scrollHeight, minHeight),
       maxHeight
@@ -834,7 +834,7 @@
     state.t3Scenario = state.t3Scenario ?? 0;
 
     return [
-      loginScreen("t3-login", "t3-intro"),
+      loginScreen("track3-login", "t3-intro"),
       screen(
         "t3-intro",
         "T3-01 Track 3 안내",
