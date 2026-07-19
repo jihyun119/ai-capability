@@ -459,9 +459,7 @@
     box-shadow: none !important;
   }
 
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:hover,
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:focus-visible,
-  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:not(.is-selected):hover {
     border: 2px solid var(--t3-violet) !important;
     background: var(--t3-white) !important;
     color: var(--t3-black) !important;
@@ -572,6 +570,30 @@
     font: 600 30px/1.1 "Paperlogy", "Pretendard", sans-serif !important;
   }
 
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-step-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel .t3-step-title {
+    font-size: 26px !important;
+    white-space: nowrap !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-step-badge {
+    display: inline-flex !important;
+    flex: 0 0 20px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+    font: 700 12px/1 "Pretendard", sans-serif !important;
+  }
+
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2 {
     color: var(--t3-violet) !important;
   }
@@ -647,7 +669,7 @@
     cursor: not-allowed !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header span {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header > span {
     display: flex !important;
     width: 176px !important;
     height: 16px !important;
@@ -1113,12 +1135,41 @@ main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
   }
 }
 
-main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:hover,
-main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:focus-visible,
-main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:not(.is-selected):focus-visible {
   border: 2px solid var(--t3-violet) !important;
   box-shadow: none !important;
   background: var(--t3-white) !important;
+  color: var(--t3-black) !important;
+}
+
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card:focus-visible {
+  outline: 2px solid var(--t3-violet) !important;
+  outline-offset: 3px !important;
+}
+
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected,
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected:hover,
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected:focus-visible {
+  border: 2px solid var(--t3-violet) !important;
+  box-shadow: none !important;
+  background: var(--t3-violet) !important;
+  color: var(--t3-white) !important;
+}
+
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected strong,
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected small {
+  color: var(--t3-white) !important;
+}
+
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected .t3-scenario-tag {
+  border-color: var(--t3-white) !important;
+  background: transparent !important;
+  color: var(--t3-white) !important;
+}
+
+main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected .t3-scenario-role {
+  border-color: var(--t3-black) !important;
+  background: var(--t3-lime) !important;
   color: var(--t3-black) !important;
 }
 
@@ -1736,7 +1787,8 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-card.is-selected {
     border: 2px solid var(--t3-violet) !important;
     box-shadow: none !important;
-    background: var(--t3-white) !important;
+    background: var(--t3-violet) !important;
+    color: var(--t3-white) !important;
   }
 
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-tags {
@@ -1889,6 +1941,29 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     font: 800 16px/1.25 "Pretendard", sans-serif !important;
   }
 
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-step-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-step-title > span:last-child {
+    min-width: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-step-badge {
+    display: inline-flex !important;
+    flex: 0 0 18px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    background: var(--t3-black) !important;
+    color: var(--t3-white) !important;
+    font: 700 11px/1 "Pretendard", sans-serif !important;
+  }
+
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2:not(:first-child) {
     margin-top: 30px !important;
   }
@@ -1960,6 +2035,16 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: auto !important;
+    padding: 0 0 18px !important;
+    border: 0 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-panel header > span {
     display: none !important;
   }
 

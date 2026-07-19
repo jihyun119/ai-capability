@@ -267,12 +267,12 @@
 
   function makeT3ChatBrief(item = selectedT3Scenario()) {
     return `
-      <h2>상황 설명</h2>
+      <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">1</span><span>상황 설명</span></h2>
       ${item.situation.map((text) => `<p>${text}</p>`).join("")}
-      ${makeT3ScenarioExtras(item)}
-      <h2>미션 가이드</h2>
+      <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">2</span><span>미션 가이드</span></h2>
       <p>다음 내용을 중심으로 AI와 함께 최종 제출물을 만들어보세요.</p>
-      <ul>${item.mission.map((text) => `<li>${text}</li>`).join("")}</ul>`;
+      <ul>${item.mission.map((text) => `<li>${text}</li>`).join("")}</ul>
+      ${makeT3ScenarioExtras(item)}`;
   }
 
   function makeT3ScoreRows() {
@@ -598,7 +598,7 @@
     const screen = document.querySelector('[data-screen="t3-chat"]');
     if (!screen) return;
 
-    screen.querySelectorAll("[data-t3-turn-progress], .t3-chat-panel header span").forEach((node) => {
+    screen.querySelectorAll("[data-t3-turn-progress], .t3-chat-panel header > span").forEach((node) => {
       node.innerHTML = makeT3TurnProgress();
     });
 
@@ -900,12 +900,12 @@
         <section class="t3-chat-layout">
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
-            <h2>최종 제출물 작업 영역</h2>
-            <p>AI와 대화할수록 해당 영역이 채워집니다. 최대 5턴까지 대화 가능합니다.</p>
+            <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">4</span><span>최종 제출물 작업 영역</span></h2>
+            <p>AI와 대화할수록 해당 영역이 채워집니다.<br>최대 5턴까지 대화 가능합니다.<br>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다</p>
             <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
           </section>
           <aside class="t3-chat-panel">
-            <header><h2>AI 채팅</h2><span><i></i><i></i><i></i><i></i><i></i></span></header>
+            <header><h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">3</span><span>AI 채팅</span></h2><span><i></i><i></i><i></i><i></i><i></i></span></header>
             <div class="t3-chat-messages" data-t3-chat-messages>${makeT3ChatMessages()}</div>
             <div class="t3-chat-footer">
             <label class="t3-chat-composer"><textarea rows="1" data-t3-chat-input placeholder="메시지 입력">${escapeHtml(state.t3Draft || "")}</textarea><button type="button" data-t3-chat-send>↑</button></label>
