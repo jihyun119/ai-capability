@@ -475,7 +475,7 @@ function t1CopyScreen() {
     <section class="t1-copy-mission">
       ${progress(t1Questions.length, t1Questions.length)}
       <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
-      <p>Step 1. 해당 프롬프트를 복사하세요.<br /><br />Step 2. 평소 사용하는 AI에게 해당 프롬프트를 붙여넣어주세요.<br /><br />Step 3. AI의 답변을 복사해<br />'답변 붙여넣으러 가기'<br />버튼을 누른 후 붙여넣어주세요.</p>
+      <p>Step 1. 해당 프롬프트를 복사하세요<br />Step 2. 평소 사용하는 AI에게 해당 프롬프트를 붙여넣어주세요.<br />Step 3. AI의 답변을 복사해 '답변 붙여넣으러 가기'<br />버튼을 누른 후 붙여넣어주세요.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t1UserPrompt}</textarea>
         <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
@@ -789,7 +789,7 @@ function t2PromptScreen() {
     <section class="t2-copy-mission">
       ${progress(4, 4)}
       <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
-      <p>Step 1. 해당 프롬프트를 복사하세요.<br /><br />Step 2. 평소 사용하는 AI에게 해당 프롬프트를 붙여넣어주세요.<br /><br />Step 3. AI의 답변을 복사해<br />'답변 붙여넣으러 가기'<br />버튼을 누른 후 붙여넣어주세요.</p>
+      <p>Step 1. 해당 프롬프트를 복사하세요<br />Step 2. 평소 사용하는 AI에게 해당 프롬프트를 붙여넣어주세요.<br />Step 3. AI의 답변을 복사해 '답변 붙여넣으러 가기'<br />버튼을 누른 후 붙여넣어주세요.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t2UserPromptClean}</textarea>
         <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
@@ -823,6 +823,29 @@ function t2LoadingScreen() {
   );
 }
 
+const track2TypeDistribution = [
+  { name: "입문 사용자", percentage: 40, min: 0, max: 39, className: "beginner" },
+  { name: "단발성 사용자", percentage: 15, min: 40, max: 54, className: "occasional" },
+  { name: "성장형 활용자", percentage: 15, min: 55, max: 69, className: "growing" },
+  { name: "실무 적용형", percentage: 15, min: 70, max: 84, className: "practical" },
+  { name: "AI 전략가", percentage: 15, min: 85, max: 100, className: "strategic" },
+];
+
+function renderTrack2TypeDistribution() {
+  return `<section class="t2-type-distribution" aria-labelledby="t2-type-distribution-title">
+    <h2 id="t2-type-distribution-title">AI 활용 역량 유형 분포</h2>
+    <div class="t2-distribution-chart">
+      ${track2TypeDistribution.map((segment) => `
+        <div class="t2-distribution-segment t2-distribution-${segment.className}" style="--distribution-width: ${segment.percentage}%">
+          <span>${segment.percentage}%</span>
+          <i aria-hidden="true"></i>
+          <strong>${escapeHtml(segment.name)}</strong>
+          <small>${segment.min}~${segment.max}점</small>
+        </div>`).join("")}
+    </div>
+  </section>`;
+}
+
 function t2ResultScreen() {
   const result = state.t2Result?.result || {
     total: 0,
@@ -850,32 +873,38 @@ function t2ResultScreen() {
     insight: result.feedback?.insight || "면접용 요약 문장이 표시됩니다.",
   };
   const chart = renderTrack2Radar(result);
+  const distribution = renderTrack2TypeDistribution();
   return screen(
     "t2-result",
     "T2-06 AI 활용 역량 테스트 결과",
     `${header()}
     <section class="t2-result-content">
-      <article class="t2-score-card">
-        <p>당신의 AI 활용 역량 점수는</p>
-        <h1>${Math.round(result.total)}점</h1>
-        ${chart}
-      </article>
-      <strong class="t2-grade-pill">${escapeHtml(displayGrade)}</strong>
-      <p class="t2-result-summary">${feedback.summary}</p>
-      <section class="t2-feedback-list">
-        <article>
-          <h2><span>Strength</span> 강점</h2>
-          <p class="t2-feedback-body">${feedback.strength}</p>
+      <div class="t2-result-left">
+        <article class="t2-score-card">
+          <p>당신의 AI 활용 역량 점수는</p>
+          <h1>${Math.round(result.total)}점</h1>
+          ${chart}
         </article>
-        <article>
-          <h2><span>Weakness</span> 약점</h2>
-          <p class="t2-feedback-body">${feedback.weakness}</p>
-        </article>
-        <article class="t2-interview-card">
-          <h2><span>나는 AI를 이렇게 활용하는 사람이에요</span></h2>
-          <p class="t2-feedback-body">${feedback.insight}</p>
-        </article>
-      </section>
+        <strong class="t2-grade-pill">${escapeHtml(displayGrade)}</strong>
+        ${distribution}
+      </div>
+      <div class="t2-result-details">
+        <p class="t2-result-summary">${feedback.summary}</p>
+        <section class="t2-feedback-list">
+          <article>
+            <h2><span>Strength</span> 강점</h2>
+            <p class="t2-feedback-body">${feedback.strength}</p>
+          </article>
+          <article>
+            <h2><span>Weakness</span> 약점</h2>
+            <p class="t2-feedback-body">${feedback.weakness}</p>
+          </article>
+          <article class="t2-interview-card">
+            <h2><span>나는 AI를 이렇게 활용하는 사람이에요</span></h2>
+            <p class="t2-feedback-body">${feedback.insight}</p>
+          </article>
+        </section>
+      </div>
       <nav class="nav-buttons t2-result-nav">
         <button class="cta secondary" type="button" data-share-open="track2">공유하기</button>
         ${button("다른 Track 도전", "track")}
