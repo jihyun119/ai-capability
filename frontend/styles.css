@@ -3551,15 +3551,6 @@ img {
     padding: 0;
   }
 
-  .t2-result-screen .top-bar {
-    position: absolute;
-    left: var(--pc-content-left);
-    top: 65px;
-    width: min(var(--pc-inner), calc(100% - 80px));
-    height: 39px;
-    margin: 0;
-  }
-
   .t2-result-screen .t2-result-content {
     position: relative;
     display: grid;
@@ -3568,7 +3559,7 @@ img {
     gap: 54px 80px;
     align-items: start;
     width: min(var(--pc-inner), calc(100% - 80px));
-    margin: 149px auto 32px;
+    margin: 54px auto 32px;
   }
 
   .t2-result-screen .t2-result-left,
