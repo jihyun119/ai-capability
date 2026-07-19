@@ -226,9 +226,14 @@
 
     return scenarios.map((item, index) => {
       const role = t3ScenarioRole(item);
-      const title = role === "데이터 분석"
-        ? "성과 부진 원인 분석"
-        : t3ScenarioCardTitle(item);
+      const projectTitle = role === "마케팅"
+        ? "신제품 재구매율 개선 캠페인"
+        : role === "데이터 분석"
+          ? "사업 성과 변화 분석 프로젝트"
+          : role === "PM"
+            ? "분기 핵심 기능 우선순위 결정"
+            : t3ScenarioCardTitle(item);
+      const title = `${String.fromCharCode(65 + index)}. ${projectTitle}`;
       const description = role === "데이터 분석"
         ? "신규 고객은 증가했지만 매출은 개선되지 않았습니다. 제공된 지표와 로그 데이터를 바탕으로 경영진 회의용 분석 계획을 세워야 합니다."
         : item.summary;
@@ -862,7 +867,8 @@
         <section class="t3-scenario-layout">
           <aside class="t3-scenario-guide">
             <h2>시나리오 선택</h2>
-            <p>먼저 평가받고 싶은 직무 상황을 선택하세요. Track 3는 선택한 시나리오를 바탕으로 AI와 5턴 동안 대화하며 최종 산출물을 만드는 실전 평가입니다.</p>
+            <h2 class="t3-scenario-guide-title" hidden>먼저 평가받고 싶은<br />직무 상황을 선택하세요</h2>
+            <p>Track 3는 선택한 시나리오를 바탕으로 AI와 5턴 동안 대화하며 최종 산출물을 만드는 실전 평가입니다.</p>
             <p>구체적인 상황 설명과 미션 가이드는 다음 화면에서 제공됩니다.</p>
             <h2>진행 방식</h2>
             <ul>
@@ -872,6 +878,7 @@
               <li>최종 산출물 제출</li>
               <li>평가 리포트 확인</li>
             </ul>
+            <p class="t3-scenario-guide-note" hidden>테스트를 통해 AI 실무 적용 점수와 피드백 레포트를 확인하실 수 있습니다</p>
           </aside>
           <section class="t3-scenario-list">${makeT3ScenarioCards()}${button("다음", "t3-chat", "primary", "t3-scenario-next")}</section>
         </section>`,

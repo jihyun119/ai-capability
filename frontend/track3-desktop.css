@@ -394,10 +394,22 @@
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide {
     width: 440px !important;
     height: 800px !important;
-    padding: 97px 41px !important;
+    padding: 58px 41px 44px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
     border: 1.33px solid var(--t3-black) !important;
     border-radius: 20px !important;
     background: var(--t3-panel) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide .t3-scenario-guide-title {
+    display: block !important;
+    order: -1 !important;
+    margin: 0 0 44px !important;
+    color: var(--t3-black) !important;
+    font: 800 30px/1.2 "Paperlogy", "Pretendard", sans-serif !important;
+    text-align: left !important;
   }
 
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide h2 {
@@ -419,6 +431,13 @@
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide ul {
     margin: 0 !important;
     padding-left: 28px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-guide .t3-scenario-guide-note {
+    display: block !important;
+    margin: auto 0 0 !important;
+    font-weight: 600 !important;
+    overflow-wrap: anywhere !important;
   }
 
   main#app.app-shell > .screen.active.t3-scenario-screen .t3-scenario-list {

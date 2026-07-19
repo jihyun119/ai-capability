@@ -321,7 +321,7 @@ function t1IntroScreen() {
     </section>
     <section class="info-list">
       <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">객관식 12문항</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">의존도, 친밀도, 신뢰도, 통제욕구를 측정해요.</p></article>
-      <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">프롬프트 복붙</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">내 AI가 말하는 나의 사용 습관을 붙여넣어요.</p></article>
+      <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">AI 답변 활용</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">내 AI가 말하는 나의 사용 습관을 붙여넣어요.</p></article>
       <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">캐릭터 결과</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">16개 유형 중 가장 가까운 유형을 보여줘요.</p></article>
     </section>
     ${button("테스트 시작하기", "t1-q-1", "primary", "intro-start")}
@@ -475,7 +475,7 @@ function t1CopyScreen() {
     <section class="t1-copy-mission">
       ${progress(t1Questions.length, t1Questions.length)}
       <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
-      <p>아래 문장을 복사해 평소 사용하는 AI 채팅창에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
+      <p>Step 1. 해당 프롬프트를 복사하세요.<br /><br />Step 2. 평소 사용하는 AI에게 해당 프롬프트를 붙여넣어주세요.<br /><br />Step 3. AI의 답변을 복사해<br />'답변 붙여넣으러 가기'<br />버튼을 누른 후 붙여넣어주세요.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t1UserPrompt}</textarea>
         <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
@@ -696,7 +696,6 @@ function t1ResultScreen() {
       <button class="cta secondary" type="button" data-share-open="track1">공유하기</button>
       ${button("다른 Track 도전", "track")}
     </nav>
-    ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t1-character-link")}
     ${desktopFooter()}`,
     "compact-screen t1-result-screen scroll-screen"
   );
@@ -732,7 +731,7 @@ function t2IntroScreen() {
           <i>#비판적 검토</i>
         </div>
       </article>
-      <article><strong>프롬프트 복붙</strong><span>내 AI가 말하는 나의 사용 습관을 붙여넣어요.</span></article>
+      <article><strong>AI 답변 활용</strong><span>내 AI가 말하는 나의 사용 습관을 붙여넣어요.</span></article>
     </section>
     ${button("테스트 시작하기", "t2-q-1", "primary", "intro-start")}
     ${footer()}`,
@@ -790,7 +789,7 @@ function t2PromptScreen() {
     <section class="t2-copy-mission">
       ${progress(4, 4)}
       <h1>이제 당신의 AI에게 <br />물어볼 차례에요</h1>
-      <p>아래 문장을 복사해 평소 사용하는 AI 채팅창에 붙여넣으세요.<br />ChatGPT, Claude, Gemini 등<br />어떤 AI든 괜찮습니다.</p>
+      <p>Step 1. 해당 프롬프트를 복사하세요.<br /><br />Step 2. 평소 사용하는 AI에게 해당 프롬프트를 붙여넣어주세요.<br /><br />Step 3. AI의 답변을 복사해<br />'답변 붙여넣으러 가기'<br />버튼을 누른 후 붙여넣어주세요.</p>
       <article class="t1-prompt-card">
         <textarea readonly>${t2UserPromptClean}</textarea>
         <button class="cta primary t1-copy-button" type="button" data-copy-prompt>프롬프트 복사하기</button>
@@ -906,7 +905,7 @@ function renderTrack2Radar(result) {
     { x: 232, y: 197, anchor: "start" },
     { x: 135, y: 255, anchor: "middle" },
     { x: 38, y: 197, anchor: "end" },
-    { x: 38, y: 76, anchor: "end" },
+    { x: 60, y: 76, anchor: "end" },
   ];
   return `<div class="radar-chart" aria-label="AI 활용 역량 테스트 레이더 차트">
     <svg viewBox="0 0 270 270" role="img" aria-hidden="true">
