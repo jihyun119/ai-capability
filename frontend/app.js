@@ -46,7 +46,7 @@ const characterFilesByType = {
   "감정 쓰레기통형": "emotion-bin.png",
   "냉철한 조련사형": "cold-trainer.png",
   "드라이한 비즈니스맨형": "business.png",
-  "따듯한 완벽주의자형": "warm-perfectionist.png",
+  "따뜻한 완벽주의자형": "warm-perfectionist.png",
   "의심많은 단골형": "skeptic-regular.png",
   "집착하는 애인형": "clingy-lover.png",
   "프로 트집러형": "nitpicker.png",
@@ -54,78 +54,98 @@ const characterFilesByType = {
 
 const t1Questions = [
   {
+    id: "Q1",
     axis: "의존도",
     heading: "AI 없이 하루를 보내면?",
     a: "나는 AI 없이도 하루 일과에 큰 지장이 없다",
     b: "나는 AI 없이 하루를 보내면 뭔가 빠진 느낌이 든다",
   },
   {
+    id: "Q2",
     axis: "의존도",
-    heading: "나는 새로운 AI 서비스나 기능이 나오면?",
+    heading: "새로운 AI 서비스나 기능이 나오면?",
     a: "나는 새로운 AI 서비스나 기능이 나와도 굳이 써봐야겠다는 생각이 잘 안 든다",
     b: "나는 새로운 AI 서비스나 기능이 나오면 일단 써본다",
   },
   {
+    id: "Q3",
     axis: "의존도",
     heading: "AI 없는 생활을 상상하면?",
     a: "나는 AI가 없던 시절로 돌아가도 크게 불편하지 않을 것 같다",
     b: "나는 이제 AI 없는 생활은 상상하기 어렵다",
   },
   {
+    id: "Q4",
     axis: "친밀도",
     heading: "AI에게 개인적인 이야기를 하나요?",
     a: "나는 AI에게 개인적인 고민이나 감정적인 이야기를 털어놓지 않는다",
     b: "나는 AI에게 개인적인 고민이나 감정적인 이야기를 털어놓는다",
   },
   {
+    id: "Q5",
     axis: "친밀도",
     heading: "AI가 내 말을 이해한다고 느끼나요?",
     a: "나는 AI가 결국 패턴을 맞추는 기계일 뿐이라고 생각한다",
     b: "나는 AI가 내 말을 진정으로 이해한다고 느낀다",
   },
   {
+    id: "Q6",
     axis: "친밀도",
     heading: "AI와 대화하는 과정은?",
     a: "나는 AI와 대화할 때 감정적인 교류보다 결과물이 중요하다",
     b: "나는 AI와 대화하는 과정 자체가 즐겁다",
   },
   {
+    id: "Q7",
     axis: "신뢰도",
     heading: "AI 답변을 받으면?",
     a: "나는 AI 답변을 받으면 한 번은 의심하고 검증 절차를 거친다",
     b: "나는 AI 답변을 대체로 신뢰하고 그대로 활용한다",
   },
   {
+    id: "Q8",
     axis: "신뢰도",
     heading: "AI가 생성한 내용은?",
     a: "나는 AI가 생성한 내용을 다른 출처로 교차 확인한다",
     b: "나는 AI가 생성한 내용을 따로 검증 없이 쓴다",
   },
   {
+    id: "Q9",
     axis: "신뢰도",
     heading: "AI의 판단을 어떻게 보나요?",
     a: "나는 AI의 판단보다 내 판단을 더 신뢰한다",
     b: "나는 AI의 판단이 내 판단보다 나을 때가 많다고 생각하곤 한다",
   },
   {
+    id: "Q10",
     axis: "통제욕구",
     heading: "AI에게 일을 맡길 때는?",
     a: "나는 AI가 알아서 해주길 기대하는 편이다",
     b: "나는 AI에게 방향·형식·조건을 내가 직접 정해주는 편이다",
   },
   {
+    id: "Q11",
     axis: "통제욕구",
     heading: "AI 결과물이 마음에 안 들면?",
     a: "나는 AI 결과물이 마음에 안 들어도 그냥 쓰는 경우가 많다",
     b: "나는 AI 결과물이 마음에 안 들면 내가 원하는 방향으로 수정 요청을 반복한다",
   },
   {
+    id: "Q12",
     axis: "통제욕구",
     heading: "AI 작업 중간에 개입하나요?",
     a: "나는 AI에게 작업을 맡기면 중간에 잘 개입하지 않는다",
     b: "나는 AI에게 작업을 맡겨도 중간중간 방향을 점검하고 수정한다",
   },
 ];
+
+const t1QuestionsById = Object.fromEntries(
+  t1Questions.map((question) => [question.id, question])
+);
+
+// 화면 표시 순서만 고정 셔플합니다. 답변은 각 질문의 원래 ID(Q1~Q12)로 저장돼 채점 축은 변하지 않습니다.
+const t1DisplayQuestions = ["Q1", "Q6", "Q10", "Q3", "Q8", "Q4", "Q11", "Q2", "Q9", "Q5", "Q12", "Q7"]
+  .map((id) => t1QuestionsById[id]);
 
 const t1Options = ["1 A에 가까움", "2", "3 중간", "4", "5 B에 가까움"];
 
@@ -360,9 +380,10 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
 
 function t1QuestionScreen(question, index, total, prev, next) {
   const currentQuestionIndex = index - 1;
-  const totalQuestions = t1Questions.length;
+  const totalQuestions = t1DisplayQuestions.length;
+  const questionId = question.id;
   const progressPercent = ((currentQuestionIndex + 1) / totalQuestions) * 100;
-  const questionError = state.t1QuestionError?.question === `Q${index}`
+  const questionError = state.t1QuestionError?.question === questionId
     ? state.t1QuestionError.message
     : "";
   return screen(
@@ -381,8 +402,8 @@ function t1QuestionScreen(question, index, total, prev, next) {
         <p class="t1-scale-a ${t1ScaleTextClass(question.a)}">${formatT1ScaleText(question.a)}</p>
         <div class="t1-scale-row">
           ${[1, 2, 3, 4, 5].map((value) => {
-            const selected = state.t1Answers[`Q${index}`] === value ? " class=\"is-selected\"" : "";
-            return `<button${selected} type="button" aria-label="${value}점" data-t1-question="Q${index}" data-t1-answer="${value}"><span>${value}</span><i></i></button>`;
+            const selected = state.t1Answers[questionId] === value ? " class=\"is-selected\"" : "";
+            return `<button${selected} type="button" aria-label="${value}점" data-t1-question="${questionId}" data-t1-answer="${value}"><span>${value}</span><i></i></button>`;
           }).join("")}
         </div>
         <div class="t1-scale-arrow" aria-hidden="true"><span></span></div>
@@ -414,10 +435,10 @@ function t1ScaleTextClass(text) {
 }
 
 function t1QuestionScreens() {
-  return t1Questions
+  return t1DisplayQuestions
     .map((question, index) => {
       const n = index + 1;
-      return t1QuestionScreen(question, n, t1Questions.length, n === 1 ? "t1-intro" : `t1-q-${n - 1}`, n === t1Questions.length ? "t1-copy" : `t1-q-${n + 1}`);
+      return t1QuestionScreen(question, n, t1DisplayQuestions.length, n === 1 ? "t1-intro" : `t1-q-${n - 1}`, n === t1DisplayQuestions.length ? "t1-copy" : `t1-q-${n + 1}`);
     })
     .join("");
 }
@@ -1462,9 +1483,10 @@ function ensureQuestionAnsweredBeforeMove(nextScreen) {
 
   if (t1Match && isForwardTrack1Move(activeName, nextScreen)) {
     const index = Number(t1Match[1]);
-    if (!state.t1Answers[`Q${index}`]) {
+    const questionId = t1DisplayQuestions[index - 1]?.id;
+    if (!questionId || !state.t1Answers[questionId]) {
       state.t1QuestionError = {
-        question: `Q${index}`,
+        question: questionId,
         message: "답변을 선택해야 다음 문항으로 넘어갈 수 있어요.",
       };
       render();
@@ -1493,7 +1515,7 @@ function ensureQuestionAnsweredBeforeMove(nextScreen) {
 
 function isForwardTrack1Move(activeName, nextScreen) {
   const current = Number(activeName.replace("t1-q-", ""));
-  if (nextScreen === "t1-copy") return current === t1Questions.length;
+  if (nextScreen === "t1-copy") return current === t1DisplayQuestions.length;
   const next = Number(String(nextScreen).replace("t1-q-", ""));
   return Number.isFinite(next) && next > current;
 }
@@ -1512,8 +1534,8 @@ function resetResults() {
 
 async function submitTrack1() {
   state.t1Error = "";
-  const missing = t1Questions
-    .map((_, index) => `Q${index + 1}`)
+  const missing = t1DisplayQuestions
+    .map((question) => question.id)
     .filter((key) => !state.t1Answers[key]);
 
   if (missing.length > 0) {
