@@ -203,7 +203,7 @@ test("returns the schema-aligned Track 1 API response shape", () => {
     gauge: "■■■■■■░░░░"
   });
   assert.equal(result.resultCard.title, "선긋는 상사형");
-  assert.deepEqual(result.resultCard.keywords, ["업무형", "거리두기", "명확한지시"]);
+  assert.deepEqual(result.resultCard.keywords, ["차분한신뢰", "정확한지시", "직접판단"]);
   assert.equal(result.resultCard.evidenceNotice, null);
   assert.equal(result.scoreBreakdown, undefined);
 });
