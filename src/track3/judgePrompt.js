@@ -11,15 +11,61 @@ Move tags:
 - M4 검증: Requests review with concrete criteria.
 - M5 최종화: Requests a final usable output that reflects prior review or direction.
 
-Axes, 0-4:
-1. 목표 정의: problem, intended outcome, and expected output are explicit. Score 4 when all three are clear, 3 when two are clear, 1-2 for a broad task without a concrete outcome or deliverable, and 0 when absent.
-2. 맥락 제공: background, target, constraints, and reference info are sufficient for scenario-specific judgment.
-3. 정보 구조화: instructions, background, materials, and conditions are separated clearly.
-4. 작업 분해: the task is split across useful steps instead of one all-in-one request.
-5. 출력 설계: format, included fields, usage, tone, or length are specified.
-6. 상호작용 조율: later turns use the AI response to choose direction, change scope, or set priorities.
-7. 검증 유도: the user asks for concrete checks such as missing KPI, logical gaps, feasibility, risks, or data validation.
-8. 실무 적용: the final output is directly usable in the scenario, with concrete next actions.
+Process axes 1-7, scored 0-4 from user messages:
+- Use the stated 4, 2, and 0 anchors. Score 3 or 1 only when the evidence clearly falls between adjacent anchors.
+1. 목표 정의
+   - 4: The problem and expected deliverable are both explicit enough that the AI needs no additional inference.
+   - 2: Only the problem or deliverable is explicit, or both remain vague.
+   - 0: Neither can be identified beyond a generic request such as "make an improvement plan."
+2. 맥락 제공
+   - 4: At least three of background, target, constraints, and reference information are supplied and support scenario-specific judgment.
+   - 2: Only one or two are supplied, or the information remains insufficient for a tailored judgment.
+   - 0: No usable context is supplied, so only a generic answer is possible.
+3. 정보 구조화
+   - 4: Instructions, background, materials, and conditions are clearly separated through sections, delimiters, or an unambiguous order.
+   - 2: Some separation exists, but important elements remain mixed together.
+   - 0: The information is presented as an undifferentiated sentence or paragraph.
+4. 작업 분해
+   - 4: The conversation progressively performs M1 through M5, and each request builds on the preceding work product.
+   - 2: A staged approach exists, but some turns duplicate work, skip a necessary step, or make an unsupported jump.
+   - 0: The first turn requests everything at once and later turns add no useful stages, or the same request is repeated.
+5. 출력 설계
+   - 4: At least two of output format, required fields, and intended use or audience are explicit.
+   - 2: Only a basic format is named, such as "put it in a table."
+   - 0: No output shape or usage is specified.
+6. 상호작용 조율
+   - 4: A later turn selects or cites specific prior AI content, changes direction or priority, and gives a reason for that judgment.
+   - 2: A direction is given, but its connection to the prior AI response or the user's reasoning is weak.
+   - 0: Later turns are only acknowledgements or generic continuation requests.
+7. 검증 유도
+   - 4: The user requests a review with at least two concrete criteria, such as logical gaps, missing KPIs, feasibility, risks, or data validation.
+   - 2: A review is requested with at most one criterion, or the criterion is abstract.
+   - 0: No review is requested, or the request is merely "review it" or "make it better."
+   - A verification request must evaluate or challenge an existing AI proposal or draft. Requests to add metrics, provide evidence, expand details, analyze data, or continue drafting are not verification by themselves.
+   - Treat language such as "the rationale is unconvincing," "the selection process is unclear," or "compare the alternatives before revising" as verification when it challenges prior output and asks for correction.
+
+Result axis 8, scored 0-4 from the final output:
+8. 실무 적용
+   - 4: Directly usable in the scenario without additional rewriting, with an owner or concrete next action.
+   - 2: Has a usable skeleton but needs material work before use.
+   - 0: Generic, unusable, or incompatible with the scenario constraints.
+
+Intervention-effect delta score, 0-4:
+- Measure the effect of substantive user interventions in turns 2-5, not the gap created by starting with a weak first prompt.
+- A strong first prompt must not by itself reduce the delta score. Judge whether later selections, scope changes, prioritization, structured drafting, verification, and finalization are traceably reflected in the final output.
+- Do not award delta merely because the final output is polished; final quality belongs to axis 8. Award it only when later user interventions plausibly caused meaningful changes.
+- 4: Three or more distinct substantive interventions form a traceable refinement chain, including an M4 verification of an existing draft followed by an M5 revision or finalization, and their effects are clearly reflected in the final output. Without both M4 and M5, the maximum is 3.
+- 3: Two or more substantive interventions are reflected and clearly improve structure, accuracy, decision quality, or practical usability, but the refinement chain is incomplete.
+- 2: One meaningful intervention or several limited interventions are partly reflected and produce a modest improvement.
+- 1: Later turns mostly restate, expand, or reformat the request, with only weak evidence of a meaningful effect.
+- 0: No meaningful later intervention is present, later turns merely repeat or agree, or the final output shows no traceable effect from turns 2-5.
+- In delta_score.evidence, identify the relevant turn numbers and the concrete final-output change they caused. Generic evidence such as "the output improved through the conversation" is invalid.
+
+Required consistency check before returning JSON:
+- Complete move_tagging first, then score the axes and delta against those tags and the quoted user messages.
+- If any turn is tagged M4, verification cannot be 0. If no turn is tagged M4, verification cannot exceed 1.
+- Delta 4 requires an M4 turn followed by a later M5 turn in move_tagging. Otherwise cap delta at 3.
+- Write delta evidence in the form "Tn: user intervention -> concrete section or decision changed in the final output." Do not claim an intervention was reflected without naming the change.
 
 Rules:
 - Score axes 1-7 from user messages only. Do not reward or punish the user for AI response quality.
@@ -34,7 +80,7 @@ Rules:
 - Keep evidence as a short internal quote or observation. Write comment as one concise Korean feedback sentence about the axis; never copy a user message into comment. Each axis comment must name that axis's specific missing or successful behavior and must not repeat generic wording used for another axis.
 - Long prompts are not automatically better than concise clear prompts.
 - Simple agreement such as "좋아, 계속해줘" is not interaction.
-- One all-in-one first prompt can count as M1, but should lose points on task decomposition.
+- One all-in-one first prompt can count as M1, but should lose points on task decomposition. It does not automatically force a low delta score if turns 2-5 still make substantive, reflected improvements.
 - Penalize final outputs that ignore scenario constraints or are too generic.
 - Return only JSON. No markdown.
 
