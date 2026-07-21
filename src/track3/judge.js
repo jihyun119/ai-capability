@@ -1,6 +1,7 @@
 import { TRACK3_JUDGE_SYSTEM_PROMPT } from "./judgePrompt.js";
 import { TRACK3_VERSION, getScenario } from "./scenarios.js";
 import { analyzeTrack3Integrity, buildConversationText, countUserTurns, runCodeChecks, userTurns } from "./codeChecks.js";
+import { getTrack3FinalArtifactContent } from "./artifact.js";
 
 export const TRACK3_AXES = [
   ["goal_definition", "목표 정의"],
@@ -12,8 +13,6 @@ export const TRACK3_AXES = [
   ["verification", "검증 유도"],
   ["practical_application", "실무 적용"]
 ];
-
-const TRACK3_COMPLETION_MULTIPLIERS = [0, 0.35, 0.55, 0.75, 0.9, 1];
 
 export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish = false } = {}) {
   const scenario = getScenario(scenarioId);
@@ -113,7 +112,7 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
     axis("output_design", "출력 설계", codeChecks.checks.find((check) => check.key === "output_format_signal")?.score ? 3 : 1, quote(allUser)),
     axis("interaction_control", "상호작용 조율", scoreBySignals(later, [/방금|제안|그중|선택|좁혀|우선|반영/i, /집중|수정|제외|방향/i]), quote(later)),
     axis("verification", "검증 유도", codeChecks.checks.find((check) => check.key === "verification_signal")?.score ? 3 : 0, quote(allUser)),
-    axis("practical_application", "실무 적용", scoreFinalOutput(output, scenario), quote(output))
+    axis("practical_application", "실무 적용", scorePracticalApplication(output, scenario), quote(getTrack3FinalArtifactContent(output, scenario) || output))
   ];
 
   return {
@@ -158,9 +157,7 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity 
       max: 4,
       rate: Math.round((score / 4) * 100) / 100,
       evidence,
-      comment: score <= 2
-        ? axisFeedbackFor(key, score)
-        : safeAxisComment(item.comment, { key, score, evidence, turns })
+      comment: safeAxisComment(item.comment, { key, score, evidence, turns })
     };
   });
 
@@ -187,7 +184,16 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity 
     deltaScore = enforced.deltaScore;
     sequenceValid = enforced.sequenceValid;
   }
+  axis_scores = applyFinalArtifactPolicy({
+    axisScores: axis_scores,
+    finalOutput,
+    scenario
+  });
   axis_scores = ensureDistinctAxisComments(axis_scores);
+  axis_scores = axis_scores.map((axis) => ({
+    ...axis,
+    comment: normalizeFinalAxisComment(axis.comment, axis.key, axis.score)
+  }));
 
   return {
     move_tagging: moveTagging,
@@ -204,13 +210,13 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity 
     missed_intervention: String(result.missed_intervention || fallback.missed_intervention),
     confidence: ["high", "medium", "low"].includes(result.confidence) ? result.confidence : fallback.confidence,
     summary_strengths: String(result.summary_strengths || summarizeStrengths(axis_scores)),
-    summary_weaknesses: String(result.summary_weaknesses || summarizeWeaknesses(axis_scores))
+    summary_weaknesses: safePoliteFeedback(result.summary_weaknesses, summarizeWeaknesses(axis_scores))
   };
 }
 
 export function calculateTrack3ScoreBreakdown(judge, {
   codeChecks = {},
-  turnCount = TRACK3_COMPLETION_MULTIPLIERS.length - 1,
+  turnCount = 5,
   effectiveTurnCount = codeChecks.integrity?.effective_turn_count ?? turnCount,
   earlyFinish = false
 } = {}) {
@@ -224,7 +230,6 @@ export function calculateTrack3ScoreBreakdown(judge, {
   const codeScore = Math.max(0, Math.min(20, Number(codeChecks.score ?? codeChecks.diagnostic_score) || 0));
   const normalizedTurnCount = Math.max(0, Math.min(5, Math.trunc(Number(turnCount) || 0)));
   const normalizedEffectiveTurnCount = Math.max(0, Math.min(5, Math.trunc(Number(effectiveTurnCount) || 0)));
-  const completionMultiplier = TRACK3_COMPLETION_MULTIPLIERS[normalizedEffectiveTurnCount];
   const subtotal = llmJudgeScore + codeScore;
 
   return {
@@ -243,11 +248,10 @@ export function calculateTrack3ScoreBreakdown(judge, {
       turn_count: normalizedTurnCount,
       effective_turn_count: normalizedEffectiveTurnCount,
       max_turns: 5,
-      multiplier: completionMultiplier,
       early_finish: Boolean(earlyFinish)
     },
     subtotal: round1(subtotal),
-    total: Math.round(subtotal * completionMultiplier)
+    total: Math.round(subtotal)
   };
 }
 
@@ -271,11 +275,35 @@ function safeAxisComment(value, { key, score, evidence, turns }) {
   const comment = String(value || "").replace(/\s+/g, " ").trim();
   const userText = userTurns(turns).map((turn) => turn.content).join(" ");
   const unsafe = !comment
+    || comment.length < 70
     || comment.length > 140
+    || !usesPoliteYoStyle(comment)
     || normalizeComparable(comment) === normalizeComparable(evidence)
     || sharesLongSequence(comment, userText);
 
   return unsafe ? axisFeedbackFor(key, score) : comment;
+}
+
+function safePoliteFeedback(value, fallback) {
+  const feedback = String(value || "").replace(/\s+/g, " ").trim();
+  return feedback && feedback.length <= 140 && usesPoliteYoStyle(feedback)
+    ? feedback
+    : fallback;
+}
+
+function normalizeFinalAxisComment(value, key, score) {
+  const comment = String(value || "").replace(/\s+/g, " ").trim();
+  return comment.length >= 70 && comment.length <= 140 && usesPoliteYoStyle(comment)
+    ? comment
+    : axisFeedbackFor(key, score);
+}
+
+function usesPoliteYoStyle(value) {
+  const sentences = String(value || "")
+    .match(/[^.!?]+[.!?]?/g)
+    ?.map((sentence) => sentence.trim())
+    .filter(Boolean) || [];
+  return sentences.length > 0 && sentences.every((sentence) => /요[.!?]?$/.test(sentence));
 }
 
 function ensureDistinctAxisComments(axisScores) {
@@ -311,47 +339,47 @@ function axisFeedbackFor(key, score) {
   const level = score >= 3 ? "high" : score >= 2 ? "mid" : "low";
   const feedback = {
     goal_definition: {
-      high: "해결할 문제와 기대하는 결과물이 명확하게 연결되어 있어요.",
-      mid: "목표는 드러나지만 기대하는 결과물을 조금 더 구체화할 필요가 있어요.",
-      low: "해결할 문제와 최종 결과물을 먼저 명확하게 정해보세요."
+      high: "해결할 문제와 기대하는 결과물이 명확하게 연결되어 AI가 작업 방향을 이해하기 쉬웠어요. 다음에는 성공 여부를 판단할 기준까지 함께 제시해보세요.",
+      mid: "해결하려는 문제는 드러났지만 기대하는 결과물의 범위와 완료 조건이 충분히 구체적이지 않았어요. 원하는 산출물과 성공 기준을 한 문장으로 고정해보세요.",
+      low: "AI가 해결해야 할 문제와 최종적으로 받아야 할 결과물을 대화에서 분명하게 확인하기 어려웠어요. 첫 요청에서 문제, 산출물, 성공 기준을 함께 정해보세요."
     },
     context: {
-      high: "AI가 판단하는 데 필요한 배경과 제약 조건을 충분히 제공했어요.",
-      mid: "기본 맥락은 전달했지만 대상과 제약 조건을 더 보강하면 좋아요.",
-      low: "AI가 상황을 판단할 수 있도록 배경, 대상, 제약 조건을 추가해보세요."
+      high: "AI가 상황에 맞춰 판단하는 데 필요한 배경, 대상, 제약 조건을 충분히 제공했어요. 다음에는 판단에 영향을 주는 참고 지표의 출처와 시점도 덧붙여보세요.",
+      mid: "기본적인 상황은 전달했지만 대상이나 제약 조건이 일부 빠져 답변이 일반화될 여지가 있었어요. 의사결정에 필요한 배경, 대상, 제한 사항을 보강해보세요.",
+      low: "AI가 상황에 맞는 판단을 내릴 수 있는 업무 배경과 제약 조건이 충분히 제시되지 않았어요. 대상, 가용 자원, 참고 지표를 구체적으로 추가해보세요."
     },
     information_structure: {
-      high: "지시와 배경, 조건이 구분되어 정보를 쉽게 파악할 수 있어요.",
-      mid: "핵심 정보는 있지만 지시와 배경을 더 분명하게 나누면 좋아요.",
-      low: "지시, 배경, 조건, 산출물 형식을 구분해서 전달해보세요."
+      high: "지시, 배경, 조건이 구분되어 AI가 정보의 역할과 우선순위를 쉽게 파악할 수 있었어요. 다음에는 참고 자료와 직접 지시도 별도 항목으로 나눠보세요.",
+      mid: "핵심 정보는 포함됐지만 지시와 배경이 일부 섞여 있어 중요한 조건을 놓칠 가능성이 있었어요. 목적, 자료, 제약, 요청 사항을 항목별로 구분해보세요.",
+      low: "업무 배경과 지시 사항이 한 흐름에 섞여 있어 AI가 무엇을 우선해야 하는지 판단하기 어려웠어요. 지시, 배경, 조건, 산출물 형식을 나눠 전달해보세요."
     },
     task_decomposition: {
-      high: "복잡한 작업을 목적에 맞는 단계로 나누어 진행했어요.",
-      mid: "작업을 일부 나누었지만 단계별 목적을 더 선명하게 정하면 좋아요.",
-      low: "한 번에 완성하기보다 설계, 초안, 검증, 최종화로 나누어보세요."
+      high: "복잡한 작업을 설계부터 검증과 최종화까지 목적에 맞는 단계로 나누어 진행했어요. 다음에는 각 단계의 완료 조건을 지정해 단계 간 연결을 더 선명하게 만들어보세요.",
+      mid: "작업을 여러 단계로 진행했지만 일부 요청이 반복되거나 단계별 목적이 충분히 구분되지 않았어요. 설계, 초안, 검증, 최종화의 역할을 각각 정해보세요.",
+      low: "한 번의 요청에서 여러 작업을 동시에 처리하거나 후속 요청이 앞선 결과를 발전시키지 못했어요. 작업을 설계, 초안, 검증, 최종화 순서로 나눠보세요."
     },
     output_design: {
-      high: "사용 목적에 맞게 결과물의 형식과 포함 항목을 구체적으로 설계했어요.",
-      mid: "결과물 형식은 제시했지만 분량과 포함 항목을 더 구체화하면 좋아요.",
-      low: "결과물의 형식, 분량, 포함 항목과 사용 목적을 함께 지정해보세요."
+      high: "결과물의 형식과 포함 항목을 사용 목적에 맞게 구체적으로 지정해 바로 활용하기 쉬운 답변을 유도했어요. 다음에는 분량과 독자별 강조점도 함께 정해보세요.",
+      mid: "기본적인 결과물 형식은 제시했지만 필요한 항목, 분량, 실제 사용 대상이 충분히 구체적이지 않았어요. 형식과 필수 항목, 사용 목적을 함께 지정해보세요.",
+      low: "AI가 어떤 형태와 수준으로 결과물을 완성해야 하는지 판단할 출력 조건이 부족했어요. 형식, 분량, 필수 항목, 사용 대상을 구체적으로 지정해보세요."
     },
     interaction_control: {
-      high: "AI의 답변을 바탕으로 방향과 우선순위를 능동적으로 조정했어요.",
-      mid: "후속 요청은 있었지만 선택과 제외의 근거를 더 분명히 제시하면 좋아요.",
-      low: "AI의 제안 중 선택할 것과 제외할 것을 직접 판단해보세요."
+      high: "AI의 이전 답변을 근거로 선택과 제외를 판단하며 작업 방향과 우선순위를 능동적으로 조정했어요. 다음에는 그 판단이 최종 결과에 반영됐는지도 확인해보세요.",
+      mid: "후속 요청으로 방향을 조정했지만 무엇을 선택하거나 제외했는지와 그 이유가 충분히 드러나지 않았어요. 이전 답변의 특정 내용을 짚고 판단 근거를 제시해보세요.",
+      low: "후속 대화가 단순 동의나 계속 요청에 머물러 사용자의 판단이 작업 방향에 뚜렷하게 반영되지 않았어요. AI 제안에서 선택할 것과 버릴 것을 직접 결정해보세요."
     },
     verification: {
-      high: "오류와 누락을 확인할 구체적인 검증 기준을 제시했어요.",
-      mid: "검토를 요청했지만 확인할 기준을 더 구체적으로 정하면 좋아요.",
-      low: "논리 비약, 누락, 실행 가능성처럼 구체적인 기준으로 검증을 요청해보세요."
+      high: "기존 결과의 오류와 누락을 확인할 구체적인 검증 기준을 제시해 단순 보완이 아닌 점검을 유도했어요. 다음에는 반대 근거나 데이터 확인 방법도 함께 요청해보세요.",
+      mid: "결과 검토를 요청했지만 무엇을 기준으로 오류나 누락을 판별해야 하는지가 충분히 구체적이지 않았어요. 논리, 근거, 실행 가능성 중 두 가지 이상을 지정해보세요.",
+      low: "기존 답변을 의심하고 점검하는 요청이나 구체적인 검증 기준이 대화에서 확인되지 않았어요. 논리 비약, 누락, 데이터 검증 가능성을 기준으로 재검토를 요청해보세요."
     },
     practical_application: {
-      high: "최종 결과물이 실제 업무에서 바로 활용할 수 있는 형태로 완성됐어요.",
-      mid: "결과물의 기본 구조는 갖췄지만 실행 항목을 더 보완하면 좋아요.",
-      low: "담당자, 우선순위와 다음 행동을 포함해 실제 사용할 수 있게 완성해보세요."
+      high: "최종 결과물이 실행 주체와 다음 행동을 포함해 실제 업무에서 바로 활용할 수 있는 수준으로 완성됐어요. 실행 일정과 성과 확인 시점까지 더하면 활용도가 높아져요.",
+      mid: "최종 결과물의 기본 구조는 갖췄지만 담당자, 우선순위, 다음 행동 중 일부가 빠져 추가 정리가 필요해요. 실행 항목과 완료 기준을 구체적으로 보완해보세요.",
+      low: "최종 결과물이 일반적인 아이디어 수준에 머물러 실제 업무에 바로 적용하기 어려웠어요. 담당자, 우선순위, 일정, 다음 행동을 포함한 실행안으로 완성해보세요."
     }
   };
-  return feedback[key]?.[level] || "이번 평가축에서 다음 행동을 더 구체적으로 보여주세요.";
+  return feedback[key]?.[level] || "이번 평가축에서 사용자가 직접 판단하거나 조정한 근거를 충분히 확인하기 어려웠어요. 다음 대화에서는 선택 기준과 구체적인 다음 행동을 함께 제시해보세요.";
 }
 
 export function applyRestatementPolicy({ axisScores, deltaScore, sequenceValid }) {
@@ -402,6 +430,22 @@ export function applyMoveScoreConsistency({ axisScores, deltaScore, moveTagging 
       ? deltaScore
       : Math.min(deltaScore, 3)
   };
+}
+
+export function applyFinalArtifactPolicy({ axisScores, finalOutput, scenario }) {
+  if (getTrack3FinalArtifactContent(finalOutput, scenario)) return axisScores;
+
+  return axisScores.map((axis) => {
+    if (axis.key !== "practical_application") return axis;
+    const score = Math.min(2, axis.score);
+    return {
+      ...axis,
+      score,
+      rate: Math.round((score / axis.max) * 100) / 100,
+      evidence: "최종화 전용 섹션이 비어 있음",
+      comment: "작업 과정은 남아 있지만 최종 제출물로 종합되지 않아 실무 적용에 추가 정리가 필요해요."
+    };
+  });
 }
 
 export function applyRepetitionPolicy({
@@ -539,6 +583,12 @@ function scoreFinalOutput(output, scenario) {
   return 0;
 }
 
+function scorePracticalApplication(output, scenario) {
+  const finalArtifact = getTrack3FinalArtifactContent(output, scenario);
+  if (finalArtifact) return scoreFinalOutput(finalArtifact, scenario);
+  return Math.min(2, scoreFinalOutput(output, scenario));
+}
+
 function axis(key, label, score, evidence) {
   return { key, axis: label, score, evidence, comment: "" };
 }
@@ -583,12 +633,12 @@ function missedIntervention(axisScores) {
 
 function summarizeStrengths(axisScores) {
   const top = [...axisScores].sort((a, b) => b.score - a.score).slice(0, 2).map((axis) => axis.axis);
-  return `${top.join(", ")}에서 비교적 강점이 드러났습니다.`;
+  return `${top.join(", ")}에서 비교적 강점이 드러났어요.`;
 }
 
 function summarizeWeaknesses(axisScores) {
   const bottom = [...axisScores].sort((a, b) => a.score - b.score).slice(0, 2).map((axis) => axis.axis);
-  return `${bottom.join(", ")} 보완이 필요합니다.`;
+  return `${bottom.join(", ")}을 보완하면 AI의 결과를 더 안정적으로 개선할 수 있어요.`;
 }
 
 function withTimeout(promise, timeoutMs) {

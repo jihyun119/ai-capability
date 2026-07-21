@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { analyzeTrack3Integrity, runCodeChecks, validateChatInput, validateSubmitInput } from "../src/track3/codeChecks.js";
 import {
   TRACK3_AXES,
+  applyFinalArtifactPolicy,
   applyMoveScoreConsistency,
   applyRepetitionPolicy,
   applyRestatementPolicy,
@@ -17,13 +18,15 @@ import {
   compactTrack3AssistantMessage,
   generateTrack3Chat,
   mergeTrack3ArtifactSections,
+  mergeTrack3SectionUpdates,
   normalizeArtifactText,
+  normalizeTrack3SectionUpdates,
   normalizeUpdatedSections,
   normalizeTrack3Artifact,
   stripTrack3ArtifactMeta,
   stripTrack3ChatMarkdown
 } from "../src/track3/chat.js";
-import { TRACK3_JUDGE_SYSTEM_PROMPT } from "../src/track3/judgePrompt.js";
+import { TRACK3_CHAT_SYSTEM_PROMPT, TRACK3_JUDGE_SYSTEM_PROMPT } from "../src/track3/judgePrompt.js";
 import { getScenario, listScenarios } from "../src/track3/scenarios.js";
 
 const sampleTurns = [
@@ -61,6 +64,9 @@ test("Track 3 Judge prompt includes operational process and delta anchors", () =
     assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, new RegExp(`- ${score}:`));
   }
   assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /identify the relevant turn numbers and the concrete final-output change/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /dedicated final section is missing or empty.*practical_application cannot exceed 2/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /preceding work sections only to corroborate/);
+  assert.match(TRACK3_CHAT_SYSTEM_PROMPT, /finalization_requested/);
 });
 
 test("validateChatInput rejects short messages and max turns", () => {
@@ -263,7 +269,7 @@ test("buildTrack3ChatMessages includes only the output contract, not hidden scen
   assert.match(system, /user turn 1 of 5/);
 });
 
-test("Track 3 applies model-declared artifact updates regardless of command phrasing", async () => {
+test("Track 3 applies structured section updates regardless of command phrasing", async () => {
   const phrases = [
     "뉴스를 바탕으로 원인 가설을 세워줘.",
     "가설별 적합성 우선순위를 매겨줘.",
@@ -271,8 +277,12 @@ test("Track 3 applies model-declared artifact updates regardless of command phra
   ];
   const chatModel = async () => ({
     assistant_message: "원인 가설을 정리했습니다.",
-    updated_sections: ["원인 가설 & 뉴스 근거"],
-    artifact: "## 원인 가설 & 뉴스 근거\n효과 체감 전 이탈을 우선 검증합니다."
+    request_kind: "artifact_update",
+    finalization_requested: false,
+    section_updates: [{
+      section: "원인 가설 & 뉴스 근거",
+      content: "효과 체감 전 이탈을 우선 검증합니다."
+    }]
   });
 
   for (const userMessage of phrases) {
@@ -297,13 +307,51 @@ test("Track 3 still rejects unsolicited artifact changes for context-only input"
   }, {
     chatModel: async () => ({
       assistant_message: "역할을 확인했습니다.",
-      updated_sections: [],
-      artifact: "## 원인 가설 & 뉴스 근거\n요청하지 않은 가설입니다."
+      request_kind: "context_only",
+      finalization_requested: false,
+      section_updates: [{
+        section: "원인 가설 & 뉴스 근거",
+        content: "요청하지 않은 가설입니다."
+      }]
     })
   });
 
   assert.deepEqual(result.updatedSections, []);
   assert.equal(result.artifact, "");
+});
+
+test("structured updates preserve untouched sections and ignore unknown headings", () => {
+  const sections = ["원인 가설", "타깃", "최종 제출물"];
+  const updates = normalizeTrack3SectionUpdates([
+    { section: "허용되지 않은 섹션", content: "무시됩니다." },
+    { section: "원인 가설", content: "## 원인 가설\n새 가설입니다." }
+  ], { artifactSections: sections });
+
+  assert.deepEqual(updates, [{ section: "원인 가설", content: "새 가설입니다." }]);
+  assert.equal(mergeTrack3SectionUpdates({
+    previousArtifact: "## 타깃\n기존 타깃입니다.",
+    artifactSections: sections,
+    sectionUpdates: updates
+  }), "## 원인 가설\n새 가설입니다.\n\n## 타깃\n기존 타깃입니다.");
+});
+
+test("chat success message is based on content that actually passed section validation", async () => {
+  const result = await generateTrack3Chat({
+    scenarioId: "marketing_001",
+    userMessage: "원인 가설을 뉴스 근거와 함께 비교해주세요."
+  }, {
+    chatModel: async () => ({
+      assistant_message: "원인 가설 영역을 업데이트했습니다.",
+      request_kind: "artifact_update",
+      finalization_requested: false,
+      section_updates: [{ section: "잘못된 섹션명", content: "표시되면 안 됩니다." }]
+    })
+  });
+
+  assert.deepEqual(result.updatedSections, []);
+  assert.equal(result.artifact, "");
+  assert.match(result.assistantMessage, /반영하지 못했습니다/);
+  assert.doesNotMatch(result.assistantMessage, /업데이트했습니다/);
 });
 
 test("mergeTrack3ArtifactSections applies only sections declared as updated", () => {
@@ -373,15 +421,56 @@ test("assistant message summarizes updated sections and falls back from casual s
   );
 });
 
-test("Track 3 scenarios expose three or four artifact sections", () => {
+test("Track 3 scenarios expose a finalization-only artifact section", () => {
   const scenarios = listScenarios();
 
   assert.equal(scenarios.length, 3);
-  assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length >= 3));
-  assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length <= 4));
-  assert.deepEqual(scenarios[0].artifact_sections, ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"]);
+  assert.equal(scenarios[0].artifact_sections.length, 4);
+  assert.equal(scenarios[1].artifact_sections.length, 5);
+  assert.equal(scenarios[2].artifact_sections.length, 5);
+  assert.deepEqual(scenarios[0].artifact_sections, ["후보 비교표", "선택안 & 선정 근거", "PRD 초안", "최종 제출물"]);
+  assert.ok(scenarios.every((scenario) => scenario.final_artifact_section === "최종 제출물"));
   assert.equal(getScenario("marketing_001").role, "이모레퍼시픽 스킨케어팀의 마케팅 담당자");
   assert.equal(getScenario("da_001").role, "마켓쿨리의 데이터 분석 담당자");
+});
+
+test("Track 3 blocks final artifact updates unless the model identifies finalization intent", async () => {
+  const chatModel = async ({ turns }) => ({
+    assistant_message: "요청을 반영했습니다.",
+    request_kind: "artifact_update",
+    finalization_requested: turns.at(-1).content.includes("완성"),
+    section_updates: [{ section: "최종 제출물", content: "다음 달 캠페인 기획서입니다." }]
+  });
+
+  const intermediate = await generateTrack3Chat({
+    scenarioId: "marketing_001",
+    userMessage: "뉴스 근거를 더 구체적으로 검토해주세요."
+  }, { chatModel });
+  assert.equal(intermediate.artifact, "");
+
+  const finalized = await generateTrack3Chat({
+    scenarioId: "marketing_001",
+    userMessage: "검토 내용을 반영해 최종 기획서로 완성해주세요."
+  }, { chatModel });
+  assert.match(finalized.artifact, /## 최종 제출물\n다음 달 캠페인 기획서입니다/);
+});
+
+test("missing finalization section caps practical application without blocking submission", () => {
+  const axes = TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4, max: 4, rate: 1 }));
+  const scenario = getScenario("pm_001");
+  const capped = applyFinalArtifactPolicy({
+    axisScores: axes,
+    finalOutput: "## PRD 초안\n목표, 성공지표, 범위, 제외범위와 일정이 포함된 충분히 긴 작업 초안입니다.",
+    scenario
+  });
+  assert.equal(capped.find((axis) => axis.key === "practical_application").score, 2);
+
+  const preserved = applyFinalArtifactPolicy({
+    axisScores: axes,
+    finalOutput: "## PRD 초안\n작업 초안\n\n## 최종 제출물\n회의에서 사용할 최종 PRD입니다.",
+    scenario
+  });
+  assert.equal(preserved.find((axis) => axis.key === "practical_application").score, 4);
 });
 
 test("compactTrack3AssistantMessage keeps chat concise while artifact holds details", () => {
@@ -443,7 +532,7 @@ test("scenario copy is detected without relying on the LLM judge", () => {
 test("scenario copy is detected from frontend boilerplate even when wording differs", () => {
   const copied = [
     "상황 설명",
-    "당신은 키키오 선물하기 서비스 개선 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
+    "당신은 키키오 선물하기 프로덕트 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
     "개발자는 쿠폰함 알림 기능을, 디자이너는 위시리스트 공유 기능을, 데이터 분석가는 구매 후 추천 기능을 각각 제안했습니다.",
     "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고 다음 회의에 쓸 PRD 초안을 만들어보세요.",
     "미션 가이드",
@@ -525,7 +614,7 @@ test("Track 3 score combines LLM 80 and code 20", () => {
   assert.equal(breakdown.completion.effective_turn_count, 5);
 });
 
-test("completion multiplier uses effective turns instead of repeated raw turns", () => {
+test("effective turns remain diagnostic without scaling the total", () => {
   const perfectJudge = {
     axis_scores: TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4 })),
     delta_score: { score: 4 }
@@ -538,11 +627,11 @@ test("completion multiplier uses effective turns instead of repeated raw turns",
 
   assert.equal(breakdown.completion.turn_count, 5);
   assert.equal(breakdown.completion.effective_turn_count, 1);
-  assert.equal(breakdown.completion.multiplier, 0.35);
-  assert.equal(breakdown.total, 35);
+  assert.equal("multiplier" in breakdown.completion, false);
+  assert.equal(breakdown.total, 100);
 });
 
-test("completion adjustment separates two-turn and five-turn answers", () => {
+test("turn count remains diagnostic without a completion multiplier", () => {
   const twoTurnJudge = {
     axis_scores: [4, 4, 3, 2, 3, 2, 2, 3].map((score, index) => ({
       key: TRACK3_AXES[index][0],
@@ -570,10 +659,13 @@ test("completion adjustment separates two-turn and five-turn answers", () => {
     turnCount: 5
   });
 
-  assert.equal(twoTurn.total, 38);
-  assert.equal(twoTurn.completion.multiplier, 0.55);
+  assert.equal(twoTurn.total, 69);
+  assert.equal(twoTurn.completion.turn_count, 2);
+  assert.equal(twoTurn.completion.early_finish, true);
+  assert.equal("multiplier" in twoTurn.completion, false);
   assert.equal(fiveTurn.total, 85);
-  assert.equal(fiveTurn.completion.multiplier, 1);
+  assert.equal(fiveTurn.completion.turn_count, 5);
+  assert.equal("multiplier" in fiveTurn.completion, false);
 });
 
 test("validateSubmitInput accepts a usable final output", () => {
@@ -604,8 +696,10 @@ test("judgeTrack3 returns a demo evaluation without OpenAI", async () => {
 
   assert.equal(result.track, "track3");
   assert.equal(result.axis_scores.length, 8);
-  assert.ok(result.axis_scores.every((axis) => axis.comment.length > 0));
+  assert.ok(result.axis_scores.every((axis) => axis.comment.length >= 70 && axis.comment.length <= 140));
+  assert.ok(result.axis_scores.every((axis) => axis.comment.match(/[^.!?]+[.!?]?/g).every((sentence) => /요[.!?]?$/.test(sentence.trim()))));
   assert.ok(result.axis_scores.every((axis) => !axis.comment.includes("다음 분기 핵심 기능 하나를 선정")));
+  assert.match(result.feedback.summary_weaknesses, /요[.!?]?$/);
   assert.ok(result.total > 0);
 });
 

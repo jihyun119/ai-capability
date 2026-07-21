@@ -5,13 +5,14 @@ export const TRACK3_SCENARIOS = [
   {
     scenario_id: "pm_001",
     title: "분기 핵심 기능 우선순위 결정",
-    role: "키키오 선물하기팀의 PM",
+    role: "키키오 선물하기 프로덕트 팀의 PM",
     canonical_terms: [
       { value: "키키오 선물하기", aliases: ["카카오 선물하기"] }
     ],
     situation: "다음 분기 3주 동안 진행할 핵심 기능 하나를 선정해야 한다. 영업팀, 디자인팀, 데이터팀이 각각 다른 기능을 1순위로 제안했고, 리소스와 기간 제약상 하나만 선택 가능하다.",
     mission: "5턴 안에 AI와 함께 세 후보를 비교하고, 최종 의사결정 근거와 회의 공유용 PRD 초안을 만든다.",
-    artifact_sections: ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"],
+    artifact_sections: ["후보 비교표", "선택안 & 선정 근거", "PRD 초안", "최종 제출물"],
+    final_artifact_section: "최종 제출물",
     available_info: [
       "영업팀 제안: 쿠폰함 기능",
       "디자인팀 제안: 위시리스트 공유 기능",
@@ -71,7 +72,8 @@ export const TRACK3_SCENARIOS = [
     ],
     situation: "신제품 출시 2개월 후 재구매율이 업계 평균보다 낮다. 지난 1주 업계 뉴스를 근거로 원인을 진단하고, 한정된 예산과 채널 안에서 다음 달 바로 집행 가능한 캠페인을 기획해야 한다.",
     mission: "5턴 안에 AI와 함께 재구매율 저하 원인 가설을 좁히고, 다음 달 집행 가능한 캠페인 기획서를 만든다.",
-    artifact_sections: ["원인 가설 & 뉴스 근거", "타깃 & 핵심 메시지", "채널별 실행안 & 예산", "성과 지표 & 기대효과"],
+    artifact_sections: ["원인 가설 & 뉴스 근거", "타깃 & 핵심 메시지", "채널별 실행안 & 예산", "성과 지표 & 기대효과", "최종 제출물"],
+    final_artifact_section: "최종 제출물",
     available_info: [
       "신제품 출시 2개월",
       "재구매율 8%로 업계 평균보다 낮음",
@@ -135,7 +137,8 @@ export const TRACK3_SCENARIOS = [
     ],
     situation: "최근 신규 고객은 증가했지만 사업 성과가 기대만큼 개선되지 않고 있다. 제공된 지표와 데이터 자원을 바탕으로 문제를 정의하고, 원인을 파악하기 위한 분석 프로젝트 계획을 수립해야 한다.",
     mission: "5턴 안에 AI와 함께 핵심 문제를 정의하고, 경영진 보고용 분석 프로젝트 계획서를 만든다.",
-    artifact_sections: ["핵심 문제 & 지표 해석", "분석 가설 & 우선순위", "데이터 & 검증 계획", "경영진 제안 & 다음 액션"],
+    artifact_sections: ["핵심 문제 & 지표 해석", "분석 가설 & 우선순위", "데이터 & 검증 계획", "경영진 제안 & 다음 액션", "최종 제출물"],
+    final_artifact_section: "최종 제출물",
     available_info: [
       "신규 가입자 수: 20,000명 → 27,000명",
       "첫 구매 전환율: 18% → 19%",
@@ -143,6 +146,9 @@ export const TRACK3_SCENARIOS = [
       "평균 주문 금액: 48,000원 → 39,000원",
       "월 매출: 11.2억 원 → 10.9억 원",
       "현재 이용 가능한 데이터: 가입자 정보, 구매 로그, 고객 문의(CS) 로그",
+      "가입자 정보 컬럼: user_id, signup_date, birth_year, gender, region, signup_channel, last_login_at, user_status",
+      "구매 로그 컬럼: order_id, user_id, product_id, product_category, quantity, discount_amount, payment_amount, purchased_at, order_status",
+      "고객 문의 로그 컬럼: inquiry_id, user_id, order_id, inquiry_type, inquiry_content, inquiry_created_at, response_created_at, resolution_status, satisfaction_score",
       "그 외 데이터는 별도 요청이 필요함"
     ],
     constraints: [
@@ -202,6 +208,7 @@ export function listScenarios() {
     title: scenario.title,
     role: scenario.role,
     mission: scenario.mission,
-    artifact_sections: scenario.artifact_sections
+    artifact_sections: scenario.artifact_sections,
+    final_artifact_section: scenario.final_artifact_section
   }));
 }

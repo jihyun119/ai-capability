@@ -246,11 +246,16 @@ window.ShareCards = (() => {
     "출력 설계",
     "상호작용 조율",
     "검증 유도",
+    "실무 적용",
   ];
 
   function clampPercent(value) {
     const number = Number(value);
     return Number.isFinite(number) ? Math.max(0, Math.min(100, number)) : 0;
+  }
+
+  function track3Level(percent) {
+    return ["최하", "하", "중", "상", "최상"][Math.round(clampPercent(percent) / 25)];
   }
 
   function normalizeTrack3ShareData(input = {}) {
@@ -263,6 +268,7 @@ window.ShareCards = (() => {
         label: String(axis.label || fallbackLabel),
         score: Math.round(score),
         percent: clampPercent(axis.percent ?? score),
+        level: String(axis.level || track3Level(axis.percent ?? score)),
         description: String(axis.description || ""),
       };
     });
@@ -277,6 +283,7 @@ window.ShareCards = (() => {
         label: String(detail.label || fallbackDetails[index]?.label || "보완 역량"),
         score: Math.round(score),
         percent: clampPercent(detail.percent ?? score),
+        level: String(detail.level || track3Level(detail.percent ?? score)),
         description: String(detail.description || "이 역량을 더 구체적으로 보여주는 요청을 추가해보세요."),
       };
     });
@@ -302,7 +309,7 @@ window.ShareCards = (() => {
   function track3ProgressMarkup(row) {
     return `<div style="display:grid;grid-template-columns:96px 38px minmax(0,1fr);align-items:center;gap:8px;width:100%;box-sizing:border-box;">
       <strong style="font-size:13px;line-height:1.25;font-weight:700;color:${color.brand};white-space:nowrap;">${escapeHtml(row.label)}</strong>
-      <b style="font-size:13px;line-height:1.25;font-weight:800;color:${color.ink};white-space:nowrap;">${row.score}점</b>
+      <b style="font-size:13px;line-height:1.25;font-weight:800;color:${color.ink};white-space:nowrap;">${escapeHtml(row.level)}</b>
       <i style="display:block;height:12px;border-radius:999px;background:${color.grid};overflow:hidden;">
         <span style="display:block;width:${row.percent}%;height:100%;border-radius:inherit;background:${color.brand};"></span>
       </i>
@@ -344,7 +351,7 @@ window.ShareCards = (() => {
     const detailLines = data.details.map((detail) => K.wrapText(ctx, detail.description, 856, 25, 500));
     const detailsHeight = detailLines.reduce((sum, lines) => sum + 150 + Math.max(1, lines.length) * 34, 0);
     canvas.width = theme.canvas.width;
-    canvas.height = 1340 + summaryLines.length * 40 + detailsHeight;
+    canvas.height = 1340 + Math.max(0, data.axes.length - 7) * 98 + summaryLines.length * 40 + detailsHeight;
 
     fillSurface(ctx, canvas);
     drawBrandMark(ctx, 64, 64);
@@ -385,7 +392,7 @@ window.ShareCards = (() => {
 
   function drawTrack3ProgressRow(ctx, row, y) {
     K.drawText(ctx, row.label, 72, y + 32, 28, 800, color.brand, font.body);
-    K.drawText(ctx, `${row.score}점`, 300, y + 32, 28, 800, color.ink, font.body);
+    K.drawText(ctx, row.level, 300, y + 32, 28, 800, color.ink, font.body);
     ctx.fillStyle = color.grid;
     K.roundRect(ctx, 420, y, 588, 36, 18);
     ctx.fill();

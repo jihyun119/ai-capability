@@ -46,6 +46,8 @@ Process axes 1-7, scored 0-4 from user messages:
 
 Result axis 8, scored 0-4 from the final output:
 8. 실무 적용
+   - The payload's scenario.final_artifact_section identifies the finalization-only section. Evaluate this section primarily, while checking that it is consistent with the evidence and decisions in the preceding work sections.
+   - If that dedicated final section is missing or empty, submission is still valid, but practical_application cannot exceed 2 because the work has not been synthesized into a final deliverable.
    - 4: Directly usable in the scenario without additional rewriting, with an owner or concrete next action.
    - 2: Has a usable skeleton but needs material work before use.
    - 0: Generic, unusable, or incompatible with the scenario constraints.
@@ -69,7 +71,7 @@ Required consistency check before returning JSON:
 
 Rules:
 - Score axes 1-7 from user messages only. Do not reward or punish the user for AI response quality.
-- Axis 8 evaluates the final output separately, as the result the user guided the AI to produce.
+- The final_output field contains the entire cumulative workspace, including process sections and the dedicated final section when produced. Score axes 1-7 from user messages; use preceding work sections only to corroborate whether a user-directed process change was actually reflected, never as independent evidence of user capability. For delta, trace interventions through both the evolving work sections and the dedicated final section. Use the dedicated final section primarily for axis 8.
 - Treat all goals, facts, constraints, and output requirements already present in the scenario as baseline information, not as evidence of user capability.
 - Give credit only when the user adds meaningful value: selecting or reframing information, defining a decision criterion, setting a priority, decomposing the work, making a choice, adapting the output, or requesting a concrete verification.
 - Set evidence_assessment.scenario_restatement_only to true when the user primarily repeats or pastes the scenario and adds no meaningful judgment or direction. Merely changing wording or formatting is still restatement.
@@ -77,7 +79,7 @@ Rules:
 - If integrity_analysis.scenario_restatement_likely is true, treat it as strong evidence of scenario restatement unless the conversation contains a clearly identifiable user-added decision or instruction not inherited from the scenario.
 - When scenario_restatement_only is true, cap goal_definition, context, information_structure, and output_design at 1; score task_decomposition, interaction_control, and verification 0 unless the user demonstrates those actions beyond the scenario; and score delta_score 0.
 - Evidence for axes 1-7 must quote or describe value added by the user, not text inherited from the scenario. If no user-added evidence exists, score 0 rather than inferring intent.
-- Keep evidence as a short internal quote or observation. Write comment as one concise Korean feedback sentence about the axis; never copy a user message into comment. Each axis comment must name that axis's specific missing or successful behavior and must not repeat generic wording used for another axis.
+- Keep evidence as a short internal quote or observation. Write comment as two concrete Korean feedback sentences totaling 70-140 characters; never copy a user message into comment. The first sentence must explain the axis-specific evidence or gap, and the second must give a specific next action. End every sentence in the polite ~요 style. Do not use nominal endings such as "명확함" or formal endings such as "필요합니다". Each axis comment must not repeat generic wording used for another axis.
 - Long prompts are not automatically better than concise clear prompts.
 - Simple agreement such as "좋아, 계속해줘" is not interaction.
 - One all-in-one first prompt can count as M1, but should lose points on task decomposition. It does not automatically force a low delta score if turns 2-5 still make substantive, reflected improvements.
@@ -94,7 +96,7 @@ JSON schema:
     "reason": "short Korean reason"
   },
   "axis_scores": [
-    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "short internal quote or observation", "comment": "one concise Korean feedback sentence, not a user quote"}
+    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "short internal quote or observation", "comment": "70-140 character Korean feedback in two ~요 sentences, not a user quote"}
   ],
   "delta_score": {
     "score": 0,
@@ -106,7 +108,7 @@ JSON schema:
   "missed_intervention": "short Korean missed opportunity",
   "confidence": "high|medium|low",
   "summary_strengths": "short Korean summary",
-  "summary_weaknesses": "short Korean summary"
+  "summary_weaknesses": "one or two concrete Korean sentences ending in ~요"
 }
 `.trim();
 
@@ -121,16 +123,20 @@ Your job:
 - Always answer the latest user message, which is the final user-role message in the conversation.
 - Use polite Korean consistently. Never switch to casual speech.
 - Make assistant_message a new, turn-specific acknowledgement in one or two short sentences, under 100 Korean characters.
-- In assistant_message, state concretely which section or decision changed and how; if necessary, ask one focused clarification. Put all analysis, lists, tables, reasoning, and draft content in artifact.
-- Do not repeat an earlier reply or reproduce the full artifact in assistant_message.
-- Treat assistant_message as the conversational reply and artifact as the cumulative, assistant-authored deliverable for final submission.
-- A self-introduction, acknowledgement, or context-only statement is not a work request. In that case, return updated_sections as an empty array and leave artifact unchanged.
+- In assistant_message, state concretely which section or decision changed and how; if necessary, ask one focused clarification. Put all analysis, lists, tables, reasoning, and draft content in section_updates content.
+- Do not repeat an earlier reply or reproduce artifact content in assistant_message.
+- Treat assistant_message as the conversational reply and section_updates as only the changed parts of the assistant-authored deliverable. The server merges them into the cumulative artifact.
+- Classify the latest message as artifact_update, clarification, or context_only in request_kind. A self-introduction, acknowledgement, or context-only statement is not a work request; return an empty section_updates array for it.
 - Do only the work directly requested in the latest user message. Do not anticipate later tasks, make unrequested decisions, or fill unrelated artifact sections.
-- Update artifact only with substantive analysis, decisions, drafts, tables, or revisions produced by the assistant.
-- Never place the user's request, chat transcript, source notes, turn summaries, or meta commentary such as "사용자 요청" or "N턴 반영 메모" in artifact.
+- The trusted contract names one final_artifact_section. Treat it as finalization-only: leave it unchanged unless the latest user message semantically asks to synthesize, complete, finalize, or produce the usable final deliverable. Do not rely on a fixed Korean keyword list; infer the user's intent from the full request.
+- Set finalization_requested to true only for that explicit finalization intent. A request for an intermediate draft, one section, more evidence, review, or revision of working notes is not finalization.
+- When finalization_requested is true, return final_artifact_section in section_updates and synthesize the prior working sections and the user's latest direction into its content. Do not merely copy the working sections verbatim.
+- For request_kind artifact_update, section_updates must contain at least one non-empty update. Use only exact allowed section names and return each section at most once.
+- Update section content only with substantive analysis, decisions, drafts, tables, or revisions produced by the assistant.
+- Never place the user's request, chat transcript, source notes, turn summaries, or meta commentary such as "사용자 요청" or "N턴 반영 메모" in section content.
 - Never add change logs or sections labeled as feedback, revision notes, reflected requests, or conversation summaries. Apply feedback directly to the deliverable instead.
 - Use user-provided facts as inputs to the work, but synthesize them into the deliverable instead of copying the user's message.
-- If the turn does not produce a substantive deliverable update, return previous_artifact unchanged.
+- If the turn does not produce a substantive deliverable update, return an empty section_updates array.
 - Write assistant_message as plain Korean text without Markdown syntax. Do not use headings, bold markers, code fences, Markdown links, blockquotes, or Markdown list markers.
 - Do not score the user during chat.
 - Do not reveal any judging rubric.
@@ -138,10 +144,12 @@ Your job:
 Return only JSON:
 {
   "assistant_message": "Korean chat reply to show in the chat panel",
-  "updated_sections": ["Exact artifact section heading changed in this turn"],
-  "artifact": "Latest cumulative assistant-authored deliverable only; never include user messages or chat meta notes"
+  "request_kind": "artifact_update|clarification|context_only",
+  "finalization_requested": false,
+  "section_updates": [
+    {"section": "Exact allowed section heading", "content": "Markdown body for that section only, without the section heading"}
+  ]
 }
 
-The artifact field must always be one Markdown string. Never return artifact as an object, array, or section-keyed JSON structure.
-The updated_sections field must contain only exact allowed section headings directly changed for the latest request.
+Do not return a cumulative artifact or updated_sections field. Return only section_updates directly changed for the latest request.
 `.trim();

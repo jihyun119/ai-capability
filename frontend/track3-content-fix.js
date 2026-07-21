@@ -6,7 +6,7 @@
       title: "PM",
       summary: "3주 안에 만들 핵심 기능을 결정하고, 다음 회의에 바로 쓸 수 있는 PRD 초안을 만듭니다.",
       situation: [
-        "당신은 키키오 선물하기 서비스 개선 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
+        "당신은 키키오 선물하기 프로덕트 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
         "개발자는 '쿠폰함 알림 기능'을, 디자이너는 '위시리스트 공유 기능'을, 데이터 분석가는 '구매 후 추천 기능'을 각각 1순위로 제안했습니다. 기간은 3주뿐이라 셋 중 하나만 선택해야 합니다.",
         "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고, 최종적으로 다음 회의에 바로 쓸 수 있는 PRD(제품요구사항문서) 초안을 만들어보세요.",
       ],
@@ -15,7 +15,7 @@
         "선택과 선정 근거",
         "PRD 핵심 항목 (목표·성공지표·범위·일정 등)",
       ],
-      artifactSections: ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"],
+      artifactSections: ["후보 비교표", "선택안 & 선정 근거", "PRD 초안", "최종 제출물"],
     },
     {
       key: "marketing",
@@ -39,7 +39,7 @@
         "채널별 실행안과 예산배분",
         "기대효과 및 핵심 인사이트",
       ],
-      artifactSections: ["원인 가설 & 뉴스 근거", "타깃 & 핵심 메시지", "채널별 실행안 & 예산", "성과 지표 & 기대효과"],
+      artifactSections: ["원인 가설 & 뉴스 근거", "타깃 & 핵심 메시지", "채널별 실행안 & 예산", "성과 지표 & 기대효과", "최종 제출물"],
     },
     {
       key: "data",
@@ -61,12 +61,26 @@
       ],
       dataTitle: "현재 이용 가능한 데이터",
       dataSources: ["가입자 정보", "구매 로그", "고객 문의(CS) 로그"],
+      dataSchemas: [
+        {
+          name: "가입자 정보",
+          columns: ["user_id", "signup_date", "birth_year", "gender", "region", "signup_channel", "last_login_at", "user_status"],
+        },
+        {
+          name: "구매 로그",
+          columns: ["order_id", "user_id", "product_id", "product_category", "quantity", "discount_amount", "payment_amount", "purchased_at", "order_status"],
+        },
+        {
+          name: "고객 문의 로그",
+          columns: ["inquiry_id", "user_id", "order_id", "inquiry_type", "inquiry_content", "inquiry_created_at", "response_created_at", "resolution_status", "satisfaction_score"],
+        },
+      ],
       mission: [
         "제공된 정보를 바탕으로 무엇이 핵심 문제인지 정의하고, 그렇게 판단한 이유 작성",
         "우선적으로 확인할 데이터와 분석 순서 작성",
         "가능한 원인과 가장 먼저 수행해야 할 추가 분석 또는 개선 과제 제안",
       ],
-      artifactSections: ["핵심 문제 & 지표 해석", "분석 가설 & 우선순위", "데이터 & 검증 계획", "경영진 제안 & 다음 액션"],
+      artifactSections: ["핵심 문제 & 지표 해석", "분석 가설 & 우선순위", "데이터 & 검증 계획", "경영진 제안 & 다음 액션", "최종 제출물"],
     },
   ];
 
@@ -75,6 +89,7 @@
   state.t3ScenarioId = state.t3ScenarioId || null;
   state.t3Turns = state.t3Turns || [];
   state.t3Artifact = state.t3Artifact || "";
+  state.t3PreviousArtifact = state.t3PreviousArtifact || "";
   state.t3FinalOutput = state.t3FinalOutput || "";
   state.t3Result = state.t3Result || null;
   state.t3SaveResult = state.t3SaveResult || null;
@@ -88,6 +103,7 @@
     state.t3ScenarioId = null;
     state.t3Turns = [];
     state.t3Artifact = "";
+    state.t3PreviousArtifact = "";
     state.t3FinalOutput = "";
     state.t3Result = null;
     state.t3SaveResult = null;
@@ -145,6 +161,9 @@
       dataSources: asArray(item?.dataSources || item?.data_sources).length
         ? asArray(item?.dataSources || item?.data_sources)
         : fallback.dataSources,
+      dataSchemas: Array.isArray(item?.dataSchemas || item?.data_schemas)
+        ? (item.dataSchemas || item.data_schemas)
+        : fallback.dataSchemas,
     };
   }
 
@@ -266,7 +285,16 @@
         ${item.metrics.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}
       </tbody></table>` : "";
     const dataSources = item.dataSources ? `<h2>${item.dataTitle}</h2><ul>${item.dataSources.map((text) => `<li>${text}</li>`).join("")}</ul>` : "";
-    return `${news}${metrics}${dataSources}`;
+    const dataSchemas = Array.isArray(item.dataSchemas) && item.dataSchemas.length ? `
+      <table class="t3-data-schema">
+        <thead><tr><th>데이터</th><th>이용 가능한 컬럼</th></tr></thead>
+        <tbody>${item.dataSchemas.map((schema) => `
+          <tr>
+            <td>${escapeHtml(schema.name)}</td>
+            <td><span class="t3-data-columns">${asArray(schema.columns).map((column) => `<code>${escapeHtml(column)}</code>`).join("")}</span></td>
+          </tr>`).join("")}</tbody>
+      </table>` : "";
+    return `${news}${metrics}${dataSources}${dataSchemas}`;
   }
 
   function makeT3ChatBrief(item = selectedT3Scenario()) {
@@ -277,30 +305,6 @@
       <p>다음 내용을 중심으로 AI와 함께 최종 제출물을 만들어보세요.</p>
       <ul>${item.mission.map((text) => `<li>${t3UiText(text)}</li>`).join("")}</ul>
       ${makeT3ScenarioExtras(item)}`;
-  }
-
-  function makeT3ScoreRows() {
-    return [
-      ["목표 정의", 78],
-      ["맥락 제공", 46],
-      ["정보 구조화", 50],
-      ["작업 분해", 78],
-      ["출력 설계", 78],
-      ["상호작용 조율", 78],
-      ["검증 유도", 78],
-    ].map(([label, score]) => `<p><b>${label}</b><strong>${score}점</strong><i><span style="width:${score}%"></span></i></p>`).join("");
-  }
-
-  function makeT3DetailRows() {
-    return [
-      ["정보 구조화", 50],
-      ["출력 설계", 78],
-      ["검증 유도", 78],
-    ].map(([label, score]) => `
-      <article>
-        <p><b>${label}</b><strong>${score}점</strong><i><span style="width:${score}%"></span></i></p>
-        <div>AI 답변의 누락 지점이나 반대 근거를 확인하는 요청은 아직 보완이 필요해요. 최종 선택안을 받은 뒤 실패할 수 있는 이유, 반대 의견, 놓친 리스크를 물어보면 결과물이 더 탄탄해집니다.</div>
-      </article>`).join("");
   }
 
   function currentT3Evaluation() {
@@ -318,6 +322,12 @@
       verification: "검증 유도",
       practical_application: "실무 적용",
     }[key] || key);
+  }
+
+  function t3AxisLevel(percent) {
+    const labels = ["최하", "하", "중", "상", "최상"];
+    const normalized = Math.max(0, Math.min(100, Number(percent) || 0));
+    return labels[Math.round(normalized / 25)];
   }
 
   function t3ScoreRowsFromEvaluation() {
@@ -341,6 +351,7 @@
         label: t3AxisLabel(key, value),
         score: Math.round(displayScore),
         percent: Math.max(0, Math.min(100, percent)),
+        level: t3AxisLevel(percent),
         description: t3SafeAxisComment(value?.comment, key, percent),
       };
     }).filter((row) => row.label && Number.isFinite(row.score));
@@ -390,7 +401,19 @@
         low: "담당자, 우선순위와 다음 행동을 포함해 실제 사용할 수 있게 완성해보세요."
       }
     };
-    return feedback[key]?.[level] || "이번 평가축에서 다음 행동을 더 구체적으로 보여주세요.";
+    const guidance = {
+      goal_definition: "다음에는 문제, 산출물, 성공 기준이 한 흐름으로 연결되도록 요청을 설계해보세요.",
+      context: "다음에는 대상, 가용 자원, 제약 조건과 참고 지표를 함께 전달해 판단 근거를 강화해보세요.",
+      information_structure: "다음에는 목적, 배경, 자료, 조건과 요청 사항을 항목별로 분리해 우선순위를 보여주세요.",
+      task_decomposition: "다음에는 설계, 초안, 검증, 최종화마다 수행할 작업과 완료 조건을 각각 정해보세요.",
+      output_design: "다음에는 형식, 분량, 필수 항목과 실제 사용 대상을 함께 지정해 결과물의 쓰임을 선명하게 만들어보세요.",
+      interaction_control: "다음에는 이전 답변의 특정 내용을 짚고 선택하거나 제외한 이유까지 설명해 작업 방향을 조정해보세요.",
+      verification: "다음에는 논리 비약, 누락, 실행 가능성과 데이터 검증 방법처럼 두 가지 이상의 점검 기준을 제시해보세요.",
+      practical_application: "다음에는 담당자, 우선순위, 일정과 다음 행동을 포함해 실제로 바로 실행할 수 있는 결과물로 완성해보세요."
+    };
+    const observation = feedback[key]?.[level]
+      || "이번 평가축에서 사용자가 직접 판단하거나 조정한 근거를 충분히 확인하기 어려웠어요.";
+    return `${observation} ${guidance[key] || "다음 대화에서는 선택 기준과 구체적인 다음 행동을 함께 제시해보세요."}`;
   }
 
   function t3SafeAxisComment(value, key, percent) {
@@ -400,9 +423,25 @@
       .map((turn) => turn.content || "")
       .join(" ");
     const unsafe = !comment
+      || comment.length < 70
       || comment.length > 140
+      || !t3UsesPoliteYoStyle(comment)
       || t3SharesLongSequence(comment, userText);
     return unsafe ? t3AxisFeedback(key, percent) : comment;
+  }
+
+  function t3FeedbackSentences(value) {
+    return String(value || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .match(/[^.!?]+[.!?]?/g)
+      ?.map((sentence) => sentence.trim())
+      .filter(Boolean) || [];
+  }
+
+  function t3UsesPoliteYoStyle(value) {
+    const sentences = t3FeedbackSentences(value);
+    return sentences.length > 0 && sentences.every((sentence) => /요[.!?]?$/.test(sentence));
   }
 
   function t3SharesLongSequence(left, right, size = 18) {
@@ -432,13 +471,19 @@
       : null;
     if (!details?.length) return null;
 
-    return details.slice(0, 3).map((item, index) => ({
-      key: item.key || item.axis || "",
-      label: item.name || item.label || scoreRows[index]?.label || "피드백",
-      score: Math.round(Number(item.score ?? scoreRows[index]?.score ?? 78)),
-      percent: Math.max(0, Math.min(100, Number.isFinite(Number(item.rate)) ? Number(item.rate) * 100 : (scoreRows[index]?.percent ?? 78))),
-      description: item.description || item.comment || item.feedback || item.text || "",
-    }));
+    return details.slice(0, 3).map((item, index) => {
+      const percent = Math.max(0, Math.min(100,
+        Number.isFinite(Number(item.rate)) ? Number(item.rate) * 100 : (scoreRows[index]?.percent ?? 78)
+      ));
+      return {
+        key: item.key || item.axis || "",
+        label: item.name || item.label || scoreRows[index]?.label || "피드백",
+        score: Math.round(Number(item.score ?? scoreRows[index]?.score ?? 78)),
+        percent,
+        level: t3AxisLevel(percent),
+        description: item.description || item.comment || item.feedback || item.text || "",
+      };
+    });
   }
 
   function makeT3ScoreRows() {
@@ -447,7 +492,7 @@
       return `<p><b>평가 결과 없음</b><strong>-</strong><i><span style="width:0%"></span></i></p>`;
     }
 
-    return rows.map(({ label, score, percent }) => `<p><b>${escapeHtml(label)}</b><strong>${score}점</strong><i><span style="width:${percent}%"></span></i></p>`).join("");
+    return rows.map(({ label, level, percent }) => `<p><b>${escapeHtml(label)}</b><strong>${escapeHtml(level)}</strong><i><span style="width:${percent}%"></span></i></p>`).join("");
   }
 
   function makeT3DetailRows() {
@@ -456,9 +501,9 @@
       return `<article><p><b>리포트 대기</b><strong>-</strong><i><span style="width:0%"></span></i></p><div>${escapeHtml(state.t3Error || "제출 후 평가 결과가 표시됩니다.")}</div></article>`;
     }
 
-    return details.map(({ label, score, percent, description }) => `
+    return details.map(({ label, level, percent, description }) => `
       <article>
-        <p><b>${escapeHtml(label)}</b><strong>${score}점</strong><i><span style="width:${percent}%"></span></i></p>
+        <p><b>${escapeHtml(label)}</b><strong>${escapeHtml(level)}</strong><i><span style="width:${percent}%"></span></i></p>
         <div>${escapeHtml(description)}</div>
       </article>`).join("");
   }
@@ -542,13 +587,15 @@
 
   function makeT3Artifact() {
     const value = normalizeT3Markdown(state.t3Artifact || state.t3FinalOutput).trim();
+    const previousValue = normalizeT3Markdown(state.t3PreviousArtifact).trim();
     const sections = selectedT3Scenario().artifactSections || ["작성 내용"];
     const contentBySection = parseT3ArtifactSections(value, sections);
+    const previousContentBySection = parseT3ArtifactSections(previousValue, sections);
 
     return `<div class="t3-artifact-doc"><div class="t3-artifact-body">${sections.map((title, index) => {
       const content = contentBySection.get(title) || "";
       const body = content
-        ? renderT3Markdown(content)
+        ? renderT3Markdown(content, previousContentBySection.get(title) || "")
         : "AI와 대화하면 이 영역이 채워집니다.";
       return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(t3UiText(title))}</h3><div class="t3-markdown">${body}</div></article>`;
     }).join("")}</div></div>`;
@@ -560,7 +607,7 @@
       .replace(/[\u2028\u2029]/g, "\n");
   }
 
-  function renderT3Markdown(value) {
+  function renderT3Markdown(value, previousValue = "") {
     const markdown = normalizeT3Markdown(value).trim();
     if (!markdown) return "";
 
@@ -568,20 +615,65 @@
       return escapeHtml(markdown).replace(/\n/g, "<br />");
     }
 
-    const rendered = window.marked.parse(markdown, {
-      async: false,
-      breaks: true,
-      gfm: true,
+    const renderSafeHtml = (source) => {
+      const rendered = window.marked.parse(source, {
+        async: false,
+        breaks: true,
+        gfm: true,
+      });
+
+      return window.DOMPurify.sanitize(rendered, {
+        ALLOWED_TAGS: [
+          "a", "blockquote", "br", "code", "del", "em", "h1", "h2", "h3", "h4", "h5", "h6",
+          "hr", "li", "ol", "p", "pre", "strong", "table", "tbody", "td", "th", "thead", "tr", "ul",
+        ],
+        ALLOWED_ATTR: ["href", "title"],
+        ALLOW_DATA_ATTR: false,
+      });
+    };
+
+    const currentHtml = renderSafeHtml(markdown);
+    if (!window.DOMParser) return currentHtml;
+
+    const previousMarkdown = normalizeT3Markdown(previousValue).trim();
+    const previousHtml = previousMarkdown ? renderSafeHtml(previousMarkdown) : "";
+    return highlightT3MarkdownChanges(currentHtml, previousHtml);
+  }
+
+  function highlightT3MarkdownChanges(currentHtml, previousHtml) {
+    const parser = new window.DOMParser();
+    const currentDocument = parser.parseFromString(currentHtml, "text/html");
+    const previousDocument = parser.parseFromString(previousHtml, "text/html");
+    const selector = "p, li, tr, h1, h2, h3, h4, h5, h6, blockquote, pre";
+    const bodySelector = "p, li, blockquote, pre, td";
+    const fingerprint = (element) => `${element.tagName}:${String(element.textContent || "").replace(/\s+/g, " ").trim()}`;
+    const previousBlocks = new Set(
+      Array.from(previousDocument.body.querySelectorAll(selector))
+        .map(fingerprint)
+        .filter((value) => value.split(":", 2)[1])
+    );
+
+    // Typography is state, not presentation: lock body copy before marking the latest changes.
+    currentDocument.body.querySelectorAll(bodySelector).forEach((element) => {
+      element.style.setProperty("font-weight", "400", "important");
+      element.querySelectorAll("strong, b").forEach((emphasis) => {
+        emphasis.style.setProperty("font-weight", "400", "important");
+      });
     });
 
-    return window.DOMPurify.sanitize(rendered, {
-      ALLOWED_TAGS: [
-        "a", "blockquote", "br", "code", "del", "em", "h1", "h2", "h3", "h4", "h5", "h6",
-        "hr", "li", "ol", "p", "pre", "strong", "table", "tbody", "td", "th", "thead", "tr", "ul",
-      ],
-      ALLOWED_ATTR: ["href", "title"],
-      ALLOW_DATA_ATTR: false,
+    currentDocument.body.querySelectorAll(selector).forEach((element) => {
+      const value = fingerprint(element);
+      if (value.split(":", 2)[1] && !previousBlocks.has(value)) {
+        element.classList.add("t3-artifact-change");
+        element.setAttribute("data-t3-change", "latest");
+        [element, ...element.querySelectorAll("*")].forEach((changedNode) => {
+          changedNode.style.setProperty("color", "inherit", "important");
+          changedNode.style.setProperty("font-weight", "700", "important");
+        });
+      }
     });
+
+    return currentDocument.body.innerHTML;
   }
 
   function parseT3ArtifactSections(value, sections) {
@@ -634,6 +726,7 @@
 
     if (input) {
       input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
+      input.disabled = t3ChatPending || turnComplete;
       if (state.t3Draft && input.value !== state.t3Draft) input.value = state.t3Draft;
       autoResizeTrack3Textarea(input);
     }
@@ -667,12 +760,32 @@
   function t3ResultSummary() {
     const evaluation = currentT3Evaluation();
     const feedback = evaluation?.feedback || {};
-    return evaluation?.summary
-      || feedback.summary
-      || [feedback.summary_strengths, feedback.summary_weaknesses, feedback.recommendation].filter(Boolean).join(" ")
-      || evaluation?.comment
+    const headlineSentences = new Set(t3FeedbackSentences(t3ResultHeadline()).map(t3ComparableFeedback));
+    const candidates = [
+      evaluation?.summary,
+      feedback.summary,
+      feedback.summary_weaknesses,
+      feedback.recommendation,
+      evaluation?.comment,
+    ].flatMap(t3FeedbackSentences);
+    const selected = [];
+
+    for (const sentence of candidates) {
+      const normalized = t3ComparableFeedback(sentence);
+      if (!normalized || headlineSentences.has(normalized) || !t3UsesPoliteYoStyle(sentence)) continue;
+      if (selected.some((item) => t3ComparableFeedback(item) === normalized)) continue;
+      const next = [...selected, sentence].join(" ");
+      if (next.length > 140) continue;
+      selected.push(sentence);
+    }
+
+    return selected.join(" ")
       || state.t3Error
-      || "제출한 대화와 산출물을 바탕으로 평가를 생성하지 못했습니다.";
+      || "구체적인 검증 기준과 다음 행동을 보완하면 AI의 결과를 더 안정적으로 개선할 수 있어요.";
+  }
+
+  function t3ComparableFeedback(value) {
+    return String(value || "").toLowerCase().replace(/[^가-힣a-z0-9]/g, "");
   }
 
   const T3_SHARE_AXES = [
@@ -683,6 +796,7 @@
     { key: "output_design", aliases: ["output_design"], label: "출력 설계" },
     { key: "interaction_control", aliases: ["interaction_control", "interaction_coordination"], label: "상호작용 조율" },
     { key: "verification", aliases: ["verification", "validation_induction"], label: "검증 유도" },
+    { key: "practical_application", aliases: ["practical_application"], label: "실무 적용" },
   ];
 
   function buildT3ShareData() {
@@ -797,17 +911,13 @@
     }
 
     const turnsBeforeRequest = normalizedT3Turns();
+    state.t3Draft = "";
     state.t3Turns = [...turnsBeforeRequest, { role: "user", content: userMessage }];
     t3ChatPending = true;
     t3ChatWarning = "";
     render();
     showScreen("t3-chat");
     syncT3ChatTab("chat");
-    const pendingInput = document.querySelector('[data-screen="t3-chat"] [data-t3-chat-input]');
-    if (pendingInput) {
-      pendingInput.value = rawMessage;
-      autoResizeTrack3Textarea(pendingInput);
-    }
     scrollT3ChatToBottom();
 
     try {
@@ -823,6 +933,7 @@
       state.t3Turns = responseTurns.length > 0
         ? responseTurns
         : [...state.t3Turns, ...(assistantMessage ? [{ role: "assistant", content: assistantMessage }] : [])];
+      state.t3PreviousArtifact = state.t3Artifact || "";
       state.t3Artifact = payload.artifact || payload.finalOutput || state.t3Artifact || "";
       state.t3Draft = "";
     } catch (error) {
@@ -952,7 +1063,7 @@
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
             <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">4</span><span>최종 제출물 작업 영역</span></h2>
-            <p>AI와 대화할수록 해당 영역이 채워집니다.<br>최대 5턴까지 대화 가능합니다.<br>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다</p>
+            <p>AI와 대화할수록 해당 영역이 채워집니다.<br>최대 5턴까지 대화 가능합니다.<br>작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다.<br>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다.</p>
             <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
           </section>
           <aside class="t3-chat-panel">
@@ -1089,6 +1200,7 @@
 
       state.t3Turns = [];
       state.t3Artifact = "";
+      state.t3PreviousArtifact = "";
       state.t3FinalOutput = "";
       state.t3Result = null;
       state.t3SaveResult = null;
@@ -1114,6 +1226,7 @@
     if (state.t3ScenarioId && state.t3ScenarioId !== nextScenarioId) {
       state.t3Turns = [];
       state.t3Artifact = "";
+      state.t3PreviousArtifact = "";
       state.t3FinalOutput = "";
       state.t3Result = null;
       state.t3SaveResult = null;
