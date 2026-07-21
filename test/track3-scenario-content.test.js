@@ -51,11 +51,21 @@ test("Track 3 highlights only latest artifact changes with typography", () => {
   assert.match(frontendSource, /renderT3Markdown\(content, previousContentBySection\.get\(title\) \|\| ""\)/);
   assert.match(frontendSource, /function highlightT3MarkdownChanges\(currentHtml, previousHtml\)/);
   assert.match(frontendSource, /element\.classList\.add\("t3-artifact-change"\)/);
-  assert.match(track3Styles, /\.t3-artifact-change[\s\S]*color: inherit !important;[\s\S]*font-weight: 700 !important/);
+  assert.match(frontendSource, /element\.setAttribute\("data-t3-change", "latest"\)/);
+  assert.match(frontendSource, /bodySelector = "p, li, blockquote, pre, td"/);
+  assert.match(frontendSource, /element\.style\.setProperty\("font-weight", "400", "important"\)/);
+  assert.match(frontendSource, /changedNode\.style\.setProperty\("font-weight", "700", "important"\)/);
+  assert.doesNotMatch(track3Styles, /\.t3-artifact-change[\s\S]{0,220}font-weight/);
   assert.doesNotMatch(track3Styles, /\.t3-artifact-change[\s\S]{0,180}color: var\(--t3-violet\) !important/);
   assert.match(track3Styles, /\.t3-markdown p,[\s\S]*font-weight: 400 !important/);
   assert.match(track3Styles, /\.t3-markdown strong,[\s\S]*font-weight: 400 !important/);
-  assert.match(track3Styles, /\.t3-artifact-change[\s\S]*font-family: "Pretendard", sans-serif !important;[\s\S]*font-weight: 700 !important/);
+  assert.match(frontendSource, /changedNode\.style\.setProperty\("color", "inherit", "important"\)/);
+});
+
+test("Track 3 artifact assets use the same fresh cache version", () => {
+  const indexSource = fs.readFileSync(path.join(ROOT, "frontend/index.html"), "utf8");
+  assert.match(indexSource, /track3-desktop\.css\?v=20260721-t3-qa8/);
+  assert.match(indexSource, /track3-content-fix\.js\?v=20260721-t3-qa8/);
 });
 
 test("Track 3 displays five-level axis labels while preserving numeric progress", () => {

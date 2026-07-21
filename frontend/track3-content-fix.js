@@ -645,6 +645,7 @@
     const currentDocument = parser.parseFromString(currentHtml, "text/html");
     const previousDocument = parser.parseFromString(previousHtml, "text/html");
     const selector = "p, li, tr, h1, h2, h3, h4, h5, h6, blockquote, pre";
+    const bodySelector = "p, li, blockquote, pre, td";
     const fingerprint = (element) => `${element.tagName}:${String(element.textContent || "").replace(/\s+/g, " ").trim()}`;
     const previousBlocks = new Set(
       Array.from(previousDocument.body.querySelectorAll(selector))
@@ -652,10 +653,23 @@
         .filter((value) => value.split(":", 2)[1])
     );
 
+    // Typography is state, not presentation: lock body copy before marking the latest changes.
+    currentDocument.body.querySelectorAll(bodySelector).forEach((element) => {
+      element.style.setProperty("font-weight", "400", "important");
+      element.querySelectorAll("strong, b").forEach((emphasis) => {
+        emphasis.style.setProperty("font-weight", "400", "important");
+      });
+    });
+
     currentDocument.body.querySelectorAll(selector).forEach((element) => {
       const value = fingerprint(element);
       if (value.split(":", 2)[1] && !previousBlocks.has(value)) {
         element.classList.add("t3-artifact-change");
+        element.setAttribute("data-t3-change", "latest");
+        [element, ...element.querySelectorAll("*")].forEach((changedNode) => {
+          changedNode.style.setProperty("color", "inherit", "important");
+          changedNode.style.setProperty("font-weight", "700", "important");
+        });
       }
     });
 
