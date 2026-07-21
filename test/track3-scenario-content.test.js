@@ -43,3 +43,11 @@ test("sending a Track 3 message clears the composer while the request is pending
   assert.match(frontendSource, /input\.disabled = t3ChatPending \|\| turnComplete/);
   assert.match(sendSource, /catch \(error\)[\s\S]*state\.t3Draft = rawMessage/);
 });
+
+test("Track 3 highlights only blocks changed by the latest artifact update", () => {
+  assert.match(frontendSource, /state\.t3PreviousArtifact = state\.t3Artifact \|\| "";/);
+  assert.match(frontendSource, /renderT3Markdown\(content, previousContentBySection\.get\(title\) \|\| ""\)/);
+  assert.match(frontendSource, /function highlightT3MarkdownChanges\(currentHtml, previousHtml\)/);
+  assert.match(frontendSource, /element\.classList\.add\("t3-artifact-change"\)/);
+  assert.match(track3Styles, /\.t3-artifact-change[\s\S]*color: var\(--t3-violet\) !important/);
+});

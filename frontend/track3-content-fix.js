@@ -89,6 +89,7 @@
   state.t3ScenarioId = state.t3ScenarioId || null;
   state.t3Turns = state.t3Turns || [];
   state.t3Artifact = state.t3Artifact || "";
+  state.t3PreviousArtifact = state.t3PreviousArtifact || "";
   state.t3FinalOutput = state.t3FinalOutput || "";
   state.t3Result = state.t3Result || null;
   state.t3SaveResult = state.t3SaveResult || null;
@@ -102,6 +103,7 @@
     state.t3ScenarioId = null;
     state.t3Turns = [];
     state.t3Artifact = "";
+    state.t3PreviousArtifact = "";
     state.t3FinalOutput = "";
     state.t3Result = null;
     state.t3SaveResult = null;
@@ -568,13 +570,15 @@
 
   function makeT3Artifact() {
     const value = normalizeT3Markdown(state.t3Artifact || state.t3FinalOutput).trim();
+    const previousValue = normalizeT3Markdown(state.t3PreviousArtifact).trim();
     const sections = selectedT3Scenario().artifactSections || ["작성 내용"];
     const contentBySection = parseT3ArtifactSections(value, sections);
+    const previousContentBySection = parseT3ArtifactSections(previousValue, sections);
 
     return `<div class="t3-artifact-doc"><div class="t3-artifact-body">${sections.map((title, index) => {
       const content = contentBySection.get(title) || "";
       const body = content
-        ? renderT3Markdown(content)
+        ? renderT3Markdown(content, previousContentBySection.get(title) || "")
         : "AI와 대화하면 이 영역이 채워집니다.";
       return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(t3UiText(title))}</h3><div class="t3-markdown">${body}</div></article>`;
     }).join("")}</div></div>`;
@@ -586,7 +590,7 @@
       .replace(/[\u2028\u2029]/g, "\n");
   }
 
-  function renderT3Markdown(value) {
+  function renderT3Markdown(value, previousValue = "") {
     const markdown = normalizeT3Markdown(value).trim();
     if (!markdown) return "";
 
@@ -594,20 +598,51 @@
       return escapeHtml(markdown).replace(/\n/g, "<br />");
     }
 
-    const rendered = window.marked.parse(markdown, {
-      async: false,
-      breaks: true,
-      gfm: true,
+    const renderSafeHtml = (source) => {
+      const rendered = window.marked.parse(source, {
+        async: false,
+        breaks: true,
+        gfm: true,
+      });
+
+      return window.DOMPurify.sanitize(rendered, {
+        ALLOWED_TAGS: [
+          "a", "blockquote", "br", "code", "del", "em", "h1", "h2", "h3", "h4", "h5", "h6",
+          "hr", "li", "ol", "p", "pre", "strong", "table", "tbody", "td", "th", "thead", "tr", "ul",
+        ],
+        ALLOWED_ATTR: ["href", "title"],
+        ALLOW_DATA_ATTR: false,
+      });
+    };
+
+    const currentHtml = renderSafeHtml(markdown);
+    if (!window.DOMParser) return currentHtml;
+
+    const previousMarkdown = normalizeT3Markdown(previousValue).trim();
+    const previousHtml = previousMarkdown ? renderSafeHtml(previousMarkdown) : "";
+    return highlightT3MarkdownChanges(currentHtml, previousHtml);
+  }
+
+  function highlightT3MarkdownChanges(currentHtml, previousHtml) {
+    const parser = new window.DOMParser();
+    const currentDocument = parser.parseFromString(currentHtml, "text/html");
+    const previousDocument = parser.parseFromString(previousHtml, "text/html");
+    const selector = "p, li, tr, h1, h2, h3, h4, h5, h6, blockquote, pre";
+    const fingerprint = (element) => `${element.tagName}:${String(element.textContent || "").replace(/\s+/g, " ").trim()}`;
+    const previousBlocks = new Set(
+      Array.from(previousDocument.body.querySelectorAll(selector))
+        .map(fingerprint)
+        .filter((value) => value.split(":", 2)[1])
+    );
+
+    currentDocument.body.querySelectorAll(selector).forEach((element) => {
+      const value = fingerprint(element);
+      if (value.split(":", 2)[1] && !previousBlocks.has(value)) {
+        element.classList.add("t3-artifact-change");
+      }
     });
 
-    return window.DOMPurify.sanitize(rendered, {
-      ALLOWED_TAGS: [
-        "a", "blockquote", "br", "code", "del", "em", "h1", "h2", "h3", "h4", "h5", "h6",
-        "hr", "li", "ol", "p", "pre", "strong", "table", "tbody", "td", "th", "thead", "tr", "ul",
-      ],
-      ALLOWED_ATTR: ["href", "title"],
-      ALLOW_DATA_ATTR: false,
-    });
+    return currentDocument.body.innerHTML;
   }
 
   function parseT3ArtifactSections(value, sections) {
@@ -846,6 +881,7 @@
       state.t3Turns = responseTurns.length > 0
         ? responseTurns
         : [...state.t3Turns, ...(assistantMessage ? [{ role: "assistant", content: assistantMessage }] : [])];
+      state.t3PreviousArtifact = state.t3Artifact || "";
       state.t3Artifact = payload.artifact || payload.finalOutput || state.t3Artifact || "";
       state.t3Draft = "";
     } catch (error) {
@@ -1112,6 +1148,7 @@
 
       state.t3Turns = [];
       state.t3Artifact = "";
+      state.t3PreviousArtifact = "";
       state.t3FinalOutput = "";
       state.t3Result = null;
       state.t3SaveResult = null;
@@ -1137,6 +1174,7 @@
     if (state.t3ScenarioId && state.t3ScenarioId !== nextScenarioId) {
       state.t3Turns = [];
       state.t3Artifact = "";
+      state.t3PreviousArtifact = "";
       state.t3FinalOutput = "";
       state.t3Result = null;
       state.t3SaveResult = null;

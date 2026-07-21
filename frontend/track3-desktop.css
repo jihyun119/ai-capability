@@ -1445,6 +1445,11 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown a {
   text-decoration: underline !important;
 }
 
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown .t3-artifact-change,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown .t3-artifact-change * {
+  color: var(--t3-violet) !important;
+}
+
 @media (max-width: 1180px) {
   main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown {
     font-size: 13px !important;
