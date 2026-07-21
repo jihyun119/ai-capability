@@ -1395,7 +1395,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown li {
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown strong,
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown b {
-  font-weight: 700 !important;
+  font-weight: 400 !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown table {
@@ -1463,6 +1463,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown a {
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown .t3-artifact-change,
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown .t3-artifact-change * {
   color: inherit !important;
+  font-family: "Pretendard", sans-serif !important;
   font-weight: 700 !important;
 }
 

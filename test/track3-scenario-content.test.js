@@ -53,5 +53,6 @@ test("Track 3 highlights only latest artifact changes with typography", () => {
   assert.match(track3Styles, /\.t3-artifact-change[\s\S]*color: inherit !important;[\s\S]*font-weight: 700 !important/);
   assert.doesNotMatch(track3Styles, /\.t3-artifact-change[\s\S]{0,180}color: var\(--t3-violet\) !important/);
   assert.match(track3Styles, /\.t3-markdown p,[\s\S]*font-weight: 400 !important/);
-  assert.match(track3Styles, /\.t3-markdown strong,[\s\S]*font-weight: 700 !important/);
+  assert.match(track3Styles, /\.t3-markdown strong,[\s\S]*font-weight: 400 !important/);
+  assert.match(track3Styles, /\.t3-artifact-change[\s\S]*font-family: "Pretendard", sans-serif !important;[\s\S]*font-weight: 700 !important/);
 });
