@@ -986,13 +986,11 @@
             <h1>${t3ResultScore()}점</h1>
             <div class="t3-score-list">${makeT3ScoreRows()}</div>
           </article>
-          <article class="t3-result-report">
-            <h2>${escapeHtml(t3ResultHeadline())}</h2>
-            <p>${escapeHtml(t3ResultSummary())}</p>
-            <div class="t3-detail-list">${makeT3DetailRows()}</div>
-          </article>
         </section>
-        <nav class="t3-result-nav"><button class="cta secondary t3-result-share" type="button">공유하기</button>${button("다른 Track 도전", "home", "primary", "t3-result-home")}</nav>`,
+        <nav class="t3-result-nav">
+          ${button("상세 리포트 보기", "t3-report", "primary", "t3-detail-open")}
+          <button class="cta secondary t3-result-share" type="button">공유하기</button>
+        </nav>`,
         "t3-screen t3-result-screen"
       ),
       screen(
@@ -1003,8 +1001,10 @@
           <h1>${escapeHtml(t3ResultHeadline())}</h1>
           <p class="t3-report-summary">${escapeHtml(t3ResultSummary())}</p>
           <div class="t3-detail-list">${makeT3DetailRows()}</div>
-          ${button("다른 Track 도전", "home", "primary", "t3-report-next")}
-          ${button("이전", "t3-result", "secondary", "t3-report-back")}
+          <nav class="t3-report-nav">
+            ${button("다른 Track 도전", "home", "primary", "t3-result-home t3-report-next")}
+            ${button("이전", "t3-result", "secondary", "t3-report-back")}
+          </nav>
         </section>`,
         "t3-screen t3-report-screen"
       ),
