@@ -35,6 +35,19 @@ window.DomCapture = (() => {
     const clone = prepareClone(node, width, height);
     await inlineImages(clone);
     inlineComputedStyles(node, clone);
+    // 계산 스타일에 포함된 off-screen 좌표가 캡처용 루트 배치를 덮어쓰지 않게 합니다.
+    Object.assign(clone.style, {
+      position: "relative",
+      left: "0",
+      top: "0",
+      width: `${width}px`,
+      height: `${height}px`,
+      minHeight: `${height}px`,
+      margin: "0",
+      transform: "none",
+      boxShadow: "none",
+      overflow: "hidden",
+    });
 
     const url = URL.createObjectURL(toSvgBlob(clone, width, height));
     try {

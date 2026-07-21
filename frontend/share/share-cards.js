@@ -236,5 +236,172 @@ window.ShareCards = (() => {
     ctx.restore();
   }
 
-  return { drawTrack1Card, drawTrack2Card };
+  // ── Track 3 카드 ─────────────────────────────────────────────────────────
+
+  const TRACK3_AXIS_LABELS = [
+    "목표 정의",
+    "맥락 제공",
+    "정보 구조화",
+    "작업 분해",
+    "출력 설계",
+    "상호작용 조율",
+    "검증 유도",
+  ];
+
+  function clampPercent(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.max(0, Math.min(100, number)) : 0;
+  }
+
+  function normalizeTrack3ShareData(input = {}) {
+    const rawAxes = Array.isArray(input.axes) ? input.axes : [];
+    const axes = TRACK3_AXIS_LABELS.map((fallbackLabel, index) => {
+      const axis = rawAxes[index] || {};
+      const score = clampPercent(axis.score ?? axis.percent);
+      return {
+        key: String(axis.key || ""),
+        label: String(axis.label || fallbackLabel),
+        score: Math.round(score),
+        percent: clampPercent(axis.percent ?? score),
+        description: String(axis.description || ""),
+      };
+    });
+
+    const rawDetails = Array.isArray(input.details) ? input.details.slice(0, 3) : [];
+    const fallbackDetails = [...axes].sort((left, right) => left.score - right.score);
+    const details = Array.from({ length: 3 }, (_, index) => {
+      const detail = rawDetails[index] || fallbackDetails[index] || {};
+      const score = clampPercent(detail.score ?? detail.percent);
+      return {
+        key: String(detail.key || ""),
+        label: String(detail.label || fallbackDetails[index]?.label || "보완 역량"),
+        score: Math.round(score),
+        percent: clampPercent(detail.percent ?? score),
+        description: String(detail.description || "이 역량을 더 구체적으로 보여주는 요청을 추가해보세요."),
+      };
+    });
+
+    return {
+      total: Math.round(clampPercent(input.total)),
+      grade: String(input.grade || "평가 결과"),
+      headline: String(input.headline || "AI 실무 활용 역량 결과입니다"),
+      summary: String(input.summary || "대화와 최종 결과물을 바탕으로 분석한 결과입니다."),
+      axes,
+      details,
+    };
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function track3ProgressMarkup(row) {
+    return `<div style="display:grid;grid-template-columns:96px 38px minmax(0,1fr);align-items:center;gap:8px;width:100%;box-sizing:border-box;">
+      <strong style="font-size:13px;line-height:1.25;font-weight:700;color:${color.brand};white-space:nowrap;">${escapeHtml(row.label)}</strong>
+      <b style="font-size:13px;line-height:1.25;font-weight:800;color:${color.ink};white-space:nowrap;">${row.score}점</b>
+      <i style="display:block;height:12px;border-radius:999px;background:${color.grid};overflow:hidden;">
+        <span style="display:block;width:${row.percent}%;height:100%;border-radius:inherit;background:${color.brand};"></span>
+      </i>
+    </div>`;
+  }
+
+  function createTrack3ShareCard(input) {
+    const data = normalizeTrack3ShareData(input);
+    const card = document.createElement("section");
+    card.dataset.shareCapture = "track3";
+    card.setAttribute("aria-hidden", "true");
+    card.style.cssText = `position:fixed;left:-10000px;top:0;width:384px;height:auto;box-sizing:border-box;padding:28px 24px 34px;background:${color.surface};color:${color.ink};font-family:${font.body},sans-serif;overflow:visible;z-index:-1;`;
+    card.innerHTML = `
+      <header style="display:flex;align-items:center;gap:9px;margin:0 0 30px;">
+        <img src="./Logo/Logo.v2.png" alt="" style="display:block;width:25px;height:25px;object-fit:contain;" />
+        <strong style="font-size:18px;line-height:1;font-weight:900;">푸키</strong>
+      </header>
+      <div style="display:flex;justify-content:center;margin-bottom:24px;">
+        <strong style="display:inline-flex;align-items:center;justify-content:center;min-width:118px;min-height:38px;padding:8px 18px;box-sizing:border-box;border:1.5px solid ${color.ink};border-radius:999px;background:${color.accent};font-size:16px;line-height:1.2;font-weight:800;">${escapeHtml(data.grade)}</strong>
+      </div>
+      <h1 style="margin:0 0 30px;text-align:center;font-family:${font.numeric},${font.body},sans-serif;font-size:54px;line-height:1;font-weight:900;">${data.total}점</h1>
+      <div style="display:grid;gap:20px;margin-bottom:34px;">${data.axes.map(track3ProgressMarkup).join("")}</div>
+      <section style="margin-bottom:30px;">
+        <h2 style="margin:0 0 12px;font-size:21px;line-height:1.35;font-weight:900;word-break:keep-all;overflow-wrap:anywhere;">${escapeHtml(data.headline)}</h2>
+        <p style="margin:0;font-size:14px;line-height:1.5;font-weight:500;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;">${escapeHtml(data.summary)}</p>
+      </section>
+      <div style="display:grid;gap:18px;">${data.details.map((detail) => `
+        <article style="display:grid;gap:12px;">
+          ${track3ProgressMarkup(detail)}
+          <p style="margin:0;padding:14px 16px;border-radius:12px;background:#f4f4f5;color:#71717a;font-size:12px;line-height:1.45;font-weight:500;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;">${escapeHtml(detail.description)}</p>
+        </article>`).join("")}
+      </div>`;
+    return card;
+  }
+
+  function drawTrack3Card(ctx, canvas, input) {
+    const data = normalizeTrack3ShareData(input);
+    const summaryLines = K.wrapText(ctx, data.summary, 936, 30, 500);
+    const detailLines = data.details.map((detail) => K.wrapText(ctx, detail.description, 856, 25, 500));
+    const detailsHeight = detailLines.reduce((sum, lines) => sum + 150 + Math.max(1, lines.length) * 34, 0);
+    canvas.width = theme.canvas.width;
+    canvas.height = 1340 + summaryLines.length * 40 + detailsHeight;
+
+    fillSurface(ctx, canvas);
+    drawBrandMark(ctx, 64, 64);
+    drawPill(ctx, data.grade, 330, 174, 420, 76, 38);
+    K.drawCenteredText(ctx, `${data.total}점`, 362, 94, 900, color.ink, font.numeric);
+
+    let y = 458;
+    for (const row of data.axes) {
+      drawTrack3ProgressRow(ctx, row, y);
+      y += 98;
+    }
+
+    y += 34;
+    const headlineLines = K.wrapText(ctx, data.headline, 936, 42, 900);
+    ctx.font = `900 42px ${font.body}`;
+    ctx.fillStyle = color.ink;
+    headlineLines.forEach((line, index) => ctx.fillText(line, 72, y + index * 52));
+    y += Math.max(1, headlineLines.length) * 52 + 30;
+
+    ctx.font = `500 30px ${font.body}`;
+    summaryLines.forEach((line, index) => ctx.fillText(line, 72, y + index * 40));
+    y += Math.max(1, summaryLines.length) * 40 + 54;
+
+    data.details.forEach((detail, index) => {
+      drawTrack3ProgressRow(ctx, detail, y);
+      y += 66;
+      const lines = detailLines[index];
+      const boxHeight = 48 + Math.max(1, lines.length) * 34;
+      ctx.fillStyle = "#f4f4f5";
+      K.roundRect(ctx, 72, y, 936, boxHeight, 24);
+      ctx.fill();
+      ctx.font = `500 25px ${font.body}`;
+      ctx.fillStyle = "#71717a";
+      lines.forEach((line, lineIndex) => ctx.fillText(line, 104, y + 42 + lineIndex * 34));
+      y += boxHeight + 50;
+    });
+  }
+
+  function drawTrack3ProgressRow(ctx, row, y) {
+    K.drawText(ctx, row.label, 72, y + 32, 28, 800, color.brand, font.body);
+    K.drawText(ctx, `${row.score}점`, 300, y + 32, 28, 800, color.ink, font.body);
+    ctx.fillStyle = color.grid;
+    K.roundRect(ctx, 420, y, 588, 36, 18);
+    ctx.fill();
+    const fillWidth = 588 * (clampPercent(row.percent) / 100);
+    if (fillWidth > 0) {
+      ctx.fillStyle = color.brand;
+      K.roundRect(ctx, 420, y, fillWidth, 36, 18);
+      ctx.fill();
+    }
+  }
+
+  return {
+    drawTrack1Card,
+    drawTrack2Card,
+    createTrack3ShareCard,
+    drawTrack3Card,
+    normalizeTrack3ShareData,
+  };
 })();

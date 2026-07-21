@@ -14,12 +14,15 @@ window.ShareService = (() => {
   const TRACKS = {
     track1: { shareScreen: "t1-share", resultScreen: "t1-result", filename: "pookie-track1-result.png" },
     track2: { shareScreen: "t2-share", resultScreen: "t2-result", filename: "pookie-track2-result.png" },
+    track3: { shareScreen: null, resultScreen: "t3-result", filename: "pookie-track3-result.png" },
   };
 
   // app.js가 주입하는 어댑터. 기본값은 서비스 단독 로드 시의 안전한 no-op입니다.
   let deps = {
     getTrack1Result: () => null,
     getTrack2Result: () => ({}),
+    getTrack3ShareData: () => ({}),
+    getShareUrl: () => "",
     characterSrcByType: () => "",
     normalizeShareKeywords: (keywords) => (Array.isArray(keywords) ? keywords : []),
     displayTrack2Grade: () => "AI 활용 역량",
@@ -34,12 +37,30 @@ window.ShareService = (() => {
   // ── 공유 문구 ────────────────────────────────────────────────────────────
 
   function buildShareMeta(track) {
+    if (track === "track3") {
+      const result = deps.getTrack3ShareData();
+      return {
+        title: "푸키 AI 실무 활용 역량 진단",
+        text: buildTrack3ShareText(result, deps.getShareUrl()),
+      };
+    }
     if (track === "track2") {
       const grade = deps.displayTrack2Grade(deps.getTrack2Result());
       return { title: `내 AI 활용 역량은 ${grade}`, text: deps.shareText };
     }
     const typeName = deps.getTrack1Result()?.type?.name || "AI 관계 유형";
     return { title: `내 AI 관계 유형은 ${typeName}`, text: deps.shareText };
+  }
+
+  function buildTrack3ShareText(result = {}, shareUrl = "") {
+    const grade = String(result.grade || "평가 결과");
+    const total = Number.isFinite(Number(result.total)) ? Math.round(Number(result.total)) : "-";
+    return [
+      "푸키 Track 3에서 AI 실무 활용 역량을 진단했어요.",
+      `제 결과는 "${grade}, ${total}점"이에요.`,
+      "직접 도전하고 나의 AI 활용 역량도 확인해보세요!",
+      String(shareUrl || "").trim(),
+    ].filter(Boolean).join("\n");
   }
 
   // ── 이미지 생성 ──────────────────────────────────────────────────────────
@@ -57,6 +78,21 @@ window.ShareService = (() => {
   async function createShareImage(track) {
     const { filename } = TRACKS[track] || TRACKS.track1;
     const meta = buildShareMeta(track);
+
+    if (track === "track3") {
+      const data = deps.getTrack3ShareData();
+      const captureNode = Cards.createTrack3ShareCard(data);
+      document.body.appendChild(captureNode);
+      try {
+        const blob = await Capture.captureElementAsPng(captureNode);
+        return { blob, filename, ...meta };
+      } catch (error) {
+        console.warn("Track 3 공유 카드 DOM 캡처 실패. 캔버스 카드로 대체합니다.", error);
+      } finally {
+        captureNode.remove();
+      }
+      return { blob: await renderTrack3Card(data), filename, ...meta };
+    }
 
     const captureNode = resolveCaptureNode(track);
     if (captureNode) {
@@ -99,6 +135,12 @@ window.ShareService = (() => {
       strength: feedback.strength || feedback.strengths?.[0]?.description || "강점 분석이 표시됩니다.",
       weakness: feedback.weakness || feedback.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.",
     });
+    return K.toBlob(canvas);
+  }
+
+  async function renderTrack3Card(data) {
+    const canvas = K.createCanvas();
+    Cards.drawTrack3Card(canvas.getContext("2d"), canvas, data);
     return K.toBlob(canvas);
   }
 
@@ -163,7 +205,8 @@ window.ShareService = (() => {
 
   // "공유" 버튼: 어디서든 네이티브 공유를 먼저 시도합니다.
   async function shareResult(track) {
-    return deliver(await createShareImage(track), { preferNativeShare: true });
+    const preferNativeShare = track === "track3" ? isTouchShareDevice() : true;
+    return deliver(await createShareImage(track), { preferNativeShare });
   }
 
   // "저장" 버튼: 데스크톱에서는 곧장 파일로 내려받고, 터치 기기에서만 공유창을 씁니다.
@@ -171,5 +214,12 @@ window.ShareService = (() => {
     return deliver(await createShareImage(track), { preferNativeShare: isTouchShareDevice() });
   }
 
-  return { configure, shareResult, saveResultImage, isTouchShareDevice, isMobileSafari };
+  return {
+    configure,
+    shareResult,
+    saveResultImage,
+    isTouchShareDevice,
+    isMobileSafari,
+    buildTrack3ShareText,
+  };
 })();

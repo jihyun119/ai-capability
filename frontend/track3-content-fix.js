@@ -196,6 +196,10 @@
     ].map(([title, desc]) => `<article><strong>${title}</strong><span>${desc}</span></article>`).join("");
   }
 
+  function t3UiText(value) {
+    return String(value ?? "").replace(/PRD/g, "세부기획안");
+  }
+
   function t3ScenarioRole(item) {
     const explicit = item?.role || item?.jobRole || item?.job_role;
     const id = String(item?.scenarioId || item?.id || item?.key || "").toLowerCase();
@@ -246,10 +250,10 @@
         <button class="t3-scenario-card ${Number(state.t3Scenario || 0) === index ? "is-selected" : ""}" type="button" data-t3-scenario="${index}">
           <span class="t3-scenario-tags">
             <i class="t3-scenario-tag t3-scenario-role">${escapeHtml(role)}</i>
-            ${tags.map((tag) => `<i class="t3-scenario-tag">${escapeHtml(tag)}</i>`).join("")}
+            ${tags.map((tag) => `<i class="t3-scenario-tag">${escapeHtml(t3UiText(tag))}</i>`).join("")}
           </span>
-          <strong class="t3-scenario-title">${escapeHtml(title)}</strong>
-          <small class="t3-scenario-description">${escapeHtml(description)}</small>
+          <strong class="t3-scenario-title">${escapeHtml(t3UiText(title))}</strong>
+          <small class="t3-scenario-description">${escapeHtml(t3UiText(description))}</small>
         </button>`;
     }).join("");
   }
@@ -268,10 +272,10 @@
   function makeT3ChatBrief(item = selectedT3Scenario()) {
     return `
       <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">1</span><span>상황 설명</span></h2>
-      ${item.situation.map((text) => `<p>${text}</p>`).join("")}
+      ${item.situation.map((text) => `<p>${t3UiText(text)}</p>`).join("")}
       <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">2</span><span>미션 가이드</span></h2>
       <p>다음 내용을 중심으로 AI와 함께 최종 제출물을 만들어보세요.</p>
-      <ul>${item.mission.map((text) => `<li>${text}</li>`).join("")}</ul>
+      <ul>${item.mission.map((text) => `<li>${t3UiText(text)}</li>`).join("")}</ul>
       ${makeT3ScenarioExtras(item)}`;
   }
 
@@ -333,6 +337,7 @@
         : (max > 0 ? (score / max) * 100 : score);
       const displayScore = max <= 5 ? percent : score;
       return {
+        key,
         label: t3AxisLabel(key, value),
         score: Math.round(displayScore),
         percent: Math.max(0, Math.min(100, percent)),
@@ -428,6 +433,7 @@
     if (!details?.length) return null;
 
     return details.slice(0, 3).map((item, index) => ({
+      key: item.key || item.axis || "",
       label: item.name || item.label || scoreRows[index]?.label || "피드백",
       score: Math.round(Number(item.score ?? scoreRows[index]?.score ?? 78)),
       percent: Math.max(0, Math.min(100, Number.isFinite(Number(item.rate)) ? Number(item.rate) * 100 : (scoreRows[index]?.percent ?? 78))),
@@ -513,8 +519,16 @@
     textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
   }
 
+  function t3TurnProgressCount(turns, maxTurns = 5) {
+    const count = (Array.isArray(turns) ? turns : [])
+      .filter((turn) => turn?.role !== "assistant" && turn?.role !== "ai")
+      .filter((turn) => String(turn?.content || turn?.message || turn?.text || "").trim())
+      .length;
+    return Math.max(0, Math.min(maxTurns, count));
+  }
+
   function getT3TurnCount() {
-    return Math.max(0, Math.min(5, normalizedT3Turns().filter((turn) => turn.role === "user").length));
+    return t3TurnProgressCount(state.t3Turns);
   }
 
   function isT3TurnComplete() {
@@ -536,7 +550,7 @@
       const body = content
         ? renderT3Markdown(content)
         : "AI와 대화하면 이 영역이 채워집니다.";
-      return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(title)}</h3><div class="t3-markdown">${body}</div></article>`;
+      return `<article class="${content ? "" : "is-empty"}"><h3>${index + 1}. ${escapeHtml(t3UiText(title))}</h3><div class="t3-markdown">${body}</div></article>`;
     }).join("")}</div></div>`;
   }
 
@@ -660,6 +674,43 @@
       || state.t3Error
       || "제출한 대화와 산출물을 바탕으로 평가를 생성하지 못했습니다.";
   }
+
+  const T3_SHARE_AXES = [
+    { key: "goal_definition", aliases: ["goal_definition", "task_clarity"], label: "목표 정의" },
+    { key: "context", aliases: ["context"], label: "맥락 제공" },
+    { key: "information_structure", aliases: ["information_structure"], label: "정보 구조화" },
+    { key: "task_decomposition", aliases: ["task_decomposition", "task_breakdown"], label: "작업 분해" },
+    { key: "output_design", aliases: ["output_design"], label: "출력 설계" },
+    { key: "interaction_control", aliases: ["interaction_control", "interaction_coordination"], label: "상호작용 조율" },
+    { key: "verification", aliases: ["verification", "validation_induction"], label: "검증 유도" },
+  ];
+
+  function buildT3ShareData() {
+    const rows = t3ScoreRowsFromEvaluation() || [];
+    const axes = T3_SHARE_AXES.map(({ key, aliases, label }) => {
+      const row = rows.find((candidate) => aliases.includes(String(candidate.key || "")))
+        || rows.find((candidate) => candidate.label === label);
+      return row
+        ? { ...row, key, label }
+        : { key, label, score: 0, percent: 0, description: t3AxisFeedback(key, 0) };
+    });
+    const details = (t3DetailRowsFromEvaluation() || [...axes].sort((left, right) => left.score - right.score))
+      .slice(0, 3);
+
+    return {
+      total: t3ResultScore(),
+      grade: t3ResultGrade(),
+      headline: t3ResultHeadline(),
+      summary: t3ResultSummary(),
+      axes,
+      details,
+    };
+  }
+
+  window.ShareService?.configure({
+    getTrack3ShareData: buildT3ShareData,
+    getShareUrl: () => window.location.href,
+  });
 
   async function getT3Json(url) {
     const response = await fetch(url);
@@ -889,8 +940,8 @@
         "T3-03 인앱 채팅",
         `${header()}
         <section class="t3-mobile-flow-head" style="display:none">
-          <h1 data-t3-mobile-title>${escapeHtml(t3ProjectName())}</h1>
-          <div class="t3-mobile-progress"><i></i><i></i><i></i><i></i><i></i></div>
+          <h1 data-t3-mobile-title>${escapeHtml(t3UiText(t3ProjectName()))}</h1>
+          <div class="t3-mobile-progress" data-t3-turn-progress><i></i><i></i><i></i><i></i><i></i></div>
           <nav class="t3-mobile-tabs" aria-label="Track 3 sections">
             <button type="button" data-t3-tab="brief" class="is-active">상황 설명</button>
             <button type="button" data-t3-tab="work">작업 영역</button>
@@ -983,19 +1034,29 @@
     render();
   }
 
-  async function shareT3Result() {
-    const text = `푸키 Track 3 AI 실무 적용 테스트 결과: ${t3ResultScore()}점 (${t3ResultGrade()})`;
-    const url = window.location.href;
+  let t3SharePending = false;
+
+  async function shareT3Result(button) {
+    if (t3SharePending || !button) return;
+    const originalText = button.textContent;
+    t3SharePending = true;
+    button.disabled = true;
+    button.textContent = "이미지 준비 중...";
     try {
-      if (navigator.share) {
-        await navigator.share({ title: "푸키 Track 3 결과", text, url });
-        return;
-      }
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(`${text}\n${url}`);
-      }
+      if (!window.ShareService?.shareResult) throw new Error("공유 서비스를 사용할 수 없습니다.");
+      const outcome = await window.ShareService.shareResult("track3");
+      button.textContent = outcome === "shared" ? "결과 공유창 열림" : "이미지 저장됨";
     } catch (error) {
-      console.warn("[track3:share]", error);
+      if (error?.name !== "AbortError") {
+        button.textContent = "공유 실패";
+        console.error("[track3:share]", error);
+      }
+    } finally {
+      t3SharePending = false;
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+      }, 1400);
     }
   }
 
@@ -1003,7 +1064,7 @@
     const shareButton = event.target.closest(".t3-result-share");
     if (shareButton) {
       event.preventDefault();
-      shareT3Result();
+      shareT3Result(shareButton);
       return;
     }
 

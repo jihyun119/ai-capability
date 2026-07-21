@@ -1097,7 +1097,7 @@ main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-message-user {
     align-self: flex-end !important;
-    background: var(--t3-violet) !important;
+    background: var(--t3-black) !important;
     color: var(--t3-white) !important;
   }
 
@@ -1443,10 +1443,13 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     flex-direction: column !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace h2,
   main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace p,
   main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace > .t3-artifact {
     display: block !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace .t3-step-title {
+    display: flex !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="work"] .t3-workspace > .t3-artifact {
@@ -1833,11 +1836,12 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   main#app.app-shell > .screen.active.t3-chat-screen {
     min-height: 100vh !important;
     min-height: 100dvh !important;
-    height: auto !important;
+    height: 100vh !important;
+    height: 100dvh !important;
     display: flex !important;
     flex-direction: column !important;
     box-sizing: border-box !important;
-    overflow: visible !important;
+    overflow: hidden !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-flow-head {
@@ -1866,10 +1870,6 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i {
     background: var(--t3-grey) !important;
     border-right: 1px solid var(--t3-white) !important;
-  }
-
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-progress i:nth-child(-n+3) {
-    background: var(--t3-lime) !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-tabs {
@@ -1945,10 +1945,22 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
+    margin: 0 0 18px !important;
+    color: var(--t3-violet) !important;
+    font-family: "Pretendard", sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    letter-spacing: normal !important;
+    text-align: left !important;
+    white-space: normal !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-step-title > span:last-child {
+    flex: 1 1 auto !important;
     min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-step-badge {
@@ -2001,12 +2013,6 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     overflow-y: auto !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace h2,
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace p,
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > div {
-    display: none !important;
-  }
-
   main#app.app-shell > .screen.active.t3-chat-screen .t3-submit {
     position: static !important;
     inset: auto !important;
@@ -2051,7 +2057,10 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-messages {
     flex: 1 1 auto !important;
     min-height: 0 !important;
+    overflow-x: hidden !important;
     overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="chat"] .t3-chat-footer {
@@ -2462,6 +2471,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
     justify-content: stretch !important;
     box-sizing: border-box !important;
     transform: none !important;
+    background: var(--t3-white) !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-actions .cta {

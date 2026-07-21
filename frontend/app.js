@@ -266,19 +266,32 @@ function screen(id, label, body, classes = "") {
   return `<section class="screen ${cleanClasses}${activeClass}" data-screen="${id}" aria-label="${label}">${body}</section>`;
 }
 
+function progressPercent(current, total) {
+  const safeTotal = Number(total);
+  if (!Number.isFinite(safeTotal) || safeTotal <= 0) return 0;
+  const value = (Number(current) / safeTotal) * 100;
+  return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+}
+
+function syncProgressBars(root = document) {
+  root.querySelectorAll?.("[data-progress-fill]").forEach((fill) => {
+    fill.style.setProperty(
+      "width",
+      `${progressPercent(fill.dataset.progressCurrent, fill.dataset.progressTotal)}%`,
+      "important",
+    );
+  });
+}
+
 function progress(current, total, mobileTotal = total) {
-  const mobileProgress = mobileTotal !== total
-    ? `<p class="progress-label progress-label-mobile">${current}/${mobileTotal}</p>`
-    : "";
-  const mobileFill = mobileTotal !== total
-    ? `<span class="progress-fill-mobile" style="width:${(current / mobileTotal) * 100}%"></span>`
-    : "";
+  const desktopPercent = progressPercent(current, total);
+  const mobilePercent = progressPercent(current, mobileTotal);
   return `
     <p class="progress-label progress-label-desktop">${current}/${total}</p>
-    ${mobileProgress}
+    <p class="progress-label progress-label-mobile">${current}/${mobileTotal}</p>
     <div class="progress" aria-hidden="true">
-      <span class="progress-fill-desktop" style="width:${(current / total) * 100}%"></span>
-      ${mobileFill}
+      <span class="progress-fill-desktop" data-progress-fill data-progress-current="${current}" data-progress-total="${total}" style="width:${desktopPercent}%"></span>
+      <span class="progress-fill-mobile" data-progress-fill data-progress-current="${current}" data-progress-total="${mobileTotal}" style="width:${mobilePercent}%"></span>
     </div>`;
 }
 
@@ -392,8 +405,10 @@ function t1QuestionScreen(question, index, total, prev, next) {
     `${header()}
     <section class="t1-question-area">
       <p class="progress-label progress-label-desktop">${currentQuestionIndex + 1}/${totalQuestions}</p>
+      <p class="progress-label progress-label-mobile">${currentQuestionIndex + 1}/${totalQuestions}</p>
       <div class="progress" aria-hidden="true">
-        <span class="progress-fill-desktop" style="width:${progressPercent}% !important"></span>
+        <span class="progress-fill-desktop" data-progress-fill data-progress-current="${currentQuestionIndex + 1}" data-progress-total="${totalQuestions}" style="width:${progressPercent}% !important"></span>
+        <span class="progress-fill-mobile" data-progress-fill data-progress-current="${currentQuestionIndex + 1}" data-progress-total="${totalQuestions}" style="width:${progressPercent}% !important"></span>
       </div>
       <h1>${question.heading}</h1>
       <p class="t1-question-guide">아래 두 문장을 비교한 뒤,<br />현재 나와 더 가까운 정도를 선택해주세요.</p>
@@ -1226,6 +1241,8 @@ function showScreen(name) {
   document.querySelectorAll(".screen").forEach((screenNode) => {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
   });
+  const activeScreen = document.querySelector(`.screen.active[data-screen="${name}"]`);
+  if (activeScreen) syncProgressBars(activeScreen);
   resetViewportPosition();
 }
 
