@@ -5,7 +5,7 @@ export const TRACK3_SCENARIOS = [
   {
     scenario_id: "pm_001",
     title: "분기 핵심 기능 우선순위 결정",
-    role: "키키오 선물하기팀의 PM",
+    role: "키키오 선물하기 프로덕트 팀의 PM",
     canonical_terms: [
       { value: "키키오 선물하기", aliases: ["카카오 선물하기"] }
     ],
@@ -143,6 +143,9 @@ export const TRACK3_SCENARIOS = [
       "평균 주문 금액: 48,000원 → 39,000원",
       "월 매출: 11.2억 원 → 10.9억 원",
       "현재 이용 가능한 데이터: 가입자 정보, 구매 로그, 고객 문의(CS) 로그",
+      "가입자 정보 컬럼: user_id, signup_date, birth_year, gender, region, signup_channel, last_login_at, user_status",
+      "구매 로그 컬럼: order_id, user_id, product_id, product_category, quantity, discount_amount, payment_amount, purchased_at, order_status",
+      "고객 문의 로그 컬럼: inquiry_id, user_id, order_id, inquiry_type, inquiry_content, inquiry_created_at, response_created_at, resolution_status, satisfaction_score",
       "그 외 데이터는 별도 요청이 필요함"
     ],
     constraints: [

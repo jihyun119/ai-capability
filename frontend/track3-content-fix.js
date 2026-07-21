@@ -6,7 +6,7 @@
       title: "PM",
       summary: "3주 안에 만들 핵심 기능을 결정하고, 다음 회의에 바로 쓸 수 있는 PRD 초안을 만듭니다.",
       situation: [
-        "당신은 키키오 선물하기 서비스 개선 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
+        "당신은 키키오 선물하기 프로덕트 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
         "개발자는 '쿠폰함 알림 기능'을, 디자이너는 '위시리스트 공유 기능'을, 데이터 분석가는 '구매 후 추천 기능'을 각각 1순위로 제안했습니다. 기간은 3주뿐이라 셋 중 하나만 선택해야 합니다.",
         "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고, 최종적으로 다음 회의에 바로 쓸 수 있는 PRD(제품요구사항문서) 초안을 만들어보세요.",
       ],
@@ -61,6 +61,20 @@
       ],
       dataTitle: "현재 이용 가능한 데이터",
       dataSources: ["가입자 정보", "구매 로그", "고객 문의(CS) 로그"],
+      dataSchemas: [
+        {
+          name: "가입자 정보",
+          columns: ["user_id", "signup_date", "birth_year", "gender", "region", "signup_channel", "last_login_at", "user_status"],
+        },
+        {
+          name: "구매 로그",
+          columns: ["order_id", "user_id", "product_id", "product_category", "quantity", "discount_amount", "payment_amount", "purchased_at", "order_status"],
+        },
+        {
+          name: "고객 문의 로그",
+          columns: ["inquiry_id", "user_id", "order_id", "inquiry_type", "inquiry_content", "inquiry_created_at", "response_created_at", "resolution_status", "satisfaction_score"],
+        },
+      ],
       mission: [
         "제공된 정보를 바탕으로 무엇이 핵심 문제인지 정의하고, 그렇게 판단한 이유 작성",
         "우선적으로 확인할 데이터와 분석 순서 작성",
@@ -145,6 +159,9 @@
       dataSources: asArray(item?.dataSources || item?.data_sources).length
         ? asArray(item?.dataSources || item?.data_sources)
         : fallback.dataSources,
+      dataSchemas: Array.isArray(item?.dataSchemas || item?.data_schemas)
+        ? (item.dataSchemas || item.data_schemas)
+        : fallback.dataSchemas,
     };
   }
 
@@ -266,7 +283,16 @@
         ${item.metrics.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}
       </tbody></table>` : "";
     const dataSources = item.dataSources ? `<h2>${item.dataTitle}</h2><ul>${item.dataSources.map((text) => `<li>${text}</li>`).join("")}</ul>` : "";
-    return `${news}${metrics}${dataSources}`;
+    const dataSchemas = Array.isArray(item.dataSchemas) && item.dataSchemas.length ? `
+      <table class="t3-data-schema">
+        <thead><tr><th>데이터</th><th>이용 가능한 컬럼</th></tr></thead>
+        <tbody>${item.dataSchemas.map((schema) => `
+          <tr>
+            <td>${escapeHtml(schema.name)}</td>
+            <td><span class="t3-data-columns">${asArray(schema.columns).map((column) => `<code>${escapeHtml(column)}</code>`).join("")}</span></td>
+          </tr>`).join("")}</tbody>
+      </table>` : "";
+    return `${news}${metrics}${dataSources}${dataSchemas}`;
   }
 
   function makeT3ChatBrief(item = selectedT3Scenario()) {
@@ -952,7 +978,7 @@
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
             <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">4</span><span>최종 제출물 작업 영역</span></h2>
-            <p>AI와 대화할수록 해당 영역이 채워집니다.<br>최대 5턴까지 대화 가능합니다.<br>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다</p>
+            <p>AI와 대화할수록 해당 영역이 채워집니다.<br>최대 5턴까지 대화 가능합니다.<br>작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다.<br>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다.</p>
             <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
           </section>
           <aside class="t3-chat-panel">

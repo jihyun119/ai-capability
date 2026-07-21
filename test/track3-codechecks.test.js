@@ -443,7 +443,7 @@ test("scenario copy is detected without relying on the LLM judge", () => {
 test("scenario copy is detected from frontend boilerplate even when wording differs", () => {
   const copied = [
     "상황 설명",
-    "당신은 키키오 선물하기 서비스 개선 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
+    "당신은 키키오 선물하기 프로덕트 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
     "개발자는 쿠폰함 알림 기능을, 디자이너는 위시리스트 공유 기능을, 데이터 분석가는 구매 후 추천 기능을 각각 제안했습니다.",
     "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고 다음 회의에 쓸 PRD 초안을 만들어보세요.",
     "미션 가이드",

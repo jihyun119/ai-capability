@@ -641,6 +641,46 @@
     font-weight: 800 !important;
   }
 
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema {
+    width: 100% !important;
+    margin: 0 0 24px !important;
+    border-collapse: collapse !important;
+    color: var(--t3-black) !important;
+    font: 400 12px/1.3 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema th,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema td {
+    padding: 8px 6px !important;
+    border: 1px solid #bcbcbc !important;
+    text-align: left !important;
+    vertical-align: top !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema th {
+    font-weight: 800 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema th:first-child,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema td:first-child {
+    width: 74px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-columns {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-columns code {
+    font: inherit !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-columns code:not(:last-child)::after {
+    content: "," !important;
+  }
+
   main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > div {
     width: 408px !important;
     height: 132px !important;
@@ -2069,6 +2109,41 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   main#app.app-shell > .screen.active.t3-chat-screen .t3-metrics td {
     padding: 6px 5px !important;
     border: 1px solid #bbb !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema {
+    width: 100% !important;
+    margin: 8px 0 18px !important;
+    border-collapse: collapse !important;
+    font: 400 10px/1.3 "Pretendard", sans-serif !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema th,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema td {
+    padding: 6px 5px !important;
+    border: 1px solid #bbb !important;
+    text-align: left !important;
+    vertical-align: top !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema th:first-child,
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-schema td:first-child {
+    width: 70px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-columns {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 3px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-columns code {
+    font: inherit !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-data-columns code:not(:last-child)::after {
+    content: "," !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace {
