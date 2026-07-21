@@ -29,8 +29,9 @@ test("data analysis scenario exposes compact schemas for all available datasets"
 
 test("artifact cards stay within the workspace instead of inheriting a fixed placeholder height", () => {
   assert.doesNotMatch(track3Styles, /\.t3-workspace\s*>\s*div\s*\{[^}]*height:\s*132px/s);
-  assert.match(track3Styles, /\.t3-artifact-body\s*>\s*article\s*\{[^}]*min-width:\s*0\s*!important;[^}]*max-width:\s*100%\s*!important;/s);
-  assert.match(track3Styles, /\.t3-artifact-doc\s*\{[^}]*overflow:\s*hidden\s*!important;/s);
+  assert.match(track3Styles, /\.t3-artifact-body\s*>\s*article\s*\{[^}]*height:\s*auto\s*!important;[^}]*max-width:\s*100%\s*!important;[^}]*overflow:\s*visible\s*!important;/s);
+  assert.match(track3Styles, /\.t3-artifact-doc\s*\{[^}]*height:\s*auto\s*!important;[^}]*overflow:\s*visible\s*!important;/s);
+  assert.match(track3Styles, /\.t3-artifact-body\s*\{[^}]*grid-auto-rows:\s*max-content\s*!important;/s);
 });
 
 test("sending a Track 3 message clears the composer while the request is pending", () => {

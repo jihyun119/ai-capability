@@ -1302,33 +1302,37 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-message-pending span:nth-
 main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc {
   width: 100% !important;
   max-width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   min-height: 0 !important;
   box-sizing: border-box !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
+  display: block !important;
+  overflow: visible !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-body {
   width: 100% !important;
   max-width: 100% !important;
-  flex: 1 1 auto !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
   min-height: 0 !important;
   box-sizing: border-box !important;
-  overflow-y: auto !important;
+  overflow-y: visible !important;
   overflow-x: hidden !important;
-  scrollbar-gutter: stable !important;
   display: grid !important;
+  grid-auto-rows: max-content !important;
+  align-content: start !important;
   gap: 14px !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-body > article {
   width: 100% !important;
+  height: auto !important;
   min-width: 0 !important;
+  min-height: 0 !important;
   max-width: 100% !important;
+  max-height: none !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
@@ -1513,7 +1517,8 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > .t3-artifact {
     flex: 1 1 auto !important;
     min-height: 0 !important;
-    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-message {
