@@ -401,7 +401,19 @@
         low: "담당자, 우선순위와 다음 행동을 포함해 실제 사용할 수 있게 완성해보세요."
       }
     };
-    return feedback[key]?.[level] || "이번 평가축에서 다음 행동을 더 구체적으로 보여주세요.";
+    const guidance = {
+      goal_definition: "다음에는 문제, 산출물, 성공 기준이 한 흐름으로 연결되도록 요청을 설계해보세요.",
+      context: "다음에는 대상, 가용 자원, 제약 조건과 참고 지표를 함께 전달해 판단 근거를 강화해보세요.",
+      information_structure: "다음에는 목적, 배경, 자료, 조건과 요청 사항을 항목별로 분리해 우선순위를 보여주세요.",
+      task_decomposition: "다음에는 설계, 초안, 검증, 최종화마다 수행할 작업과 완료 조건을 각각 정해보세요.",
+      output_design: "다음에는 형식, 분량, 필수 항목과 실제 사용 대상을 함께 지정해 결과물의 쓰임을 선명하게 만들어보세요.",
+      interaction_control: "다음에는 이전 답변의 특정 내용을 짚고 선택하거나 제외한 이유까지 설명해 작업 방향을 조정해보세요.",
+      verification: "다음에는 논리 비약, 누락, 실행 가능성과 데이터 검증 방법처럼 두 가지 이상의 점검 기준을 제시해보세요.",
+      practical_application: "다음에는 담당자, 우선순위, 일정과 다음 행동을 포함해 실제로 바로 실행할 수 있는 결과물로 완성해보세요."
+    };
+    const observation = feedback[key]?.[level]
+      || "이번 평가축에서 사용자가 직접 판단하거나 조정한 근거를 충분히 확인하기 어려웠어요.";
+    return `${observation} ${guidance[key] || "다음 대화에서는 선택 기준과 구체적인 다음 행동을 함께 제시해보세요."}`;
   }
 
   function t3SafeAxisComment(value, key, percent) {
@@ -411,9 +423,25 @@
       .map((turn) => turn.content || "")
       .join(" ");
     const unsafe = !comment
+      || comment.length < 70
       || comment.length > 140
+      || !t3UsesPoliteYoStyle(comment)
       || t3SharesLongSequence(comment, userText);
     return unsafe ? t3AxisFeedback(key, percent) : comment;
+  }
+
+  function t3FeedbackSentences(value) {
+    return String(value || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .match(/[^.!?]+[.!?]?/g)
+      ?.map((sentence) => sentence.trim())
+      .filter(Boolean) || [];
+  }
+
+  function t3UsesPoliteYoStyle(value) {
+    const sentences = t3FeedbackSentences(value);
+    return sentences.length > 0 && sentences.every((sentence) => /요[.!?]?$/.test(sentence));
   }
 
   function t3SharesLongSequence(left, right, size = 18) {
@@ -718,12 +746,32 @@
   function t3ResultSummary() {
     const evaluation = currentT3Evaluation();
     const feedback = evaluation?.feedback || {};
-    return evaluation?.summary
-      || feedback.summary
-      || [feedback.summary_strengths, feedback.summary_weaknesses, feedback.recommendation].filter(Boolean).join(" ")
-      || evaluation?.comment
+    const headlineSentences = new Set(t3FeedbackSentences(t3ResultHeadline()).map(t3ComparableFeedback));
+    const candidates = [
+      evaluation?.summary,
+      feedback.summary,
+      feedback.summary_weaknesses,
+      feedback.recommendation,
+      evaluation?.comment,
+    ].flatMap(t3FeedbackSentences);
+    const selected = [];
+
+    for (const sentence of candidates) {
+      const normalized = t3ComparableFeedback(sentence);
+      if (!normalized || headlineSentences.has(normalized) || !t3UsesPoliteYoStyle(sentence)) continue;
+      if (selected.some((item) => t3ComparableFeedback(item) === normalized)) continue;
+      const next = [...selected, sentence].join(" ");
+      if (next.length > 140) continue;
+      selected.push(sentence);
+    }
+
+    return selected.join(" ")
       || state.t3Error
-      || "제출한 대화와 산출물을 바탕으로 평가를 생성하지 못했습니다.";
+      || "구체적인 검증 기준과 다음 행동을 보완하면 AI의 결과를 더 안정적으로 개선할 수 있어요.";
+  }
+
+  function t3ComparableFeedback(value) {
+    return String(value || "").toLowerCase().replace(/[^가-힣a-z0-9]/g, "");
   }
 
   const T3_SHARE_AXES = [

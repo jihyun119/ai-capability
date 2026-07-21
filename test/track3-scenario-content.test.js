@@ -67,3 +67,16 @@ test("Track 3 displays five-level axis labels while preserving numeric progress"
   assert.match(shareCardSource, /"검증 유도",\s*"실무 적용"/);
   assert.match(shareCardSource, /K\.drawText\(ctx, row\.level/);
 });
+
+test("Track 3 report separates the headline and constrains detailed feedback", () => {
+  const summaryStart = frontendSource.indexOf("function t3ResultSummary()");
+  const summaryEnd = frontendSource.indexOf("const T3_SHARE_AXES", summaryStart);
+  const summarySource = frontendSource.slice(summaryStart, summaryEnd);
+
+  assert.doesNotMatch(summarySource, /feedback\.summary_strengths/);
+  assert.match(summarySource, /headlineSentences\.has\(normalized\)/);
+  assert.match(summarySource, /next\.length > 140/);
+  assert.match(frontendSource, /comment\.length < 70/);
+  assert.match(frontendSource, /comment\.length > 140/);
+  assert.match(frontendSource, /t3UsesPoliteYoStyle\(comment\)/);
+});

@@ -79,7 +79,7 @@ Rules:
 - If integrity_analysis.scenario_restatement_likely is true, treat it as strong evidence of scenario restatement unless the conversation contains a clearly identifiable user-added decision or instruction not inherited from the scenario.
 - When scenario_restatement_only is true, cap goal_definition, context, information_structure, and output_design at 1; score task_decomposition, interaction_control, and verification 0 unless the user demonstrates those actions beyond the scenario; and score delta_score 0.
 - Evidence for axes 1-7 must quote or describe value added by the user, not text inherited from the scenario. If no user-added evidence exists, score 0 rather than inferring intent.
-- Keep evidence as a short internal quote or observation. Write comment as one concise Korean feedback sentence about the axis; never copy a user message into comment. Each axis comment must name that axis's specific missing or successful behavior and must not repeat generic wording used for another axis.
+- Keep evidence as a short internal quote or observation. Write comment as two concrete Korean feedback sentences totaling 70-140 characters; never copy a user message into comment. The first sentence must explain the axis-specific evidence or gap, and the second must give a specific next action. End every sentence in the polite ~요 style. Do not use nominal endings such as "명확함" or formal endings such as "필요합니다". Each axis comment must not repeat generic wording used for another axis.
 - Long prompts are not automatically better than concise clear prompts.
 - Simple agreement such as "좋아, 계속해줘" is not interaction.
 - One all-in-one first prompt can count as M1, but should lose points on task decomposition. It does not automatically force a low delta score if turns 2-5 still make substantive, reflected improvements.
@@ -96,7 +96,7 @@ JSON schema:
     "reason": "short Korean reason"
   },
   "axis_scores": [
-    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "short internal quote or observation", "comment": "one concise Korean feedback sentence, not a user quote"}
+    {"axis": "목표 정의", "key": "goal_definition", "score": 0, "evidence": "short internal quote or observation", "comment": "70-140 character Korean feedback in two ~요 sentences, not a user quote"}
   ],
   "delta_score": {
     "score": 0,
@@ -108,7 +108,7 @@ JSON schema:
   "missed_intervention": "short Korean missed opportunity",
   "confidence": "high|medium|low",
   "summary_strengths": "short Korean summary",
-  "summary_weaknesses": "short Korean summary"
+  "summary_weaknesses": "one or two concrete Korean sentences ending in ~요"
 }
 `.trim();
 
