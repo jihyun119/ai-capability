@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { analyzeTrack3Integrity, runCodeChecks, validateChatInput, validateSubmitInput } from "../src/track3/codeChecks.js";
 import {
   TRACK3_AXES,
+  applyFinalArtifactPolicy,
   applyMoveScoreConsistency,
   applyRepetitionPolicy,
   applyRestatementPolicy,
@@ -23,7 +24,7 @@ import {
   stripTrack3ArtifactMeta,
   stripTrack3ChatMarkdown
 } from "../src/track3/chat.js";
-import { TRACK3_JUDGE_SYSTEM_PROMPT } from "../src/track3/judgePrompt.js";
+import { TRACK3_CHAT_SYSTEM_PROMPT, TRACK3_JUDGE_SYSTEM_PROMPT } from "../src/track3/judgePrompt.js";
 import { getScenario, listScenarios } from "../src/track3/scenarios.js";
 
 const sampleTurns = [
@@ -61,6 +62,9 @@ test("Track 3 Judge prompt includes operational process and delta anchors", () =
     assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, new RegExp(`- ${score}:`));
   }
   assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /identify the relevant turn numbers and the concrete final-output change/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /dedicated final section is missing or empty.*practical_application cannot exceed 2/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /preceding work sections only to corroborate/);
+  assert.match(TRACK3_CHAT_SYSTEM_PROMPT, /finalization_requested/);
 });
 
 test("validateChatInput rejects short messages and max turns", () => {
@@ -373,15 +377,63 @@ test("assistant message summarizes updated sections and falls back from casual s
   );
 });
 
-test("Track 3 scenarios expose three or four artifact sections", () => {
+test("Track 3 scenarios expose a finalization-only artifact section", () => {
   const scenarios = listScenarios();
 
   assert.equal(scenarios.length, 3);
-  assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length >= 3));
-  assert.ok(scenarios.every((scenario) => scenario.artifact_sections.length <= 4));
-  assert.deepEqual(scenarios[0].artifact_sections, ["후보 비교표", "선택안 & 선정 근거", "PRD 초안"]);
+  assert.equal(scenarios[0].artifact_sections.length, 4);
+  assert.equal(scenarios[1].artifact_sections.length, 5);
+  assert.equal(scenarios[2].artifact_sections.length, 5);
+  assert.deepEqual(scenarios[0].artifact_sections, ["후보 비교표", "선택안 & 선정 근거", "PRD 초안", "최종 제출물"]);
+  assert.ok(scenarios.every((scenario) => scenario.final_artifact_section === "최종 제출물"));
   assert.equal(getScenario("marketing_001").role, "이모레퍼시픽 스킨케어팀의 마케팅 담당자");
   assert.equal(getScenario("da_001").role, "마켓쿨리의 데이터 분석 담당자");
+});
+
+test("Track 3 blocks final artifact updates unless the model identifies finalization intent", async () => {
+  const finalArtifact = [
+    "## 원인 가설 & 뉴스 근거",
+    "효과 체감 전 이탈을 검증합니다.",
+    "",
+    "## 최종 제출물",
+    "다음 달 캠페인 기획서입니다."
+  ].join("\n");
+  const chatModel = async ({ turns }) => ({
+    assistant_message: "요청을 반영했습니다.",
+    finalization_requested: turns.at(-1).content.includes("완성"),
+    updated_sections: ["최종 제출물"],
+    artifact: finalArtifact
+  });
+
+  const intermediate = await generateTrack3Chat({
+    scenarioId: "marketing_001",
+    userMessage: "뉴스 근거를 더 구체적으로 검토해주세요."
+  }, { chatModel });
+  assert.equal(intermediate.artifact, "");
+
+  const finalized = await generateTrack3Chat({
+    scenarioId: "marketing_001",
+    userMessage: "검토 내용을 반영해 최종 기획서로 완성해주세요."
+  }, { chatModel });
+  assert.match(finalized.artifact, /## 최종 제출물\n다음 달 캠페인 기획서입니다/);
+});
+
+test("missing finalization section caps practical application without blocking submission", () => {
+  const axes = TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4, max: 4, rate: 1 }));
+  const scenario = getScenario("pm_001");
+  const capped = applyFinalArtifactPolicy({
+    axisScores: axes,
+    finalOutput: "## PRD 초안\n목표, 성공지표, 범위, 제외범위와 일정이 포함된 충분히 긴 작업 초안입니다.",
+    scenario
+  });
+  assert.equal(capped.find((axis) => axis.key === "practical_application").score, 2);
+
+  const preserved = applyFinalArtifactPolicy({
+    axisScores: axes,
+    finalOutput: "## PRD 초안\n작업 초안\n\n## 최종 제출물\n회의에서 사용할 최종 PRD입니다.",
+    scenario
+  });
+  assert.equal(preserved.find((axis) => axis.key === "practical_application").score, 4);
 });
 
 test("compactTrack3AssistantMessage keeps chat concise while artifact holds details", () => {

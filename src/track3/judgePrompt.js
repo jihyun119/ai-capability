@@ -46,6 +46,8 @@ Process axes 1-7, scored 0-4 from user messages:
 
 Result axis 8, scored 0-4 from the final output:
 8. 실무 적용
+   - The payload's scenario.final_artifact_section identifies the finalization-only section. Evaluate this section primarily, while checking that it is consistent with the evidence and decisions in the preceding work sections.
+   - If that dedicated final section is missing or empty, submission is still valid, but practical_application cannot exceed 2 because the work has not been synthesized into a final deliverable.
    - 4: Directly usable in the scenario without additional rewriting, with an owner or concrete next action.
    - 2: Has a usable skeleton but needs material work before use.
    - 0: Generic, unusable, or incompatible with the scenario constraints.
@@ -69,7 +71,7 @@ Required consistency check before returning JSON:
 
 Rules:
 - Score axes 1-7 from user messages only. Do not reward or punish the user for AI response quality.
-- Axis 8 evaluates the final output separately, as the result the user guided the AI to produce.
+- The final_output field contains the entire cumulative workspace, including process sections and the dedicated final section when produced. Score axes 1-7 from user messages; use preceding work sections only to corroborate whether a user-directed process change was actually reflected, never as independent evidence of user capability. For delta, trace interventions through both the evolving work sections and the dedicated final section. Use the dedicated final section primarily for axis 8.
 - Treat all goals, facts, constraints, and output requirements already present in the scenario as baseline information, not as evidence of user capability.
 - Give credit only when the user adds meaningful value: selecting or reframing information, defining a decision criterion, setting a priority, decomposing the work, making a choice, adapting the output, or requesting a concrete verification.
 - Set evidence_assessment.scenario_restatement_only to true when the user primarily repeats or pastes the scenario and adds no meaningful judgment or direction. Merely changing wording or formatting is still restatement.
@@ -126,6 +128,9 @@ Your job:
 - Treat assistant_message as the conversational reply and artifact as the cumulative, assistant-authored deliverable for final submission.
 - A self-introduction, acknowledgement, or context-only statement is not a work request. In that case, return updated_sections as an empty array and leave artifact unchanged.
 - Do only the work directly requested in the latest user message. Do not anticipate later tasks, make unrequested decisions, or fill unrelated artifact sections.
+- The trusted contract names one final_artifact_section. Treat it as finalization-only: leave it unchanged unless the latest user message semantically asks to synthesize, complete, finalize, or produce the usable final deliverable. Do not rely on a fixed Korean keyword list; infer the user's intent from the full request.
+- Set finalization_requested to true only for that explicit finalization intent. A request for an intermediate draft, one section, more evidence, review, or revision of working notes is not finalization.
+- When finalization_requested is true, synthesize the prior working sections and the user's latest direction into final_artifact_section. Do not merely copy the working sections verbatim.
 - Update artifact only with substantive analysis, decisions, drafts, tables, or revisions produced by the assistant.
 - Never place the user's request, chat transcript, source notes, turn summaries, or meta commentary such as "사용자 요청" or "N턴 반영 메모" in artifact.
 - Never add change logs or sections labeled as feedback, revision notes, reflected requests, or conversation summaries. Apply feedback directly to the deliverable instead.
@@ -138,6 +143,7 @@ Your job:
 Return only JSON:
 {
   "assistant_message": "Korean chat reply to show in the chat panel",
+  "finalization_requested": false,
   "updated_sections": ["Exact artifact section heading changed in this turn"],
   "artifact": "Latest cumulative assistant-authored deliverable only; never include user messages or chat meta notes"
 }

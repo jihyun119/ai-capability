@@ -1,6 +1,7 @@
 import { TRACK3_CHAT_SYSTEM_PROMPT } from "./judgePrompt.js";
 import { TRACK3_MAX_TURNS, TRACK3_VERSION, getScenario } from "./scenarios.js";
 import { normalizeTurns, validateChatInput } from "./codeChecks.js";
+import { splitTrack3ArtifactSections } from "./artifact.js";
 
 export async function generateTrack3Chat(
   { scenarioId, turns = [], userMessage, artifact = "" } = {},
@@ -23,7 +24,11 @@ export async function generateTrack3Chat(
     });
   const updatedSections = normalizeUpdatedSections(
     result.updated_sections,
-    scenario.artifact_sections
+    scenario.artifact_sections,
+    {
+      finalSection: scenario.final_artifact_section,
+      finalizationRequested: result.finalization_requested === true
+    }
   );
   const assistantMessage = applyCanonicalTerms(
     buildTrack3AssistantMessage(result.assistant_message || result.assistantMessage, updatedSections),
@@ -104,7 +109,8 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
       "The following trusted contract defines canonical names and the expected output structure only:",
       `<scenario_reference>${JSON.stringify({
         expected_output: scenario.expected_output,
-        canonical_terms: scenario.canonical_terms
+        canonical_terms: scenario.canonical_terms,
+        final_artifact_section: scenario.final_artifact_section
       })}</scenario_reference>`,
       "Use canonical terms exactly even when the user misspells or substitutes a similar real-world name.",
       "You do not know the scenario situation, metrics, resources, constraints, or business facts unless the user states them in the conversation.",
@@ -119,9 +125,15 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
   ];
 }
 
-export function normalizeUpdatedSections(value, artifactSections = []) {
+export function normalizeUpdatedSections(value, artifactSections = [], {
+  finalSection = "",
+  finalizationRequested = false
+} = {}) {
   if (!Array.isArray(value) || !Array.isArray(artifactSections)) return [];
-  return artifactSections.filter((section) => value.some((item) => String(item).trim() === section));
+  return artifactSections.filter((section) => {
+    if (section === finalSection && !finalizationRequested) return false;
+    return value.some((item) => String(item).trim() === section);
+  });
 }
 
 export function buildTrack3AssistantMessage(value, updatedSections = []) {
@@ -165,22 +177,6 @@ export function mergeTrack3ArtifactSections({
     .trim();
 }
 
-function splitTrack3ArtifactSections(value, artifactSections) {
-  const text = String(value || "").replace(/\r\n?/g, "\n");
-  const values = new Map(artifactSections.map((section) => [section, ""]));
-  const markers = artifactSections.flatMap((section) => {
-    const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const match = new RegExp(`(?:^|\\n)\\s*#{1,6}\\s+${escaped}\\s*(?:\\n|$)`, "i").exec(text);
-    return match ? [{ section, index: match.index, contentStart: match.index + match[0].length }] : [];
-  }).sort((a, b) => a.index - b.index);
-
-  markers.forEach((marker, index) => {
-    const end = markers[index + 1]?.index ?? text.length;
-    values.set(marker.section, text.slice(marker.contentStart, end).trim());
-  });
-  return { matched: markers.length > 0, values };
-}
-
 export function applyCanonicalTerms(value, canonicalTerms = []) {
   let output = String(value || "");
   for (const term of canonicalTerms || []) {
@@ -201,7 +197,8 @@ function buildFallbackChat({ artifact }) {
     assistant_message: currentArtifact
       ? "요청을 처리하지 못해 기존 최종 제출물 초안을 유지했어요. 잠시 후 다시 시도해주세요."
       : "요청을 처리하지 못해 최종 제출물 초안을 만들지 못했어요. 잠시 후 다시 시도해주세요.",
-    artifact: currentArtifact
+    artifact: currentArtifact,
+    finalization_requested: false
   };
 }
 
