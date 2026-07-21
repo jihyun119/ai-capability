@@ -307,30 +307,6 @@
       ${makeT3ScenarioExtras(item)}`;
   }
 
-  function makeT3ScoreRows() {
-    return [
-      ["목표 정의", 78],
-      ["맥락 제공", 46],
-      ["정보 구조화", 50],
-      ["작업 분해", 78],
-      ["출력 설계", 78],
-      ["상호작용 조율", 78],
-      ["검증 유도", 78],
-    ].map(([label, score]) => `<p><b>${label}</b><strong>${score}점</strong><i><span style="width:${score}%"></span></i></p>`).join("");
-  }
-
-  function makeT3DetailRows() {
-    return [
-      ["정보 구조화", 50],
-      ["출력 설계", 78],
-      ["검증 유도", 78],
-    ].map(([label, score]) => `
-      <article>
-        <p><b>${label}</b><strong>${score}점</strong><i><span style="width:${score}%"></span></i></p>
-        <div>AI 답변의 누락 지점이나 반대 근거를 확인하는 요청은 아직 보완이 필요해요. 최종 선택안을 받은 뒤 실패할 수 있는 이유, 반대 의견, 놓친 리스크를 물어보면 결과물이 더 탄탄해집니다.</div>
-      </article>`).join("");
-  }
-
   function currentT3Evaluation() {
     return state.t3Result?.result || state.t3Result || null;
   }
@@ -346,6 +322,12 @@
       verification: "검증 유도",
       practical_application: "실무 적용",
     }[key] || key);
+  }
+
+  function t3AxisLevel(percent) {
+    const labels = ["최하", "하", "중", "상", "최상"];
+    const normalized = Math.max(0, Math.min(100, Number(percent) || 0));
+    return labels[Math.round(normalized / 25)];
   }
 
   function t3ScoreRowsFromEvaluation() {
@@ -369,6 +351,7 @@
         label: t3AxisLabel(key, value),
         score: Math.round(displayScore),
         percent: Math.max(0, Math.min(100, percent)),
+        level: t3AxisLevel(percent),
         description: t3SafeAxisComment(value?.comment, key, percent),
       };
     }).filter((row) => row.label && Number.isFinite(row.score));
@@ -460,13 +443,19 @@
       : null;
     if (!details?.length) return null;
 
-    return details.slice(0, 3).map((item, index) => ({
-      key: item.key || item.axis || "",
-      label: item.name || item.label || scoreRows[index]?.label || "피드백",
-      score: Math.round(Number(item.score ?? scoreRows[index]?.score ?? 78)),
-      percent: Math.max(0, Math.min(100, Number.isFinite(Number(item.rate)) ? Number(item.rate) * 100 : (scoreRows[index]?.percent ?? 78))),
-      description: item.description || item.comment || item.feedback || item.text || "",
-    }));
+    return details.slice(0, 3).map((item, index) => {
+      const percent = Math.max(0, Math.min(100,
+        Number.isFinite(Number(item.rate)) ? Number(item.rate) * 100 : (scoreRows[index]?.percent ?? 78)
+      ));
+      return {
+        key: item.key || item.axis || "",
+        label: item.name || item.label || scoreRows[index]?.label || "피드백",
+        score: Math.round(Number(item.score ?? scoreRows[index]?.score ?? 78)),
+        percent,
+        level: t3AxisLevel(percent),
+        description: item.description || item.comment || item.feedback || item.text || "",
+      };
+    });
   }
 
   function makeT3ScoreRows() {
@@ -475,7 +464,7 @@
       return `<p><b>평가 결과 없음</b><strong>-</strong><i><span style="width:0%"></span></i></p>`;
     }
 
-    return rows.map(({ label, score, percent }) => `<p><b>${escapeHtml(label)}</b><strong>${score}점</strong><i><span style="width:${percent}%"></span></i></p>`).join("");
+    return rows.map(({ label, level, percent }) => `<p><b>${escapeHtml(label)}</b><strong>${escapeHtml(level)}</strong><i><span style="width:${percent}%"></span></i></p>`).join("");
   }
 
   function makeT3DetailRows() {
@@ -484,9 +473,9 @@
       return `<article><p><b>리포트 대기</b><strong>-</strong><i><span style="width:0%"></span></i></p><div>${escapeHtml(state.t3Error || "제출 후 평가 결과가 표시됩니다.")}</div></article>`;
     }
 
-    return details.map(({ label, score, percent, description }) => `
+    return details.map(({ label, level, percent, description }) => `
       <article>
-        <p><b>${escapeHtml(label)}</b><strong>${score}점</strong><i><span style="width:${percent}%"></span></i></p>
+        <p><b>${escapeHtml(label)}</b><strong>${escapeHtml(level)}</strong><i><span style="width:${percent}%"></span></i></p>
         <div>${escapeHtml(description)}</div>
       </article>`).join("");
   }
@@ -745,6 +734,7 @@
     { key: "output_design", aliases: ["output_design"], label: "출력 설계" },
     { key: "interaction_control", aliases: ["interaction_control", "interaction_coordination"], label: "상호작용 조율" },
     { key: "verification", aliases: ["verification", "validation_induction"], label: "검증 유도" },
+    { key: "practical_application", aliases: ["practical_application"], label: "실무 적용" },
   ];
 
   function buildT3ShareData() {

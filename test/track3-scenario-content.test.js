@@ -8,6 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const frontendSource = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
 const scenarioSource = fs.readFileSync(path.join(ROOT, "src/track3/scenarios.js"), "utf8");
 const track3Styles = fs.readFileSync(path.join(ROOT, "frontend/track3-desktop.css"), "utf8");
+const shareCardSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-cards.js"), "utf8");
 
 test("Track 3 workspace explains that the artifact keeps updating", () => {
   assert.match(frontendSource, /작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다\./);
@@ -55,4 +56,14 @@ test("Track 3 highlights only latest artifact changes with typography", () => {
   assert.match(track3Styles, /\.t3-markdown p,[\s\S]*font-weight: 400 !important/);
   assert.match(track3Styles, /\.t3-markdown strong,[\s\S]*font-weight: 400 !important/);
   assert.match(track3Styles, /\.t3-artifact-change[\s\S]*font-family: "Pretendard", sans-serif !important;[\s\S]*font-weight: 700 !important/);
+});
+
+test("Track 3 displays five-level axis labels while preserving numeric progress", () => {
+  assert.match(frontendSource, /const labels = \["최하", "하", "중", "상", "최상"\]/);
+  assert.match(frontendSource, /level: t3AxisLevel\(percent\)/);
+  assert.match(frontendSource, /<strong>\$\{escapeHtml\(level\)\}<\/strong><i><span style="width:\$\{percent\}%"/);
+  assert.doesNotMatch(frontendSource, /<strong>\$\{score\}점<\/strong><i><span style="width:\$\{percent\}%"/);
+  assert.match(frontendSource, /key: "practical_application"[\s\S]*label: "실무 적용"/);
+  assert.match(shareCardSource, /"검증 유도",\s*"실무 적용"/);
+  assert.match(shareCardSource, /K\.drawText\(ctx, row\.level/);
 });
