@@ -660,6 +660,7 @@
 
     if (input) {
       input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
+      input.disabled = t3ChatPending || turnComplete;
       if (state.t3Draft && input.value !== state.t3Draft) input.value = state.t3Draft;
       autoResizeTrack3Textarea(input);
     }
@@ -823,17 +824,13 @@
     }
 
     const turnsBeforeRequest = normalizedT3Turns();
+    state.t3Draft = "";
     state.t3Turns = [...turnsBeforeRequest, { role: "user", content: userMessage }];
     t3ChatPending = true;
     t3ChatWarning = "";
     render();
     showScreen("t3-chat");
     syncT3ChatTab("chat");
-    const pendingInput = document.querySelector('[data-screen="t3-chat"] [data-t3-chat-input]');
-    if (pendingInput) {
-      pendingInput.value = rawMessage;
-      autoResizeTrack3Textarea(pendingInput);
-    }
     scrollT3ChatToBottom();
 
     try {

@@ -32,3 +32,14 @@ test("artifact cards stay within the workspace instead of inheriting a fixed pla
   assert.match(track3Styles, /\.t3-artifact-body\s*>\s*article\s*\{[^}]*min-width:\s*0\s*!important;[^}]*max-width:\s*100%\s*!important;/s);
   assert.match(track3Styles, /\.t3-artifact-doc\s*\{[^}]*overflow:\s*hidden\s*!important;/s);
 });
+
+test("sending a Track 3 message clears the composer while the request is pending", () => {
+  const sendStart = frontendSource.indexOf("async function sendTrack3Chat()");
+  const sendEnd = frontendSource.indexOf("function persistTrack3Result", sendStart);
+  const sendSource = frontendSource.slice(sendStart, sendEnd);
+
+  assert.match(sendSource, /state\.t3Draft = "";\s*state\.t3Turns = \[\.\.\.turnsBeforeRequest/);
+  assert.doesNotMatch(sendSource, /pendingInput\.value = rawMessage/);
+  assert.match(frontendSource, /input\.disabled = t3ChatPending \|\| turnComplete/);
+  assert.match(sendSource, /catch \(error\)[\s\S]*state\.t3Draft = rawMessage/);
+});
