@@ -22,32 +22,59 @@ export async function generateTrack3Chat(
       console.error("[track3:chat] OpenAI 호출 실패, fallback으로 전환합니다:", error.message);
       return buildFallbackChat({ artifact });
     });
-  const updatedSections = normalizeUpdatedSections(
-    result.updated_sections,
-    scenario.artifact_sections,
-    {
+  const usesStructuredUpdates = Array.isArray(result.section_updates);
+  const sectionUpdates = usesStructuredUpdates && result.request_kind === "artifact_update"
+    ? normalizeTrack3SectionUpdates(result.section_updates, {
+      artifactSections: scenario.artifact_sections,
       finalSection: scenario.final_artifact_section,
-      finalizationRequested: result.finalization_requested === true
-    }
-  );
+      finalizationRequested: result.finalization_requested === true,
+      lastUserMessage: validation.userMessage
+    })
+    : [];
+  const updatedSections = usesStructuredUpdates
+    ? sectionUpdates.map((update) => update.section)
+    : normalizeUpdatedSections(
+      result.updated_sections,
+      scenario.artifact_sections,
+      {
+        finalSection: scenario.final_artifact_section,
+        finalizationRequested: result.finalization_requested === true
+      }
+    );
+  const invalidStructuredUpdate = usesStructuredUpdates
+    && result.request_kind === "artifact_update"
+    && sectionUpdates.length === 0;
+  if (invalidStructuredUpdate) {
+    console.warn("[track3:chat] 모델 section_updates 검증 실패:", {
+      scenarioId: scenario.scenario_id,
+      requestedSections: result.section_updates.map((item) => String(item?.section || "")).filter(Boolean)
+    });
+  }
   const assistantMessage = applyCanonicalTerms(
-    buildTrack3AssistantMessage(result.assistant_message || result.assistantMessage, updatedSections),
+    buildTrack3AssistantMessage(
+      invalidStructuredUpdate
+        ? "요청한 내용을 작업 영역에 반영하지 못했습니다. 다시 시도해주세요."
+        : result.assistant_message || result.assistantMessage,
+      updatedSections
+    ),
     scenario.canonical_terms
   );
   const cleanedPriorTurns = nextTurns.map((turn) => turn.role === "assistant"
     ? { ...turn, content: stripTrack3ChatMarkdown(turn.content) }
     : turn);
-  const normalizedArtifact = normalizeTrack3Artifact(result.artifact, {
-    previousArtifact: artifact,
-    lastUserMessage: validation.userMessage,
-    artifactSections: scenario.artifact_sections
-  });
-  const nextArtifact = applyCanonicalTerms(mergeTrack3ArtifactSections({
-    candidateArtifact: normalizedArtifact,
-    previousArtifact: artifact,
-    artifactSections: scenario.artifact_sections,
-    updatedSections
-  }), scenario.canonical_terms);
+  const nextArtifact = applyCanonicalTerms(usesStructuredUpdates
+    ? mergeTrack3SectionUpdates({
+      previousArtifact: artifact,
+      artifactSections: scenario.artifact_sections,
+      sectionUpdates
+    })
+    : mergeLegacyTrack3Artifact({
+      result,
+      artifact,
+      lastUserMessage: validation.userMessage,
+      artifactSections: scenario.artifact_sections,
+      updatedSections
+    }), scenario.canonical_terms);
 
   return {
     track: "track3",
@@ -75,8 +102,8 @@ async function callChatModel({ turns, artifact, scenario }) {
     model: process.env.TRACK3_CHAT_MODEL || "gpt-4o-mini",
     messages: buildTrack3ChatMessages({ turns, artifact, scenario }),
     temperature: 0.3,
-    max_tokens: 1500,
-    response_format: { type: "json_object" }
+    max_tokens: Number(process.env.TRACK3_CHAT_MAX_TOKENS || 1800),
+    response_format: buildTrack3ChatResponseFormat(scenario.artifact_sections)
   }), Number(process.env.TRACK3_CHAT_TIMEOUT_MS || 8000));
 
   return JSON.parse(response.choices[0].message.content.trim());
@@ -99,8 +126,9 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
       "",
       "The artifact may use only these exact section headings:",
       ...sections.map((section) => `## ${section}`),
-      "Return the full cumulative artifact, but add or revise content only in sections directly requested by the latest user message.",
-      "Do not pre-fill untouched sections. Preserve their prior content exactly."
+      "Return only sections directly changed for the latest request in section_updates.",
+      "Each section_updates item must use one exact heading as section and Markdown body content without the section heading as content.",
+      "Do not pre-fill untouched sections and do not repeat their prior content. The server preserves them."
     ].join("\n")
     : "";
   const scenarioContext = scenario
@@ -125,6 +153,38 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
   ];
 }
 
+function buildTrack3ChatResponseFormat(artifactSections = []) {
+  return {
+    type: "json_schema",
+    json_schema: {
+      name: "track3_chat_section_updates",
+      strict: true,
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          assistant_message: { type: "string" },
+          request_kind: { type: "string", enum: ["artifact_update", "clarification", "context_only"] },
+          finalization_requested: { type: "boolean" },
+          section_updates: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                section: { type: "string", enum: artifactSections },
+                content: { type: "string" }
+              },
+              required: ["section", "content"]
+            }
+          }
+        },
+        required: ["assistant_message", "request_kind", "finalization_requested", "section_updates"]
+      }
+    }
+  };
+}
+
 export function normalizeUpdatedSections(value, artifactSections = [], {
   finalSection = "",
   finalizationRequested = false
@@ -134,6 +194,32 @@ export function normalizeUpdatedSections(value, artifactSections = [], {
     if (section === finalSection && !finalizationRequested) return false;
     return value.some((item) => String(item).trim() === section);
   });
+}
+
+export function normalizeTrack3SectionUpdates(value, {
+  artifactSections = [],
+  finalSection = "",
+  finalizationRequested = false,
+  lastUserMessage = ""
+} = {}) {
+  if (!Array.isArray(value) || !artifactSections.length) return [];
+
+  const allowed = new Set(artifactSections);
+  const updates = new Map();
+  for (const item of value) {
+    const section = String(item?.section || "").trim();
+    if (!allowed.has(section)) continue;
+    if (section === finalSection && !finalizationRequested) continue;
+
+    const content = stripLeadingSectionHeading(normalizeTrack3Artifact(item?.content, {
+      lastUserMessage
+    }), section);
+    if (content) updates.set(section, content);
+  }
+
+  return artifactSections
+    .filter((section) => updates.has(section))
+    .map((section) => ({ section, content: updates.get(section) }));
 }
 
 export function buildTrack3AssistantMessage(value, updatedSections = []) {
@@ -177,6 +263,46 @@ export function mergeTrack3ArtifactSections({
     .trim();
 }
 
+export function mergeTrack3SectionUpdates({
+  previousArtifact = "",
+  artifactSections = [],
+  sectionUpdates = []
+} = {}) {
+  if (!artifactSections.length || !sectionUpdates.length) return previousArtifact;
+
+  const previousSections = splitTrack3ArtifactSections(previousArtifact, artifactSections);
+  const updates = new Map(sectionUpdates.map((item) => [item.section, item.content]));
+  return artifactSections
+    .map((section) => {
+      const content = updates.get(section) || previousSections.values.get(section);
+      return content ? `## ${section}\n${content}` : "";
+    })
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+}
+
+function mergeLegacyTrack3Artifact({ result, artifact, lastUserMessage, artifactSections, updatedSections }) {
+  const normalizedArtifact = normalizeTrack3Artifact(result.artifact, {
+    previousArtifact: artifact,
+    lastUserMessage,
+    artifactSections
+  });
+  return mergeTrack3ArtifactSections({
+    candidateArtifact: normalizedArtifact,
+    previousArtifact: artifact,
+    artifactSections,
+    updatedSections
+  });
+}
+
+function stripLeadingSectionHeading(value, section) {
+  const escaped = String(section).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return String(value || "")
+    .replace(new RegExp(`^\\s*#{1,6}\\s+${escaped}\\s*(?:\\n|$)`, "i"), "")
+    .trim();
+}
+
 export function applyCanonicalTerms(value, canonicalTerms = []) {
   let output = String(value || "");
   for (const term of canonicalTerms || []) {
@@ -198,7 +324,9 @@ function buildFallbackChat({ artifact }) {
       ? "요청을 처리하지 못해 기존 최종 제출물 초안을 유지했어요. 잠시 후 다시 시도해주세요."
       : "요청을 처리하지 못해 최종 제출물 초안을 만들지 못했어요. 잠시 후 다시 시도해주세요.",
     artifact: currentArtifact,
-    finalization_requested: false
+    request_kind: "context_only",
+    finalization_requested: false,
+    section_updates: []
   };
 }
 

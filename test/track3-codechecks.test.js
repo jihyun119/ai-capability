@@ -18,7 +18,9 @@ import {
   compactTrack3AssistantMessage,
   generateTrack3Chat,
   mergeTrack3ArtifactSections,
+  mergeTrack3SectionUpdates,
   normalizeArtifactText,
+  normalizeTrack3SectionUpdates,
   normalizeUpdatedSections,
   normalizeTrack3Artifact,
   stripTrack3ArtifactMeta,
@@ -267,7 +269,7 @@ test("buildTrack3ChatMessages includes only the output contract, not hidden scen
   assert.match(system, /user turn 1 of 5/);
 });
 
-test("Track 3 applies model-declared artifact updates regardless of command phrasing", async () => {
+test("Track 3 applies structured section updates regardless of command phrasing", async () => {
   const phrases = [
     "뉴스를 바탕으로 원인 가설을 세워줘.",
     "가설별 적합성 우선순위를 매겨줘.",
@@ -275,8 +277,12 @@ test("Track 3 applies model-declared artifact updates regardless of command phra
   ];
   const chatModel = async () => ({
     assistant_message: "원인 가설을 정리했습니다.",
-    updated_sections: ["원인 가설 & 뉴스 근거"],
-    artifact: "## 원인 가설 & 뉴스 근거\n효과 체감 전 이탈을 우선 검증합니다."
+    request_kind: "artifact_update",
+    finalization_requested: false,
+    section_updates: [{
+      section: "원인 가설 & 뉴스 근거",
+      content: "효과 체감 전 이탈을 우선 검증합니다."
+    }]
   });
 
   for (const userMessage of phrases) {
@@ -301,13 +307,51 @@ test("Track 3 still rejects unsolicited artifact changes for context-only input"
   }, {
     chatModel: async () => ({
       assistant_message: "역할을 확인했습니다.",
-      updated_sections: [],
-      artifact: "## 원인 가설 & 뉴스 근거\n요청하지 않은 가설입니다."
+      request_kind: "context_only",
+      finalization_requested: false,
+      section_updates: [{
+        section: "원인 가설 & 뉴스 근거",
+        content: "요청하지 않은 가설입니다."
+      }]
     })
   });
 
   assert.deepEqual(result.updatedSections, []);
   assert.equal(result.artifact, "");
+});
+
+test("structured updates preserve untouched sections and ignore unknown headings", () => {
+  const sections = ["원인 가설", "타깃", "최종 제출물"];
+  const updates = normalizeTrack3SectionUpdates([
+    { section: "허용되지 않은 섹션", content: "무시됩니다." },
+    { section: "원인 가설", content: "## 원인 가설\n새 가설입니다." }
+  ], { artifactSections: sections });
+
+  assert.deepEqual(updates, [{ section: "원인 가설", content: "새 가설입니다." }]);
+  assert.equal(mergeTrack3SectionUpdates({
+    previousArtifact: "## 타깃\n기존 타깃입니다.",
+    artifactSections: sections,
+    sectionUpdates: updates
+  }), "## 원인 가설\n새 가설입니다.\n\n## 타깃\n기존 타깃입니다.");
+});
+
+test("chat success message is based on content that actually passed section validation", async () => {
+  const result = await generateTrack3Chat({
+    scenarioId: "marketing_001",
+    userMessage: "원인 가설을 뉴스 근거와 함께 비교해주세요."
+  }, {
+    chatModel: async () => ({
+      assistant_message: "원인 가설 영역을 업데이트했습니다.",
+      request_kind: "artifact_update",
+      finalization_requested: false,
+      section_updates: [{ section: "잘못된 섹션명", content: "표시되면 안 됩니다." }]
+    })
+  });
+
+  assert.deepEqual(result.updatedSections, []);
+  assert.equal(result.artifact, "");
+  assert.match(result.assistantMessage, /반영하지 못했습니다/);
+  assert.doesNotMatch(result.assistantMessage, /업데이트했습니다/);
 });
 
 test("mergeTrack3ArtifactSections applies only sections declared as updated", () => {
@@ -391,18 +435,11 @@ test("Track 3 scenarios expose a finalization-only artifact section", () => {
 });
 
 test("Track 3 blocks final artifact updates unless the model identifies finalization intent", async () => {
-  const finalArtifact = [
-    "## 원인 가설 & 뉴스 근거",
-    "효과 체감 전 이탈을 검증합니다.",
-    "",
-    "## 최종 제출물",
-    "다음 달 캠페인 기획서입니다."
-  ].join("\n");
   const chatModel = async ({ turns }) => ({
     assistant_message: "요청을 반영했습니다.",
+    request_kind: "artifact_update",
     finalization_requested: turns.at(-1).content.includes("완성"),
-    updated_sections: ["최종 제출물"],
-    artifact: finalArtifact
+    section_updates: [{ section: "최종 제출물", content: "다음 달 캠페인 기획서입니다." }]
   });
 
   const intermediate = await generateTrack3Chat({
