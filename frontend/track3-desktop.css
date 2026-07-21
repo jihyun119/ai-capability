@@ -681,14 +681,6 @@
     content: "," !important;
   }
 
-  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace > div {
-    width: 408px !important;
-    height: 132px !important;
-    margin: 36px 0 0 !important;
-    border-radius: 10px !important;
-    background: var(--t3-grey) !important;
-  }
-
   main#app.app-shell > .screen.active.t3-chat-screen .t3-submit {
     position: absolute !important;
     right: 37px !important;
@@ -1308,20 +1300,35 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-message-pending span:nth-
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-doc {
+  width: 100% !important;
+  max-width: 100% !important;
   height: 100% !important;
   min-height: 0 !important;
+  box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-body {
+  width: 100% !important;
+  max-width: 100% !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
+  box-sizing: border-box !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   scrollbar-gutter: stable !important;
   display: grid !important;
   gap: 14px !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-artifact-body > article {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
@@ -1332,8 +1339,10 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-warning {
 
 /* Track 3 artifact Markdown */
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown {
+  width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
+  box-sizing: border-box !important;
   overflow-x: auto !important;
   color: var(--t3-black) !important;
   font: 400 15px/1.5 "Pretendard", sans-serif !important;
