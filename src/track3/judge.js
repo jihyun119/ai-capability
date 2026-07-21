@@ -83,7 +83,7 @@ async function runLlmJudge({ scenario, turns, finalOutput, integrity }) {
       { role: "system", content: TRACK3_JUDGE_SYSTEM_PROMPT },
       { role: "user", content: JSON.stringify(payload) }
     ],
-    temperature: 0.1,
+    temperature: 0,
     max_tokens: 1600,
     response_format: { type: "json_object" }
   }), Number(process.env.TRACK3_JUDGE_TIMEOUT_MS || 20000));
@@ -143,6 +143,7 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
 
 function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity }) {
   const fallback = buildHeuristicJudge({ scenario, turns, finalOutput });
+  const moveTagging = Array.isArray(result.move_tagging) ? result.move_tagging : fallback.move_tagging;
   const evidenceAssessment = normalizeEvidenceAssessment(result.evidence_assessment, fallback.evidence_assessment, integrity);
   const fallbackByKey = new Map(fallback.axis_scores.map((item) => [item.key, item]));
   const byKey = new Map((Array.isArray(result.axis_scores) ? result.axis_scores : []).map((item) => [item.key || keyForAxis(item.axis), item]));
@@ -165,6 +166,9 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity 
 
   let deltaScore = clampScore(result.delta_score?.score);
   let sequenceValid = Boolean(result.sequence_valid);
+  const consistent = applyMoveScoreConsistency({ axisScores: axis_scores, deltaScore, moveTagging });
+  axis_scores = consistent.axisScores;
+  deltaScore = consistent.deltaScore;
   if (evidenceAssessment.scenario_restatement_only) {
     const enforced = applyRestatementPolicy({ axisScores: axis_scores, deltaScore, sequenceValid });
     axis_scores = enforced.axisScores;
@@ -186,7 +190,7 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity 
   axis_scores = ensureDistinctAxisComments(axis_scores);
 
   return {
-    move_tagging: Array.isArray(result.move_tagging) ? result.move_tagging : fallback.move_tagging,
+    move_tagging: moveTagging,
     sequence_valid: sequenceValid,
     evidence_assessment: evidenceAssessment,
     axis_scores,
@@ -355,6 +359,48 @@ export function applyRestatementPolicy({ axisScores, deltaScore, sequenceValid }
     axisScores: applyRestatementCaps(axisScores),
     deltaScore: 0,
     sequenceValid: false
+  };
+}
+
+export function applyMoveScoreConsistency({ axisScores, deltaScore, moveTagging }) {
+  const tags = Array.isArray(moveTagging) ? moveTagging : [];
+  const m4Turns = tags
+    .filter((item) => Array.isArray(item?.moves) && item.moves.includes("M4"))
+    .map((item) => Number(item.turn))
+    .filter(Number.isFinite);
+  const m5Turns = tags
+    .filter((item) => Array.isArray(item?.moves) && item.moves.includes("M5"))
+    .map((item) => Number(item.turn))
+    .filter(Number.isFinite);
+  const hasM4 = m4Turns.length > 0;
+  const hasM4ThenM5 = m4Turns.some((m4Turn) => m5Turns.some((m5Turn) => m5Turn > m4Turn));
+  const substantiveInterventions = tags.filter((item) =>
+    Number(item?.turn) > 1
+    && Array.isArray(item?.moves)
+    && item.moves.some((move) => ["M2", "M3", "M4", "M5"].includes(move))
+  ).length;
+
+  const consistentAxes = axisScores.map((axis) => {
+    if (axis.key !== "verification") return axis;
+    const score = hasM4 ? Math.max(2, axis.score) : Math.min(1, axis.score);
+    if (score === axis.score) return axis;
+    const taggedMove = tags.find((item) => Array.isArray(item?.moves) && item.moves.includes("M4"));
+    return {
+      ...axis,
+      score,
+      rate: Math.round((score / axis.max) * 100) / 100,
+      evidence: hasM4
+        ? `T${taggedMove.turn}: ${String(taggedMove.note || "구체적인 검증 요청").slice(0, 180)}`
+        : axis.evidence,
+      comment: axisFeedbackFor(axis.key, score)
+    };
+  });
+
+  return {
+    axisScores: consistentAxes,
+    deltaScore: hasM4ThenM5 && substantiveInterventions >= 3
+      ? deltaScore
+      : Math.min(deltaScore, 3)
   };
 }
 

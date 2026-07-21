@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { analyzeTrack3Integrity, runCodeChecks, validateChatInput, validateSubmitInput } from "../src/track3/codeChecks.js";
 import {
   TRACK3_AXES,
+  applyMoveScoreConsistency,
   applyRepetitionPolicy,
   applyRestatementPolicy,
   calculateTrack3ScoreBreakdown,
@@ -22,6 +23,7 @@ import {
   stripTrack3ArtifactMeta,
   stripTrack3ChatMarkdown
 } from "../src/track3/chat.js";
+import { TRACK3_JUDGE_SYSTEM_PROMPT } from "../src/track3/judgePrompt.js";
 import { getScenario, listScenarios } from "../src/track3/scenarios.js";
 
 const sampleTurns = [
@@ -35,6 +37,31 @@ const sampleTurns = [
   { role: "assistant", content: "검토했습니다." },
   { role: "user", content: "그 지적을 반영해서 최종 PRD 초안으로 완성해주세요." }
 ];
+
+test("Track 3 Judge prompt includes operational process and delta anchors", () => {
+  for (const axis of [
+    "1. 목표 정의",
+    "2. 맥락 제공",
+    "3. 정보 구조화",
+    "4. 작업 분해",
+    "5. 출력 설계",
+    "6. 상호작용 조율",
+    "7. 검증 유도"
+  ]) {
+    assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, new RegExp(axis.replace(".", "\\.")));
+  }
+
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /Intervention-effect delta score, 0-4/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /A strong first prompt must not by itself reduce the delta score/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /Requests to add metrics.*are not verification/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /Without both M4 and M5, the maximum is 3/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /If any turn is tagged M4, verification cannot be 0/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /Delta 4 requires an M4 turn followed by a later M5 turn/);
+  for (const score of [4, 3, 2, 1, 0]) {
+    assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, new RegExp(`- ${score}:`));
+  }
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /identify the relevant turn numbers and the concrete final-output change/);
+});
 
 test("validateChatInput rejects short messages and max turns", () => {
   assert.equal(validateChatInput({ turns: [], userMessage: "짧음" }).valid, false);
@@ -445,6 +472,35 @@ test("repetition policy caps interaction and improvement evidence", () => {
   assert.equal(enforced.axisScores.find((axis) => axis.key === "interaction_control").score, 0);
   assert.equal(enforced.deltaScore, 0);
   assert.equal(enforced.sequenceValid, false);
+});
+
+test("move tags and Judge scores cannot contradict each other", () => {
+  const axes = TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: key === "verification" ? 0 : 3, max: 4, rate: 0.75 }));
+  const withVerification = applyMoveScoreConsistency({
+    axisScores: axes,
+    deltaScore: 4,
+    moveTagging: [
+      { turn: 2, moves: ["M3"], note: "초안 작성" },
+      { turn: 3, moves: ["M4"], note: "선정 근거 검증" },
+      { turn: 4, moves: ["M5"], note: "검증 반영 후 최종화" }
+    ]
+  });
+
+  assert.equal(withVerification.axisScores.find((axis) => axis.key === "verification").score, 2);
+  assert.equal(withVerification.deltaScore, 4);
+
+  const withoutVerification = applyMoveScoreConsistency({
+    axisScores: axes.map((axis) => axis.key === "verification" ? { ...axis, score: 4 } : axis),
+    deltaScore: 4,
+    moveTagging: [
+      { turn: 2, moves: ["M2"], note: "방향 선택" },
+      { turn: 3, moves: ["M3"], note: "초안 작성" },
+      { turn: 4, moves: ["M5"], note: "최종화" }
+    ]
+  });
+
+  assert.equal(withoutVerification.axisScores.find((axis) => axis.key === "verification").score, 1);
+  assert.equal(withoutVerification.deltaScore, 3);
 });
 
 test("Track 3 score combines LLM 80 and code 20", () => {
