@@ -1369,6 +1369,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown blockquote,
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown pre,
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown table {
   margin: 0 0 12px !important;
+  font-weight: 400 !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown h1,
@@ -1389,6 +1390,12 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown ol {
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown li {
   margin: 4px 0 !important;
+  font-weight: 400 !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown strong,
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown b {
+  font-weight: 700 !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown table {
@@ -1411,6 +1418,10 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown td {
   white-space: normal !important;
   word-break: keep-all !important;
   overflow-wrap: anywhere !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown td {
+  font-weight: 400 !important;
 }
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown th {
@@ -1451,7 +1462,8 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown a {
 
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown .t3-artifact-change,
 main#app.app-shell > .screen.active.t3-chat-screen .t3-markdown .t3-artifact-change * {
-  color: var(--t3-violet) !important;
+  color: inherit !important;
+  font-weight: 700 !important;
 }
 
 @media (max-width: 1180px) {

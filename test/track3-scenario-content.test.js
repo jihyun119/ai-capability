@@ -45,10 +45,13 @@ test("sending a Track 3 message clears the composer while the request is pending
   assert.match(sendSource, /catch \(error\)[\s\S]*state\.t3Draft = rawMessage/);
 });
 
-test("Track 3 highlights only blocks changed by the latest artifact update", () => {
+test("Track 3 highlights only latest artifact changes with typography", () => {
   assert.match(frontendSource, /state\.t3PreviousArtifact = state\.t3Artifact \|\| "";/);
   assert.match(frontendSource, /renderT3Markdown\(content, previousContentBySection\.get\(title\) \|\| ""\)/);
   assert.match(frontendSource, /function highlightT3MarkdownChanges\(currentHtml, previousHtml\)/);
   assert.match(frontendSource, /element\.classList\.add\("t3-artifact-change"\)/);
-  assert.match(track3Styles, /\.t3-artifact-change[\s\S]*color: var\(--t3-violet\) !important/);
+  assert.match(track3Styles, /\.t3-artifact-change[\s\S]*color: inherit !important;[\s\S]*font-weight: 700 !important/);
+  assert.doesNotMatch(track3Styles, /\.t3-artifact-change[\s\S]{0,180}color: var\(--t3-violet\) !important/);
+  assert.match(track3Styles, /\.t3-markdown p,[\s\S]*font-weight: 400 !important/);
+  assert.match(track3Styles, /\.t3-markdown strong,[\s\S]*font-weight: 700 !important/);
 });
