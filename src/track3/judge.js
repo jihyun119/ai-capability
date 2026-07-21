@@ -14,8 +14,6 @@ export const TRACK3_AXES = [
   ["practical_application", "실무 적용"]
 ];
 
-const TRACK3_COMPLETION_MULTIPLIERS = [0, 0.35, 0.55, 0.75, 0.9, 1];
-
 export async function judgeTrack3({ scenarioId, turns, finalOutput, earlyFinish = false } = {}) {
   const scenario = getScenario(scenarioId);
   const integrity = analyzeTrack3Integrity({ turns, scenario });
@@ -216,7 +214,7 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity 
 
 export function calculateTrack3ScoreBreakdown(judge, {
   codeChecks = {},
-  turnCount = TRACK3_COMPLETION_MULTIPLIERS.length - 1,
+  turnCount = 5,
   effectiveTurnCount = codeChecks.integrity?.effective_turn_count ?? turnCount,
   earlyFinish = false
 } = {}) {
@@ -230,7 +228,6 @@ export function calculateTrack3ScoreBreakdown(judge, {
   const codeScore = Math.max(0, Math.min(20, Number(codeChecks.score ?? codeChecks.diagnostic_score) || 0));
   const normalizedTurnCount = Math.max(0, Math.min(5, Math.trunc(Number(turnCount) || 0)));
   const normalizedEffectiveTurnCount = Math.max(0, Math.min(5, Math.trunc(Number(effectiveTurnCount) || 0)));
-  const completionMultiplier = TRACK3_COMPLETION_MULTIPLIERS[normalizedEffectiveTurnCount];
   const subtotal = llmJudgeScore + codeScore;
 
   return {
@@ -249,11 +246,10 @@ export function calculateTrack3ScoreBreakdown(judge, {
       turn_count: normalizedTurnCount,
       effective_turn_count: normalizedEffectiveTurnCount,
       max_turns: 5,
-      multiplier: completionMultiplier,
       early_finish: Boolean(earlyFinish)
     },
     subtotal: round1(subtotal),
-    total: Math.round(subtotal * completionMultiplier)
+    total: Math.round(subtotal)
   };
 }
 

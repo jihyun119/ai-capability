@@ -614,7 +614,7 @@ test("Track 3 score combines LLM 80 and code 20", () => {
   assert.equal(breakdown.completion.effective_turn_count, 5);
 });
 
-test("completion multiplier uses effective turns instead of repeated raw turns", () => {
+test("effective turns remain diagnostic without scaling the total", () => {
   const perfectJudge = {
     axis_scores: TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4 })),
     delta_score: { score: 4 }
@@ -627,11 +627,11 @@ test("completion multiplier uses effective turns instead of repeated raw turns",
 
   assert.equal(breakdown.completion.turn_count, 5);
   assert.equal(breakdown.completion.effective_turn_count, 1);
-  assert.equal(breakdown.completion.multiplier, 0.35);
-  assert.equal(breakdown.total, 35);
+  assert.equal("multiplier" in breakdown.completion, false);
+  assert.equal(breakdown.total, 100);
 });
 
-test("completion adjustment separates two-turn and five-turn answers", () => {
+test("turn count remains diagnostic without a completion multiplier", () => {
   const twoTurnJudge = {
     axis_scores: [4, 4, 3, 2, 3, 2, 2, 3].map((score, index) => ({
       key: TRACK3_AXES[index][0],
@@ -659,10 +659,13 @@ test("completion adjustment separates two-turn and five-turn answers", () => {
     turnCount: 5
   });
 
-  assert.equal(twoTurn.total, 38);
-  assert.equal(twoTurn.completion.multiplier, 0.55);
+  assert.equal(twoTurn.total, 69);
+  assert.equal(twoTurn.completion.turn_count, 2);
+  assert.equal(twoTurn.completion.early_finish, true);
+  assert.equal("multiplier" in twoTurn.completion, false);
   assert.equal(fiveTurn.total, 85);
-  assert.equal(fiveTurn.completion.multiplier, 1);
+  assert.equal(fiveTurn.completion.turn_count, 5);
+  assert.equal("multiplier" in fiveTurn.completion, false);
 });
 
 test("validateSubmitInput accepts a usable final output", () => {
