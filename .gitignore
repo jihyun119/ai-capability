@@ -1,11 +1,22 @@
 node_modules/
 .env
 .env.local
+.env.*
+!.env.example
+!**/.env.example
 .vercel/
 .DS_Store
 **/.DS_Store
 *.code-workspace
 frontend/desktop-concept.html
+
+# 로컬 인증키 및 동기화 임시 산출물
+*.service-account.json
+gcp-service-account*.json
+.secrets/
+.sync-output/
+supabase-sync-*.jsonl
+supabase-sync-*.ndjson
 
 # 로컬 참고용 기획 문서 (레포에는 안 올림)
 /1_평가축_조작적정의.md
