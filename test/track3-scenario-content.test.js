@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { TRACK3_SCENARIOS } from "../src/track3/scenarios.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const frontendSource = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
@@ -29,6 +30,31 @@ test("data analysis scenario exposes compact schemas for all available datasets"
     assert.match(frontendSource, new RegExp(value));
     assert.match(scenarioSource, new RegExp(value));
   }
+});
+
+test("frontend fallbacks stay aligned with canonical backend scenario displays", () => {
+  for (const scenario of TRACK3_SCENARIOS) {
+    const displayValues = [
+      ...scenario.display.situation,
+      ...scenario.display.mission,
+      ...(scenario.display.news || []),
+      ...(scenario.display.metrics || []).flat(),
+      ...(scenario.display.dataSources || []),
+      ...(scenario.display.dataSchemas || []).flatMap((schema) => [schema.name, ...schema.columns])
+    ];
+
+    for (const value of displayValues) {
+      assert.ok(
+        frontendSource.includes(value),
+        `${scenario.scenario_id} frontend fallback is missing canonical value: ${value}`
+      );
+    }
+  }
+});
+
+test("scenario sources do not contain unsupported PM staffing assumptions", () => {
+  assert.doesNotMatch(scenarioSource, /개발자 2명|디자이너 1명|영업팀 제안/);
+  assert.match(scenarioSource, /개발자 제안: 쿠폰함 알림 기능/);
 });
 
 test("artifact cards stay within the workspace instead of inheriting a fixed placeholder height", () => {

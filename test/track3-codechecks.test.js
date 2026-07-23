@@ -32,7 +32,7 @@ import { getScenario, listScenarios } from "../src/track3/scenarios.js";
 const sampleTurns = [
   { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 PRD 초안을 만들려고 합니다." },
   { role: "assistant", content: "후보별 비교 프레임을 잡아보겠습니다." },
-  { role: "user", content: "개발자 2명, 디자이너 1명, 3주 안에 가능한지를 중요 기준으로 좁혀주세요." },
+  { role: "user", content: "3주 안에 가능한지를 중요 기준으로 삼고 후보별 리스크를 비교해주세요." },
   { role: "assistant", content: "좋습니다." },
   { role: "user", content: "비교 기준, 기능 선정 결과, 선정 근거, 목표, 성공지표, 범위, 제외범위, 일정을 표로 정리해주세요." },
   { role: "assistant", content: "초안입니다." },
@@ -77,7 +77,7 @@ test("validateChatInput rejects short messages and max turns", () => {
 test("runCodeChecks contributes up to 20 points", () => {
   const result = runCodeChecks({ turns: sampleTurns });
   assert.equal(result.max, 20);
-  assert.equal(result.score, 17);
+  assert.equal(result.score, 20);
   assert.equal(result.diagnostic_max, 20);
   assert.equal(result.diagnostic_score, result.score);
   assert.equal(result.checks.length, 6);
@@ -432,6 +432,46 @@ test("Track 3 scenarios expose a finalization-only artifact section", () => {
   assert.ok(scenarios.every((scenario) => scenario.final_artifact_section === "최종 제출물"));
   assert.equal(getScenario("marketing_001").role, "이모레퍼시픽 스킨케어팀의 마케팅 담당자");
   assert.equal(getScenario("da_001").role, "마켓쿨리의 데이터 분석 담당자");
+});
+
+test("Track 3 scenario API exposes the canonical frontend display model", () => {
+  const scenarios = listScenarios();
+  const pm = scenarios.find((scenario) => scenario.scenario_id === "pm_001");
+  const marketing = scenarios.find((scenario) => scenario.scenario_id === "marketing_001");
+  const data = scenarios.find((scenario) => scenario.scenario_id === "da_001");
+
+  assert.equal(pm.title, "PM");
+  assert.equal(pm.scenario_title, "분기 핵심 기능 우선순위 결정");
+  assert.deepEqual(pm.situation, [
+    "당신은 키키오 선물하기 프로덕트 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
+    "개발자는 '쿠폰함 알림 기능'을, 디자이너는 '위시리스트 공유 기능'을, 데이터 분석가는 '구매 후 추천 기능'을 각각 1순위로 제안했습니다. 기간은 3주뿐이라 셋 중 하나만 선택해야 합니다.",
+    "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고, 최종적으로 다음 회의에 바로 쓸 수 있는 세부기획안(제품요구사항문서) 초안을 만들어보세요."
+  ]);
+  assert.match(marketing.news[2], /뮈신사 뷰티 공격적인 할인 공세/);
+  assert.equal(data.metrics.length, 5);
+  assert.equal(data.dataSchemas.length, 3);
+  assert.match(data.situation[1], /가장 먼저 확인해야 할 문제는 무엇인가/);
+});
+
+test("Track 3 backend does not invent PM resources or alter candidate ownership", () => {
+  const scenario = getScenario("pm_001");
+  const serialized = JSON.stringify(scenario);
+
+  assert.match(serialized, /개발자 제안: 쿠폰함 알림 기능/);
+  assert.match(serialized, /디자이너 제안: 위시리스트 공유 기능/);
+  assert.match(serialized, /데이터 분석가 제안: 구매 후 추천 기능/);
+  assert.doesNotMatch(serialized, /개발자 2명|디자이너 1명|영업팀 제안|쿠폰함 기능"/);
+});
+
+test("Track 3 Judge context contains every canonical scenario paragraph", () => {
+  for (const scenario of ["pm_001", "marketing_001", "da_001"].map(getScenario)) {
+    for (const paragraph of scenario.display.situation) {
+      assert.ok(
+        scenario.situation.includes(paragraph),
+        `${scenario.scenario_id} Judge context is missing: ${paragraph}`
+      );
+    }
+  }
 });
 
 test("Track 3 blocks final artifact updates unless the model identifies finalization intent", async () => {
