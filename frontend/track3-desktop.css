@@ -179,8 +179,8 @@
   }
 
   main#app.app-shell > .screen.active[data-screen^="t3-"] .footer strong {
-    margin-right: 14px !important;
-    font-weight: 800 !important;
+    margin-right: 0 !important;
+    font-weight: 700 !important;
   }
 
   main#app.app-shell > .screen.active:is([data-screen="t3-scenario"], [data-screen="t3-chat"], [data-screen="t3-loading"], [data-screen="t3-result"]) .footer {
@@ -1756,8 +1756,8 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
   }
 
   main#app.app-shell > .screen.active[data-screen^="t3-"] .footer strong {
-    margin-right: 8px !important;
-    font-weight: 800 !important;
+    margin-right: 0 !important;
+    font-weight: 700 !important;
   }
 
   main#app.app-shell > .screen.active[data-screen="t3-login"] .login-content {

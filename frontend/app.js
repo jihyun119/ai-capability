@@ -1362,8 +1362,11 @@ function mapScreen() {
 function footer() {
   return `
     <footer class="footer">
-      <p><strong>CONTACT</strong> pookie@gmail.com</p>
-      <p>© 2026 pookie. All rights reserved</p>
+      <p class="footer-social">
+        <strong>INSTAGRAM</strong>
+        <a href="https://www.instagram.com/pookie.ai_official/" target="_blank" rel="noopener noreferrer" aria-label="푸키 공식 인스타그램 열기">@pookie.ai_official</a>
+      </p>
+      <p class="footer-copyright">© 2026 pookie. All rights reserved</p>
     </footer>`;
 }
 

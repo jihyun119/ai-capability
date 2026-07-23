@@ -209,8 +209,31 @@ img {
 }
 
 .footer strong {
-  margin-right: 12px;
+  margin-right: 0;
+  font-weight: 700;
+}
+
+.footer-social {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.footer-social a {
+  color: inherit;
   font-weight: 400;
+  text-decoration: none;
+}
+
+.footer-social a:hover {
+  text-decoration: underline;
+}
+
+.footer-social a:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .cta {
@@ -2106,7 +2129,7 @@ img {
   }
 
   .footer strong {
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .h01-screen-v2 .home-content-v2 {
@@ -2640,9 +2663,9 @@ img {
 
   .footer,
   .desktop-page-footer .footer {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
     min-height: 135px;
     margin-top: 62px;
     padding: 38px max(40px, calc((100% - min(var(--pc-inner), calc(100% - 80px))) / 2));
@@ -3669,8 +3692,8 @@ img {
   }
 
   .screen.active.character-gallery-screen .footer strong {
-    margin-right: 14px;
-    font-weight: 800;
+    margin-right: 0;
+    font-weight: 700;
   }
 }
 @media (min-width: 1181px) {
