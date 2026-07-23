@@ -125,7 +125,8 @@ export function score(essay, mcAnswers = null) {
     return { key, name, maxScore, freqWord, evidence, essayScore, essayNormalized, mcRaw, mcNormalized, finalScore };
   });
 
-  const total = round1(axes.reduce((sum, ax) => sum + ax.finalScore, 0) + BASE_SCORE);
+  // 향후 문항/배점 변경에도 표시 점수가 0~100 범위를 벗어나지 않게 보호한다.
+  const total = Math.max(0, Math.min(100, round1(axes.reduce((sum, ax) => sum + ax.finalScore, 0) + BASE_SCORE)));
   const grade = decideGrade(total);
 
   // 강점/약점 (비율 기준 정렬)

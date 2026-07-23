@@ -277,6 +277,28 @@ const t2Questions = [
       "E. AI 결과물은 참고만 하고 핵심 내용은 직접 다시 구성한다.",
     ],
   },
+  {
+    label: "상황 5",
+    title: "과제 보고서에 넣을 통계와 근거 자료를 찾아야 합니다. AI를 어떻게 활용하시겠습니까?",
+    options: [
+      "A. 과제 주제를 말하고, 관련된 통계나 근거 자료를 찾아달라고 한다.",
+      "B. 찾고 싶은 정보와 핵심 키워드를 알려주고, 참고할 만한 자료를 정리해 달라고 한다.",
+      "C. 보고서의 목적, 독자, 주장하려는 내용, 필요한 최신성 등을 설명한 뒤, 활용 가능한 통계와 출처를 표로 정리해 달라고 한다.",
+      "D. 먼저 어떤 근거가 필요한지와 검색 기준을 함께 정리하고, 신뢰할 수 있는 1차 출처를 우선으로 찾아 비교해 달라고 한다.",
+      "E. AI가 제안한 자료는 참고만 하고, 원문 출처·발행 시점·조사 방법을 직접 확인한 뒤 검증된 자료만 활용한다.",
+    ],
+  },
+  {
+    label: "상황 6",
+    title: "AI와 함께 만든 과제 문서·엑셀 파일·코드에서 오류가 발견됐습니다. 어떻게 해결하시겠습니까?",
+    options: [
+      "A. 오류가 있다고 말하고, 전체를 다시 만들어 달라고 한다.",
+      "B. 문제가 보이는 부분만 알려주고 수정해 달라고 한다.",
+      "C. 기대했던 결과, 실제로 나온 결과, 사용한 조건을 정리해 수정해 달라고 한다.",
+      "D. 오류가 생긴 원인을 단계별로 점검하게 하고, 각 단계에서 무엇을 확인해야 하는지도 함께 요청한다.",
+      "E. AI가 제시한 수정안을 바로 적용하지 않고, 원본 자료·계산 과정·출처와 대조해 직접 검증한다.",
+    ],
+  },
 ];
 
 const state = {
@@ -852,7 +874,7 @@ function t2IntroScreen() {
     </section>
     <section class="info-list t2-info-list">
       <article>
-        <strong>객관식 4문항</strong>
+        <strong>객관식 6문항</strong>
         <span>선택 결과는 6개 지표로 환산되어 100점 만점 점수로 표시됩니다.</span>
         <div class="t2-chip-grid">
           <i>#작업 명확성</i>
@@ -875,7 +897,7 @@ function t2QuestionScreens() {
   return t2Questions
     .map((question, index) => {
       const n = index + 1;
-      return questionScreen("t2", n, 4, question.title, question.options, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === 4 ? "t2-prompt" : `t2-q-${n + 1}`);
+      return questionScreen("t2", n, t2Questions.length, question.title, question.options, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === t2Questions.length ? "t2-prompt" : `t2-q-${n + 1}`);
     })
     .join("");
 }
@@ -1308,7 +1330,7 @@ function mapScreen() {
     ["T1-06", "AI 관계 유형 테스트 결과", "t1-result"],
     ["L02", "AI 활용 역량 테스트 로그인", "t2-login"],
     ["T2-01", "AI 활용 역량 테스트 안내", "t2-intro"],
-    ["T2-02", "AI 활용 역량 테스트 객관식 4문항", "t2-q-1"],
+    ["T2-02", "AI 활용 역량 테스트 객관식 6문항", "t2-q-1"],
     ["T2-03", "AI 답변 제출", "t2-paste"],
     ["T2-04", "AI 활용 역량 테스트 결과", "t2-result"],
     ["T3", "AI 실무 적용 테스트", "track3-login"],
@@ -2074,7 +2096,7 @@ async function submitTrack2() {
     .filter((key) => !state.t2Answers[key]);
 
   if (missing.length > 0) {
-    state.t2Error = "상황 문항 4개에 모두 답변해 주세요.";
+    state.t2Error = "상황 문항 6개에 모두 답변해 주세요.";
     render();
     showScreen("t2-paste");
     return;

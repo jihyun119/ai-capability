@@ -18,7 +18,7 @@ test("rejects Track2 prompt text as freeText", () => {
     {
       respondentId: "res",
       accessToken: "token",
-      answers: { Q1: "A", Q2: "B", Q3: "C", Q4: "D" },
+      answers: { Q1: "A", Q2: "B", Q3: "C", Q4: "D", Q5: "E", Q6: "A" },
       freeText: promptText
     },
     { requireRespondent: true }
@@ -26,4 +26,17 @@ test("rejects Track2 prompt text as freeText", () => {
 
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /프롬프트 원문/);
+});
+
+test("requires answers for all six Track 2 questions", () => {
+  const result = validateSubmitInput(
+    {
+      answers: { Q1: "A", Q2: "B", Q3: "C", Q4: "D", Q5: "E" },
+      freeText: "I always define the goal and provide context before asking. I sometimes specify the output format in detail."
+    },
+    { requireRespondent: false }
+  );
+
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join("\n"), /answers.Q6/);
 });

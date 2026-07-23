@@ -10,7 +10,7 @@ import { randomUUID } from "node:crypto";
  * {
  *   "respondentId": "uuid",
  *   "accessToken": "token",
- *   "answers": { "Q1": "D", "Q2": "D", "Q3": "B", "Q4": "C" },
+ *   "answers": { "Q1": "D", "Q2": "D", "Q3": "B", "Q4": "C", "Q5": "D", "Q6": "D" },
  *   "freeText": "I usually give the AI my goal..."
  * }
  *
