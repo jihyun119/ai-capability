@@ -1,7 +1,6 @@
 import { TRACK3_JUDGE_SYSTEM_PROMPT } from "./judgePrompt.js";
 import { TRACK3_VERSION, getScenario } from "./scenarios.js";
 import { analyzeTrack3Integrity, buildConversationText, countUserTurns, runCodeChecks, userTurns } from "./codeChecks.js";
-import { getTrack3FinalArtifactContent } from "./artifact.js";
 
 export const TRACK3_AXES = [
   ["goal_definition", "목표 정의"],
@@ -112,7 +111,7 @@ function buildHeuristicJudge({ scenario, turns, finalOutput }) {
     axis("output_design", "출력 설계", codeChecks.checks.find((check) => check.key === "output_format_signal")?.score ? 3 : 1, quote(allUser)),
     axis("interaction_control", "상호작용 조율", scoreBySignals(later, [/방금|제안|그중|선택|좁혀|우선|반영/i, /집중|수정|제외|방향/i]), quote(later)),
     axis("verification", "검증 유도", codeChecks.checks.find((check) => check.key === "verification_signal")?.score ? 3 : 0, quote(allUser)),
-    axis("practical_application", "실무 적용", scorePracticalApplication(output, scenario), quote(getTrack3FinalArtifactContent(output, scenario) || output))
+    axis("practical_application", "실무 적용", scorePracticalApplication(output, scenario), quote(output))
   ];
 
   return {
@@ -184,11 +183,6 @@ function normalizeJudgeResult(result, { scenario, turns, finalOutput, integrity 
     deltaScore = enforced.deltaScore;
     sequenceValid = enforced.sequenceValid;
   }
-  axis_scores = applyFinalArtifactPolicy({
-    axisScores: axis_scores,
-    finalOutput,
-    scenario
-  });
   axis_scores = ensureDistinctAxisComments(axis_scores);
   axis_scores = axis_scores.map((axis) => ({
     ...axis,
@@ -432,22 +426,6 @@ export function applyMoveScoreConsistency({ axisScores, deltaScore, moveTagging 
   };
 }
 
-export function applyFinalArtifactPolicy({ axisScores, finalOutput, scenario }) {
-  if (getTrack3FinalArtifactContent(finalOutput, scenario)) return axisScores;
-
-  return axisScores.map((axis) => {
-    if (axis.key !== "practical_application") return axis;
-    const score = Math.min(2, axis.score);
-    return {
-      ...axis,
-      score,
-      rate: Math.round((score / axis.max) * 100) / 100,
-      evidence: "최종화 전용 섹션이 비어 있음",
-      comment: "작업 과정은 남아 있지만 최종 제출물로 종합되지 않아 실무 적용에 추가 정리가 필요해요."
-    };
-  });
-}
-
 export function applyRepetitionPolicy({
   axisScores,
   deltaScore,
@@ -584,9 +562,7 @@ function scoreFinalOutput(output, scenario) {
 }
 
 function scorePracticalApplication(output, scenario) {
-  const finalArtifact = getTrack3FinalArtifactContent(output, scenario);
-  if (finalArtifact) return scoreFinalOutput(finalArtifact, scenario);
-  return Math.min(2, scoreFinalOutput(output, scenario));
+  return scoreFinalOutput(output, scenario);
 }
 
 function axis(key, label, score, evidence) {

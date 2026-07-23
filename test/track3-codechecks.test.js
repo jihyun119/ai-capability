@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { analyzeTrack3Integrity, runCodeChecks, validateChatInput, validateSubmitInput } from "../src/track3/codeChecks.js";
 import {
   TRACK3_AXES,
-  applyFinalArtifactPolicy,
   applyMoveScoreConsistency,
   applyRepetitionPolicy,
   applyRestatementPolicy,
@@ -30,15 +29,15 @@ import { TRACK3_CHAT_SYSTEM_PROMPT, TRACK3_JUDGE_SYSTEM_PROMPT } from "../src/tr
 import { getScenario, listScenarios } from "../src/track3/scenarios.js";
 
 const sampleTurns = [
-  { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 PRD 초안을 만들려고 합니다." },
+  { role: "user", content: "다음 분기 핵심 기능 하나를 선정하고 회의용 실행 계획을 만들려고 합니다." },
   { role: "assistant", content: "후보별 비교 프레임을 잡아보겠습니다." },
   { role: "user", content: "3주 안에 가능한지를 중요 기준으로 삼고 후보별 리스크를 비교해주세요." },
   { role: "assistant", content: "좋습니다." },
-  { role: "user", content: "비교 기준, 기능 선정 결과, 선정 근거, 목표, 성공지표, 범위, 제외범위, 일정을 표로 정리해주세요." },
+  { role: "user", content: "문제 정의, 비교 기준, 기능 선정 결과, 선정 근거, 실행 계획, 검증 방법을 표로 정리해주세요." },
   { role: "assistant", content: "초안입니다." },
   { role: "user", content: "논리 비약, 누락된 고려사항, 3주 안에 어려운 범위를 검토하고 지적해주세요." },
   { role: "assistant", content: "검토했습니다." },
-  { role: "user", content: "그 지적을 반영해서 최종 PRD 초안으로 완성해주세요." }
+  { role: "user", content: "그 지적을 반영해서 작업 영역 전체를 회의용 실행 계획으로 완성해주세요." }
 ];
 
 test("Track 3 Judge prompt includes operational process and delta anchors", () => {
@@ -64,9 +63,9 @@ test("Track 3 Judge prompt includes operational process and delta anchors", () =
     assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, new RegExp(`- ${score}:`));
   }
   assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /identify the relevant turn numbers and the concrete final-output change/);
-  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /dedicated final section is missing or empty.*practical_application cannot exceed 2/);
-  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /preceding work sections only to corroborate/);
-  assert.match(TRACK3_CHAT_SYSTEM_PROMPT, /finalization_requested/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /full cumulative workspace as the final deliverable/);
+  assert.match(TRACK3_JUDGE_SYSTEM_PROMPT, /workspace sections only to corroborate/);
+  assert.doesNotMatch(TRACK3_CHAT_SYSTEM_PROMPT, /finalization_requested/);
 });
 
 test("validateChatInput rejects short messages and max turns", () => {
@@ -207,7 +206,7 @@ test("Track 3 chat fallback preserves the prior artifact without copying user in
 
   assert.equal(result.artifact, previousArtifact);
   assert.equal(result.artifact.includes(userMessage), false);
-  assert.match(result.assistantMessage, /기존 최종 제출물 초안을 유지/);
+  assert.match(result.assistantMessage, /기존 작업 영역을 유지/);
 });
 
 test("stripTrack3ChatMarkdown converts assistant Markdown to readable plain text", () => {
@@ -278,7 +277,6 @@ test("Track 3 applies structured section updates regardless of command phrasing"
   const chatModel = async () => ({
     assistant_message: "원인 가설을 정리했습니다.",
     request_kind: "artifact_update",
-    finalization_requested: false,
     section_updates: [{
       section: "원인 가설 & 뉴스 근거",
       content: "효과 체감 전 이탈을 우선 검증합니다."
@@ -308,7 +306,6 @@ test("Track 3 still rejects unsolicited artifact changes for context-only input"
     chatModel: async () => ({
       assistant_message: "역할을 확인했습니다.",
       request_kind: "context_only",
-      finalization_requested: false,
       section_updates: [{
         section: "원인 가설 & 뉴스 근거",
         content: "요청하지 않은 가설입니다."
@@ -321,7 +318,7 @@ test("Track 3 still rejects unsolicited artifact changes for context-only input"
 });
 
 test("structured updates preserve untouched sections and ignore unknown headings", () => {
-  const sections = ["원인 가설", "타깃", "최종 제출물"];
+  const sections = ["원인 가설", "타깃", "성과 지표"];
   const updates = normalizeTrack3SectionUpdates([
     { section: "허용되지 않은 섹션", content: "무시됩니다." },
     { section: "원인 가설", content: "## 원인 가설\n새 가설입니다." }
@@ -343,7 +340,6 @@ test("chat success message is based on content that actually passed section vali
     chatModel: async () => ({
       assistant_message: "원인 가설 영역을 업데이트했습니다.",
       request_kind: "artifact_update",
-      finalization_requested: false,
       section_updates: [{ section: "잘못된 섹션명", content: "표시되면 안 됩니다." }]
     })
   });
@@ -421,15 +417,15 @@ test("assistant message summarizes updated sections and falls back from casual s
   );
 });
 
-test("Track 3 scenarios expose a finalization-only artifact section", () => {
+test("Track 3 scenarios expose four cumulative workspace sections", () => {
   const scenarios = listScenarios();
 
   assert.equal(scenarios.length, 3);
   assert.equal(scenarios[0].artifact_sections.length, 4);
-  assert.equal(scenarios[1].artifact_sections.length, 5);
-  assert.equal(scenarios[2].artifact_sections.length, 5);
-  assert.deepEqual(scenarios[0].artifact_sections, ["후보 비교표", "선택안 & 선정 근거", "PRD 초안", "최종 제출물"]);
-  assert.ok(scenarios.every((scenario) => scenario.final_artifact_section === "최종 제출물"));
+  assert.equal(scenarios[1].artifact_sections.length, 4);
+  assert.equal(scenarios[2].artifact_sections.length, 4);
+  assert.deepEqual(scenarios[0].artifact_sections, ["문제 정의", "후보 비교 기준 & 비교표", "선택안 & 선정 근거", "실행 계획 & 검증 방법"]);
+  assert.ok(scenarios.every((scenario) => !scenario.final_artifact_section));
   assert.equal(getScenario("marketing_001").role, "이모레퍼시픽 스킨케어팀의 마케팅 담당자");
   assert.equal(getScenario("da_001").role, "마켓쿨리의 데이터 분석 담당자");
 });
@@ -474,43 +470,19 @@ test("Track 3 Judge context contains every canonical scenario paragraph", () => 
   }
 });
 
-test("Track 3 blocks final artifact updates unless the model identifies finalization intent", async () => {
-  const chatModel = async ({ turns }) => ({
+test("Track 3 accepts updates to any requested workspace section", async () => {
+  const chatModel = async () => ({
     assistant_message: "요청을 반영했습니다.",
     request_kind: "artifact_update",
-    finalization_requested: turns.at(-1).content.includes("완성"),
-    section_updates: [{ section: "최종 제출물", content: "다음 달 캠페인 기획서입니다." }]
+    section_updates: [{ section: "성과 지표 & 기대효과", content: "다음 달 재구매율 목표와 점검 지표입니다." }]
   });
 
-  const intermediate = await generateTrack3Chat({
+  const result = await generateTrack3Chat({
     scenarioId: "marketing_001",
-    userMessage: "뉴스 근거를 더 구체적으로 검토해주세요."
+    userMessage: "성과 지표와 기대효과를 구체적으로 작성해주세요."
   }, { chatModel });
-  assert.equal(intermediate.artifact, "");
-
-  const finalized = await generateTrack3Chat({
-    scenarioId: "marketing_001",
-    userMessage: "검토 내용을 반영해 최종 기획서로 완성해주세요."
-  }, { chatModel });
-  assert.match(finalized.artifact, /## 최종 제출물\n다음 달 캠페인 기획서입니다/);
-});
-
-test("missing finalization section caps practical application without blocking submission", () => {
-  const axes = TRACK3_AXES.map(([key, axis]) => ({ key, axis, score: 4, max: 4, rate: 1 }));
-  const scenario = getScenario("pm_001");
-  const capped = applyFinalArtifactPolicy({
-    axisScores: axes,
-    finalOutput: "## PRD 초안\n목표, 성공지표, 범위, 제외범위와 일정이 포함된 충분히 긴 작업 초안입니다.",
-    scenario
-  });
-  assert.equal(capped.find((axis) => axis.key === "practical_application").score, 2);
-
-  const preserved = applyFinalArtifactPolicy({
-    axisScores: axes,
-    finalOutput: "## PRD 초안\n작업 초안\n\n## 최종 제출물\n회의에서 사용할 최종 PRD입니다.",
-    scenario
-  });
-  assert.equal(preserved.find((axis) => axis.key === "practical_application").score, 4);
+  assert.deepEqual(result.updatedSections, ["성과 지표 & 기대효과"]);
+  assert.match(result.artifact, /## 성과 지표 & 기대효과/);
 });
 
 test("compactTrack3AssistantMessage keeps chat concise while artifact holds details", () => {
@@ -576,7 +548,7 @@ test("scenario copy is detected from frontend boilerplate even when wording diff
     "개발자는 쿠폰함 알림 기능을, 디자이너는 위시리스트 공유 기능을, 데이터 분석가는 구매 후 추천 기능을 각각 제안했습니다.",
     "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고 다음 회의에 쓸 PRD 초안을 만들어보세요.",
     "미션 가이드",
-    "다음 내용을 중심으로 AI와 함께 최종 제출물을 만들어보세요."
+    "다음 내용을 중심으로 AI와 함께 작업 영역을 완성해보세요."
   ].join("\n");
   const integrity = analyzeTrack3Integrity({
     scenario: getScenario("pm_001"),
@@ -711,7 +683,7 @@ test("turn count remains diagnostic without a completion multiplier", () => {
 test("validateSubmitInput accepts a usable final output", () => {
   const result = validateSubmitInput({
     turns: sampleTurns,
-    finalOutput: "비교 기준, 기능 선정 결과, 선정 근거, 목표, 성공지표, 범위, 제외범위, 일정이 포함된 최종 PRD 초안입니다."
+    finalOutput: "문제 정의, 비교 기준, 기능 선정 결과, 선정 근거, 실행 계획, 검증 방법이 포함된 회의용 작업 영역입니다."
   });
   assert.equal(result.valid, true);
 });
@@ -723,13 +695,11 @@ test("judgeTrack3 returns a demo evaluation without OpenAI", async () => {
     scenarioId: "pm_001",
     turns: sampleTurns,
     finalOutput: [
+      "문제 정의: 3주 안에 검증할 핵심 기능 하나를 선택한다.",
       "기능 선정 결과: 위시리스트 공유 기능",
-      "선정 근거: 3주 안에 개발자 2명과 디자이너 1명으로 MVP 범위 구현 가능",
-      "목표: 선물 탐색과 공유 전환 개선",
-      "성공지표: 공유 클릭률, 공유 후 구매 전환율",
-      "범위: 위시리스트 생성, 공유 링크, 기본 상품 카드",
-      "제외범위: 추천 알고리즘 고도화, 쿠폰 정책 변경",
-      "일정: 1주차 설계, 2주차 구현, 3주차 QA 및 릴리즈"
+      "선정 근거: 세 후보 중 3주 안에 검증 가능한 범위와 출시 리스크를 우선 비교했다.",
+      "실행 계획: 1주차 범위 확정, 2주차 구현, 3주차 검증 및 회의 공유",
+      "검증 방법: 공유 클릭률과 공유 후 구매 전환율을 확인한다."
     ].join("\n")
   });
   process.env.ENABLE_TRACK3_LLM_JUDGE = original;
@@ -796,13 +766,11 @@ test("judgeTrack3 gives different scores for weak and strong conversations", asy
     scenarioId: "pm_001",
     turns: sampleTurns,
     finalOutput: [
+      "문제 정의: 3주 안에 검증할 핵심 기능 하나를 선택한다.",
       "기능 선정 결과: 위시리스트 공유 기능",
-      "선정 근거: 3주 안에 개발자 2명과 디자이너 1명으로 MVP 범위 구현 가능",
-      "목표: 선물 탐색과 공유 전환 개선",
-      "성공지표: 공유 클릭률, 공유 후 구매 전환율",
-      "범위: 위시리스트 생성, 공유 링크, 기본 상품 카드",
-      "제외범위: 추천 알고리즘 고도화, 쿠폰 정책 변경",
-      "일정: 1주차 설계, 2주차 구현, 3주차 QA 및 릴리즈"
+      "선정 근거: 세 후보 중 3주 안에 검증 가능한 범위와 출시 리스크를 우선 비교했다.",
+      "실행 계획: 1주차 범위 확정, 2주차 구현, 3주차 검증 및 회의 공유",
+      "검증 방법: 공유 클릭률과 공유 후 구매 전환율을 확인한다."
     ].join("\n")
   });
 
