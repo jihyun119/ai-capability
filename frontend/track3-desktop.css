@@ -1518,6 +1518,28 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
   word-break: break-word !important;
 }
 
+main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-guide {
+  display: grid !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 18px 22px 18px 42px !important;
+  border: 2px solid var(--t3-violet) !important;
+  border-radius: 16px !important;
+  background: #fbfaff !important;
+  color: var(--t3-black) !important;
+  list-style: disc !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-guide li {
+  padding-left: 2px !important;
+  font: 500 16px/1.45 "Pretendard", sans-serif !important;
+  word-break: keep-all !important;
+}
+
+main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-guide li::marker {
+  color: var(--t3-violet) !important;
+}
+
 @media (min-width: 1181px) {
   main#app.app-shell > .screen.active.t3-chat-screen {
     padding-bottom: 72px !important;
@@ -1575,6 +1597,17 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
 }
 
 @media (max-width: 1180px) {
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-guide {
+    gap: 8px !important;
+    padding: 14px 16px 14px 32px !important;
+    border-radius: 12px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-guide li {
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-back {
     width: var(--t3-mobile-inner) !important;
     margin: 15px auto 0 !important;

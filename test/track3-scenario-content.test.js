@@ -12,6 +12,9 @@ const shareCardSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-ca
 
 test("Track 3 workspace explains that the artifact keeps updating", () => {
   assert.match(frontendSource, /작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다\./);
+  assert.match(frontendSource, /class="t3-workspace-guide"/);
+  assert.match(frontendSource, /최종 제출 시, 아래 작성된 내용이 최종 제출물로 평가됩니다\./);
+  assert.match(track3Styles, /\.t3-workspace \.t3-workspace-guide/);
 });
 
 test("PM scenario consistently uses product team wording", () => {

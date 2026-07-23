@@ -1095,7 +1095,12 @@
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
             <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">4</span><span>최종 제출물 작업 영역</span></h2>
-            <p>AI와 대화할수록 해당 영역이 채워집니다.<br>최대 5턴까지 대화 가능합니다.<br>작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다.<br>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다.</p>
+            <ul class="t3-workspace-guide">
+              <li>AI와 대화할수록 해당 영역이 채워지며, 최대 5턴까지 대화 가능합니다.</li>
+              <li>작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다.</li>
+              <li>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다.</li>
+              <li>최종 제출 시, 아래 작성된 내용이 최종 제출물로 평가됩니다.</li>
+            </ul>
             <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
           </section>
           <aside class="t3-chat-panel">
