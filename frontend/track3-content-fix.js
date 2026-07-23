@@ -97,6 +97,7 @@
   state.t3Draft = state.t3Draft || "";
   let t3ChatPending = false;
   let t3ChatWarning = "";
+  let t3ChatInputMethod = "button";
 
   function resetTrack3Progress() {
     state.t3Scenario = 0;
@@ -111,6 +112,8 @@
     state.t3Draft = "";
     t3ChatPending = false;
     t3ChatWarning = "";
+    t3ChatInputMethod = "button";
+    window.PookieAnalytics?.resetTrack("track3");
   }
 
   window.__resetTrack3Progress = resetTrack3Progress;
@@ -856,6 +859,7 @@
         showScreen(current);
       }
     } catch (error) {
+      window.PookieAnalytics?.trackError("track3", "scenario_load", error);
       state.t3Scenarios = t3ScenarioData;
       state.t3ScenariosLoaded = true;
       console.error("[track3:scenarios]", error);
@@ -911,6 +915,10 @@
     }
 
     const turnsBeforeRequest = normalizedT3Turns();
+    const scenarioId = activeT3ScenarioId();
+    const turnNumber = turnsBeforeRequest.filter((turn) => turn.role === "user").length + 1;
+    const inputMethod = t3ChatInputMethod;
+    t3ChatInputMethod = "button";
     state.t3Draft = "";
     state.t3Turns = [...turnsBeforeRequest, { role: "user", content: userMessage }];
     t3ChatPending = true;
@@ -922,7 +930,7 @@
 
     try {
       const response = await postJson("/api/track3/chat", {
-        scenarioId: activeT3ScenarioId(),
+        scenarioId,
         turns: turnsBeforeRequest,
         userMessage,
         artifact: state.t3Artifact || "",
@@ -936,7 +944,16 @@
       state.t3PreviousArtifact = state.t3Artifact || "";
       state.t3Artifact = payload.artifact || payload.finalOutput || state.t3Artifact || "";
       state.t3Draft = "";
+      window.PookieAnalytics?.chatStarted(scenarioId);
+      window.PookieAnalytics?.sendGaEvent("message_send", {
+        track_id: "track3",
+        scenario_id: scenarioId,
+        turn_number: turnNumber,
+        message_length: userMessage.length,
+        input_method: inputMethod,
+      });
     } catch (error) {
+      window.PookieAnalytics?.trackError("track3", "chat_send", error);
       state.t3Turns = turnsBeforeRequest;
       state.t3Draft = rawMessage;
       console.error("[track3:chat]", error);
@@ -960,7 +977,7 @@
       finalOutput: requestPayload.finalOutput,
       earlyFinish: requestPayload.earlyFinish,
       evaluation: result?.result || result,
-    });
+    }, { trackId: "track3", errorStage: "result_save" });
   }
 
   async function submitTrack3() {
@@ -984,8 +1001,13 @@
       };
       const response = await postJson("/api/track3/submit", requestPayload);
       state.t3Result = response;
+      window.PookieAnalytics?.trackSubmitted("track3", {
+        scenario_id: requestPayload.scenarioId,
+        turn_count: getT3TurnCount(),
+      });
       persistTrack3Result(response, requestPayload);
     } catch (error) {
+      window.PookieAnalytics?.trackError("track3", "track_submit", error);
       state.t3Error = error.message || "Track 3 결과를 불러오지 못했습니다.";
       console.error("[track3:submit]", error);
     }
@@ -993,6 +1015,16 @@
     await waitForMinimumLoading(loadingStartedAt);
     render();
     showScreen("t3-result");
+    if (state.t3Result) {
+      const resultKey = state.t3Result.resultId
+        || state.t3Result.result?.resultId
+        || `${activeT3ScenarioId()}:${t3ResultScore()}`;
+      window.PookieAnalytics?.resultViewed("track3", resultKey, {
+        scenario_id: activeT3ScenarioId(),
+        score: Number(t3ResultScore()) || 0,
+        grade: t3ResultGrade(),
+      });
+    }
   }
 
   window.__track3Submit = submitTrack3;
@@ -1097,10 +1129,16 @@
             <h1>${t3ResultScore()}점</h1>
             <div class="t3-score-list">${makeT3ScoreRows()}</div>
           </article>
+          <article class="t3-result-report">
+            <h2>${escapeHtml(t3ResultHeadline())}</h2>
+            <p>${escapeHtml(t3ResultSummary())}</p>
+            <div class="t3-detail-list">${makeT3DetailRows()}</div>
+          </article>
         </section>
         <nav class="t3-result-nav">
           ${button("상세 리포트 보기", "t3-report", "primary", "t3-detail-open")}
           <button class="cta secondary t3-result-share" type="button">공유하기</button>
+          ${button("다른 Track 도전", "home", "primary", "t3-result-home")}
         </nav>`,
         "t3-screen t3-result-screen"
       ),
@@ -1127,19 +1165,29 @@
     if (brief) brief.innerHTML = makeT3ChatBrief();
   }
 
+  const t3MobileResultMedia = window.matchMedia("(max-width: 1180px)");
   const originalShowScreen = showScreen;
   showScreen = function patchedShowScreen(name) {
-    originalShowScreen(name);
-    if (name === "t3-scenario" || name === "t3-chat") {
+    const responsiveName = name === "t3-report" && !t3MobileResultMedia.matches
+      ? "t3-result"
+      : name;
+    originalShowScreen(responsiveName);
+    if (responsiveName === "t3-scenario" || responsiveName === "t3-chat") {
       loadT3Scenarios();
     }
-    if (name === "t3-chat") {
+    if (responsiveName === "t3-chat") {
       syncT3ChatScenario();
       const screen = document.querySelector('[data-screen="t3-chat"]');
       if (screen && !screen.dataset.t3Tab) screen.dataset.t3Tab = "brief";
       refreshT3ChatUi();
     }
   };
+
+  t3MobileResultMedia.addEventListener?.("change", (event) => {
+    if (!event.matches && document.querySelector('[data-screen="t3-report"].active')) {
+      showScreen("t3-result");
+    }
+  });
 
   if (typeof render === "function") {
     render();
@@ -1153,6 +1201,7 @@
     t3SharePending = true;
     button.disabled = true;
     button.textContent = "이미지 준비 중...";
+    window.PookieAnalytics?.sendGaEvent("share_open", { track_id: "track3" });
     try {
       if (!window.ShareService?.shareResult) throw new Error("공유 서비스를 사용할 수 없습니다.");
       const outcome = await window.ShareService.shareResult("track3");
@@ -1182,6 +1231,8 @@
     const resultHomeButton = event.target.closest(".t3-result-home");
     if (resultHomeButton) {
       event.preventDefault();
+      window.PookieAnalytics?.otherTrackClicked("track3");
+      window.PookieAnalytics?.resetTrack("track3");
       state.t3Result = null;
       state.t3SaveResult = null;
       state.t3Error = "";
@@ -1223,6 +1274,8 @@
     const nextScenario = Number(scenarioButton.dataset.t3Scenario) || 0;
     const scenarios = activeT3Scenarios();
     const nextScenarioId = scenarioIdOf(scenarios[nextScenario], nextScenario);
+    const selectionChanged = Number(state.t3Scenario) !== nextScenario
+      || state.t3ScenarioId !== nextScenarioId;
     if (state.t3ScenarioId && state.t3ScenarioId !== nextScenarioId) {
       state.t3Turns = [];
       state.t3Artifact = "";
@@ -1236,6 +1289,13 @@
     }
     state.t3Scenario = nextScenario;
     state.t3ScenarioId = nextScenarioId;
+    if (selectionChanged) {
+      window.PookieAnalytics?.sendGaEvent("scenario_select", {
+        track_id: "track3",
+        scenario_id: nextScenarioId,
+        scenario_index: nextScenario + 1,
+      });
+    }
     scenarioButton
       .closest(".t3-scenario-list")
       ?.querySelectorAll("[data-t3-scenario]")
@@ -1247,6 +1307,7 @@
     if (!sendButton) return;
 
     event.preventDefault();
+    t3ChatInputMethod = "button";
     sendTrack3Chat();
   }, true);
 
@@ -1262,6 +1323,7 @@
     ) return;
 
     event.preventDefault();
+    t3ChatInputMethod = "enter";
     sendTrack3Chat();
   });
 

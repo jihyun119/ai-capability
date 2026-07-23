@@ -788,24 +788,34 @@
 
   main#app.app-shell > .screen.active.t3-result-screen .t3-result-layout {
     position: absolute !important;
-    left: 416px !important;
+    left: 120px !important;
     top: 149px !important;
-    width: 609px !important;
+    width: 1200px !important;
     height: 800px !important;
-    display: block !important;
+    display: grid !important;
+    grid-template-columns: 609px 591px !important;
     border: 1.33px solid var(--t3-black) !important;
     border-radius: 20px !important;
     background: var(--t3-white) !important;
     overflow: hidden !important;
   }
 
-  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score {
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score,
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-report {
     height: 800px !important;
     margin: 0 !important;
     border-radius: 0 !important;
     background: var(--t3-white) !important;
     box-shadow: none !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-score {
     padding: 72px 48px !important;
+    border-right: 1.33px solid var(--t3-black) !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-report {
+    padding: 55px 39px !important;
   }
 
   main#app.app-shell > .screen.active.t3-result-screen .t3-grade {
@@ -913,17 +923,21 @@
 
   main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav {
     position: absolute !important;
-    left: 416px !important;
+    left: 120px !important;
     top: 994px !important;
-    width: 609px !important;
+    width: 1200px !important;
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 24px !important;
+    grid-template-columns: 540px 540px !important;
+    gap: 120px !important;
   }
 
   main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta {
-    width: 100% !important;
-    height: 72px !important;
+    width: 540px !important;
+    height: 88px !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-open {
+    display: none !important;
   }
 
   main#app.app-shell > .screen.active.t3-report-screen .t3-report-mobile {
@@ -1213,9 +1227,13 @@ main#app.app-shell > .screen.active.t3-loading-screen .t3-loading-pookie {
     order: 1 !important;
   }
 
-  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary) {
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-home {
     display: flex !important;
     order: 2 !important;
+  }
+
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-open {
+    display: none !important;
   }
 }
 
@@ -2397,12 +2415,16 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-composer textarea {
     order: 1 !important;
   }
 
+  main#app.app-shell > .screen.active.t3-result-screen .t3-result-home {
+    display: none !important;
+  }
+
   main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta.secondary {
     display: flex !important;
     order: 2 !important;
   }
 
-  main#app.app-shell > .screen.active.t3-result-screen .t3-result-nav .cta:not(.secondary) {
+  main#app.app-shell > .screen.active.t3-result-screen .t3-detail-open {
     display: flex !important;
     order: 1 !important;
   }

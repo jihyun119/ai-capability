@@ -57,7 +57,7 @@ window.ShareService = (() => {
     const total = Number.isFinite(Number(result.total)) ? Math.round(Number(result.total)) : "-";
     return [
       "푸키 Track 3에서 AI 실무 활용 역량을 진단했어요.",
-      `제 결과는 "${grade}, ${total}점"이에요.`,
+      `제 결과는 ${grade}, ${total}점이에요.`,
       "직접 도전하고 나의 AI 활용 역량도 확인해보세요!",
       String(shareUrl || "").trim(),
     ].filter(Boolean).join("\n");
@@ -148,21 +148,42 @@ window.ShareService = (() => {
 
   // "shared"(네이티브 공유창 열림) 또는 "downloaded"(파일 저장)를 반환합니다.
   // 사용자가 공유창을 닫으면 AbortError를 그대로 던져 호출부가 구분할 수 있게 합니다.
-  async function deliver({ blob, filename, title, text }, { preferNativeShare }) {
+  async function deliver({ blob, filename, title, text }, { preferNativeShare, track }) {
     const file = new File([blob], filename, { type: "image/png" });
-    const canShareFile = navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }));
+    let canShareFile = false;
+    if (typeof navigator.share === "function" && typeof navigator.canShare === "function") {
+      try {
+        canShareFile = navigator.canShare({ files: [file] });
+      } catch (error) {
+        console.warn("[share] 파일 공유 지원 여부를 확인하지 못했습니다.", error);
+      }
+    }
 
     if (preferNativeShare && canShareFile) {
       try {
         await navigator.share({ title, text, files: [file] });
+        window.PookieAnalytics?.sendGaEvent("share_result", {
+          track_id: track,
+          share_method: "native_share",
+        });
         return "shared";
       } catch (error) {
         if (error?.name === "AbortError") throw error;
-        // 그 외 공유 실패는 다운로드로 폴백합니다.
+        window.PookieAnalytics?.trackError(track, "share_execute", error);
+        console.error("[share] 네이티브 파일 공유 실패", error);
       }
     }
 
-    downloadBlob(blob, filename);
+    try {
+      downloadBlob(blob, filename);
+    } catch (error) {
+      window.PookieAnalytics?.trackError(track, "share_execute", error);
+      throw error;
+    }
+    window.PookieAnalytics?.sendGaEvent("share_result", {
+      track_id: track,
+      share_method: "image_download",
+    });
     return "downloaded";
   }
 
@@ -205,13 +226,30 @@ window.ShareService = (() => {
 
   // "공유" 버튼: 어디서든 네이티브 공유를 먼저 시도합니다.
   async function shareResult(track) {
-    const preferNativeShare = track === "track3" ? isTouchShareDevice() : true;
-    return deliver(await createShareImage(track), { preferNativeShare });
+    let image;
+    try {
+      image = await createShareImage(track);
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        window.PookieAnalytics?.trackError(track, "share_generate", error);
+      }
+      throw error;
+    }
+    return deliver(image, { preferNativeShare: true, track });
   }
 
   // "저장" 버튼: 데스크톱에서는 곧장 파일로 내려받고, 터치 기기에서만 공유창을 씁니다.
   async function saveResultImage(track) {
-    return deliver(await createShareImage(track), { preferNativeShare: isTouchShareDevice() });
+    let image;
+    try {
+      image = await createShareImage(track);
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        window.PookieAnalytics?.trackError(track, "share_generate", error);
+      }
+      throw error;
+    }
+    return deliver(image, { preferNativeShare: isTouchShareDevice(), track });
   }
 
   return {

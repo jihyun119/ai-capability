@@ -13,23 +13,106 @@ const characters = {
   result: ["시키는만큼만 해 형", "minimal-request.png"],
 };
 
+const TRACK1_CHARACTER_RESULT_CARDS = {
+  ai_unknown: {
+    typeName: "AI 몰라형",
+    galleryFile: "ai-unknown.png",
+    resultCardSrc: "./assets/track1-result-cards/01-ai-unknown.png",
+  },
+  minimal_request: {
+    typeName: "시키는만큼만 해 형",
+    galleryFile: "minimal-request.png",
+    resultCardSrc: "./assets/track1-result-cards/02-minimal-request.png",
+  },
+  searcher: {
+    typeName: "프로 검색러형",
+    galleryFile: "searcher.png",
+    resultCardSrc: "./assets/track1-result-cards/03-searcher.png",
+  },
+  cold_trainer: {
+    typeName: "냉철한 조련사형",
+    galleryFile: "cold-trainer.png",
+    resultCardSrc: "./assets/track1-result-cards/04-cold-trainer.png",
+  },
+  chatty: {
+    typeName: "가벼운 수다쟁이형",
+    galleryFile: "chatty.png",
+    resultCardSrc: "./assets/track1-result-cards/05-chatty.png",
+  },
+  skeptic_regular: {
+    typeName: "의심많은 단골형",
+    galleryFile: "skeptic-regular.png",
+    resultCardSrc: "./assets/track1-result-cards/06-skeptic-regular.png",
+  },
+  friend: {
+    typeName: "필찾하는 친구형",
+    galleryFile: "friend.png",
+    resultCardSrc: "./assets/track1-result-cards/07-friend.png",
+  },
+  warm_perfectionist: {
+    typeName: "따뜻한 완벽주의자형",
+    galleryFile: "warm-perfectionist.png",
+    resultCardSrc: "./assets/track1-result-cards/08-warm-perfectionist.png",
+  },
+  anxious_client: {
+    typeName: "불안한 상습의뢰인형",
+    galleryFile: "anxious-client.png",
+    resultCardSrc: "./assets/track1-result-cards/09-anxious-client.png",
+  },
+  nitpicker: {
+    typeName: "프로 트집러형",
+    galleryFile: "nitpicker.png",
+    resultCardSrc: "./assets/track1-result-cards/10-nitpicker.png",
+  },
+  business: {
+    typeName: "드라이한 비즈니스맨형",
+    galleryFile: "business.png",
+    resultCardSrc: "./assets/track1-result-cards/11-business.png",
+  },
+  boss: {
+    typeName: "선긋는 상사형",
+    galleryFile: "boss.png",
+    resultCardSrc: "./assets/track1-result-cards/12-boss.png",
+  },
+  emotion_bin: {
+    typeName: "감정 쓰레기통형",
+    galleryFile: "emotion-bin.png",
+    resultCardSrc: "./assets/track1-result-cards/13-emotion-bin.png",
+  },
+  boundary_love: {
+    typeName: "애정 넘치는 경계형",
+    galleryFile: "boundary-love.png",
+    resultCardSrc: "./assets/track1-result-cards/14-boundary-love.png",
+  },
+  partner: {
+    typeName: "든든한 파트너형",
+    galleryFile: "partner.png",
+    resultCardSrc: "./assets/track1-result-cards/15-partner.png",
+  },
+  clingy_lover: {
+    typeName: "집착하는 애인형",
+    galleryFile: "clingy-lover.png",
+    resultCardSrc: "./assets/track1-result-cards/16-clingy-lover.png",
+  },
+};
+
 const characterGallery = [
-  "ai-unknown.png",
-  "friend.png",
-  "boundary-love.png",
-  "cold-trainer.png",
-  "chatty.png",
-  "searcher.png",
-  "anxious-client.png",
-  "partner.png",
-  "clingy-lover.png",
-  "business.png",
-  "nitpicker.png",
-  "minimal-request.png",
-  "boss.png",
-  "emotion-bin.png",
-  "skeptic-regular.png",
-  "warm-perfectionist.png",
+  "ai_unknown",
+  "friend",
+  "boundary_love",
+  "cold_trainer",
+  "chatty",
+  "searcher",
+  "anxious_client",
+  "partner",
+  "clingy_lover",
+  "business",
+  "nitpicker",
+  "minimal_request",
+  "boss",
+  "emotion_bin",
+  "skeptic_regular",
+  "warm_perfectionist",
 ];
 
 const characterFilesByType = {
@@ -214,6 +297,18 @@ const state = {
 };
 
 const app = document.querySelector("#app");
+
+function analyticsTrackId(value) {
+  const match = String(value || "").match(/^(?:t|track)([123])(?:-|$)/);
+  return match ? `track${match[1]}` : null;
+}
+
+function analyticsEntryScreen() {
+  const screenName = document.querySelector(".screen.active")?.dataset.screen || state.currentScreen;
+  if (screenName === "home") return "home";
+  if (/^(?:t[123]-(?:result|report|share))/.test(screenName)) return "result";
+  return "track_list";
+}
 
 function char(key, className = "character") {
   const [name, file] = characters[key];
@@ -640,7 +735,7 @@ function t2ShareScreen() {
     strength: result.feedback?.strength || result.feedback?.strengths?.[0]?.description || "강점 분석이 표시됩니다.",
     weakness: result.feedback?.weakness || result.feedback?.weaknesses?.[0]?.description || "보완점 분석이 표시됩니다.",
   };
-  const chart = renderTrack2Radar(result);
+  const chart = renderTrack2Radar(result, false);
 
   return screen(
     "t2-share",
@@ -867,6 +962,33 @@ const track2TypeDistribution = [
   { name: "AI 전략가", percentage: 15, min: 85, max: 100, className: "strategic" },
 ];
 
+const TRACK2_AXIS_INFO = {
+  task_clarity: {
+    label: "작업 명확성",
+    description: "원하는 작업을 목표·조건·범위까지 구체적으로 정의하는가",
+  },
+  context: {
+    label: "배경·맥락 설명",
+    description: "요청 전에 목적·배경·대상을 충분히 설명하는가",
+  },
+  role: {
+    label: "역할 지정",
+    description: "AI에게 구체적인 전문가 역할이나 페르소나를 부여하는가",
+  },
+  output_format: {
+    label: "출력 형식 지정",
+    description: "원하는 형식·길이·톤을 사전에 명시하는가",
+  },
+  iteration: {
+    label: "반복 개선 능력",
+    description: "답변이 기대와 다를 때 정확히 짚어 수정 요청하는가",
+  },
+  critical_review: {
+    label: "비판적 검토",
+    description: "AI 답변을 그대로 수용하지 않고 검증·반박하는가",
+  },
+};
+
 function renderTrack2TypeDistribution() {
   return `<section class="t2-type-distribution" aria-labelledby="t2-type-distribution-title">
     <h2 id="t2-type-distribution-title">AI 활용 역량 유형 분포</h2>
@@ -952,7 +1074,7 @@ function t2ResultScreen() {
   );
 }
 
-function renderTrack2Radar(result) {
+function renderTrack2Radar(result, interactive = true) {
   const axisOrder = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
   const center = 135;
   const maxRadius = 94;
@@ -979,9 +1101,43 @@ function renderTrack2Radar(result) {
       <polygon class="radar-fill" points="${radarPoints}" />
       <polygon class="radar-stroke" points="${radarPoints}" />
       ${axisOrder.map((key, index) => `<circle class="radar-dot" cx="${point(result.axes[key]?.rate || 0, index).split(",")[0]}" cy="${point(result.axes[key]?.rate || 0, index).split(",")[1]}" r="3.5" />`).join("")}
-      ${axisOrder.map((key, index) => `<text class="radar-label" x="${labelPositions[index].x}" y="${labelPositions[index].y}" text-anchor="${labelPositions[index].anchor}">${result.axes[key]?.label || key}</text>`).join("")}
+      ${interactive ? "" : axisOrder.map((key, index) => `<text class="radar-label" x="${labelPositions[index].x}" y="${labelPositions[index].y}" text-anchor="${labelPositions[index].anchor}">${escapeHtml(result.axes[key]?.label || key)}</text>`).join("")}
     </svg>
+    ${interactive ? `<div class="track2-axis-label-layer">
+      ${axisOrder.map((key, index) => renderTrack2AxisLabel(key, index)).join("")}
+    </div>` : ""}
   </div>`;
+}
+
+function renderTrack2AxisLabel(key, index) {
+  const info = TRACK2_AXIS_INFO[key];
+  const tooltipId = `track2-axis-tooltip-${key}`;
+  return `<div class="track2-axis-label track2-axis-label-${index + 1}">
+    <span>${escapeHtml(info.label)}</span>
+    <button
+      class="track2-axis-info-button"
+      type="button"
+      aria-label="${escapeHtml(info.label)} 설명 보기"
+      aria-expanded="false"
+      aria-describedby="${tooltipId}"
+    ><i aria-hidden="true">i</i></button>
+    <div class="track2-axis-tooltip" id="${tooltipId}" role="tooltip">
+      <strong>${escapeHtml(info.label)}</strong>
+      <p>${escapeHtml(info.description)}</p>
+    </div>
+  </div>`;
+}
+
+function closeTrack2AxisTooltips(exceptButton = null) {
+  document.querySelectorAll(".track2-axis-info-button").forEach((buttonNode) => {
+    if (buttonNode !== exceptButton) buttonNode.setAttribute("aria-expanded", "false");
+  });
+}
+
+function toggleTrack2AxisTooltip(buttonNode) {
+  const willOpen = buttonNode.getAttribute("aria-expanded") !== "true";
+  closeTrack2AxisTooltips();
+  buttonNode.setAttribute("aria-expanded", String(willOpen));
 }
 
 function t3Screens() {
@@ -1015,11 +1171,56 @@ function characterGalleryScreen() {
     <section class="character-gallery-page">
       <div class="character-grid">
         ${characterGallery
-          .map((file) => {
-            const name = file.replace(".png", "");
-            return `<article class="character-tile"><img src="${galleryCharacterDir}${file}" alt="${name}" /></article>`;
+          .map((characterKey) => {
+            const character = TRACK1_CHARACTER_RESULT_CARDS[characterKey];
+            return `
+              <button
+                type="button"
+                class="character-tile"
+                data-character-card-open="${characterKey}"
+                aria-label="${escapeHtml(character.typeName)} 결과 카드 보기"
+                aria-haspopup="dialog"
+                aria-controls="character-result-dialog"
+              >
+                <img src="${galleryCharacterDir}${character.galleryFile}" alt="${escapeHtml(character.typeName)}" />
+              </button>`;
           })
           .join("")}
+      </div>
+      <div
+        class="character-result-dialog"
+        data-character-result-dialog
+        id="character-result-dialog"
+        aria-hidden="true"
+        hidden
+      >
+        <button
+          type="button"
+          class="character-result-dialog-backdrop"
+          data-character-card-close
+          aria-label="결과 카드 팝업 닫기"
+          tabindex="-1"
+        ></button>
+        <div
+          class="character-result-dialog-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="character-result-dialog-title"
+          tabindex="-1"
+        >
+          <h2 class="character-result-dialog-title" id="character-result-dialog-title"></h2>
+          <button
+            type="button"
+            class="character-result-dialog-close"
+            data-character-card-close
+            aria-label="결과 카드 팝업 닫기"
+          >×</button>
+          <p class="character-result-dialog-status" data-character-card-status>결과 카드를 불러오는 중입니다.</p>
+          <img class="character-result-dialog-image" data-character-card-image alt="" hidden />
+          <p class="character-result-dialog-error" data-character-card-error hidden>
+            결과 카드 이미지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+          </p>
+        </div>
       </div>
     </section>`,
     "character-gallery-screen"
@@ -1237,12 +1438,16 @@ function render() {
 
 function showScreen(name) {
   state.currentScreen = name;
+  closeTrack2AxisTooltips();
   clearQuestionErrorOutsideScreen(name);
   document.querySelectorAll(".screen").forEach((screenNode) => {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
   });
   const activeScreen = document.querySelector(`.screen.active[data-screen="${name}"]`);
   if (activeScreen) syncProgressBars(activeScreen);
+  if (name === "t1-q-1") window.PookieAnalytics?.trackStarted("track1");
+  if (name === "t2-q-1") window.PookieAnalytics?.trackStarted("track2");
+  if (name === "t3-scenario") window.PookieAnalytics?.trackStarted("track3");
   resetViewportPosition();
 }
 
@@ -1279,6 +1484,89 @@ function closeMenu() {
   document.querySelector(".menu-overlay")?.classList.remove("open");
 }
 
+let characterResultDialogTrigger = null;
+let characterResultDialogBodyOverflow = "";
+
+function openCharacterResultDialog(trigger) {
+  const characterKey = trigger?.dataset.characterCardOpen;
+  const character = TRACK1_CHARACTER_RESULT_CARDS[characterKey];
+  const dialog = trigger?.closest(".character-gallery-screen")?.querySelector("[data-character-result-dialog]");
+  if (!character || !dialog) {
+    console.warn(`[character-card] 결과 카드 mapping을 찾지 못했습니다: ${characterKey || "unknown"}`);
+    return;
+  }
+
+  const panel = dialog.querySelector(".character-result-dialog-panel");
+  const closeButton = dialog.querySelector(".character-result-dialog-close");
+  const title = dialog.querySelector(".character-result-dialog-title");
+  const status = dialog.querySelector("[data-character-card-status]");
+  const image = dialog.querySelector("[data-character-card-image]");
+  const errorMessage = dialog.querySelector("[data-character-card-error]");
+  if (!panel || !closeButton || !title || !status || !image || !errorMessage) return;
+
+  characterResultDialogTrigger = trigger;
+  characterResultDialogBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+
+  title.textContent = `${character.typeName} 결과 카드`;
+  status.hidden = false;
+  image.hidden = true;
+  errorMessage.hidden = true;
+  image.alt = `${character.typeName} Track 1 결과 카드`;
+  dialog.hidden = false;
+  dialog.setAttribute("aria-hidden", "false");
+
+  const expectedSrc = new URL(character.resultCardSrc, window.location.href).href;
+  const showLoadedImage = () => {
+    if (image.src !== expectedSrc) return;
+    status.hidden = true;
+    errorMessage.hidden = true;
+    image.hidden = false;
+  };
+  const showImageError = () => {
+    if (image.src !== expectedSrc) return;
+    status.hidden = true;
+    image.hidden = true;
+    errorMessage.hidden = false;
+    console.warn(`[character-card] 결과 카드 이미지를 불러오지 못했습니다: ${characterKey}`);
+  };
+
+  image.onload = showLoadedImage;
+  image.onerror = showImageError;
+  image.src = character.resultCardSrc;
+  if (image.complete) {
+    if (image.naturalWidth > 0) showLoadedImage();
+    else showImageError();
+  }
+
+  window.PookieAnalytics?.sendGaEvent("character_card_open", {
+    track_id: "track1",
+    character_type: characterKey,
+    source_screen: "character_guide",
+  });
+
+  requestAnimationFrame(() => closeButton.focus());
+}
+
+function closeCharacterResultDialog() {
+  const dialog = document.querySelector("[data-character-result-dialog]:not([hidden])");
+  if (!dialog) return;
+
+  const image = dialog.querySelector("[data-character-card-image]");
+  if (image) {
+    image.onload = null;
+    image.onerror = null;
+    image.removeAttribute("src");
+  }
+  dialog.hidden = true;
+  dialog.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = characterResultDialogBodyOverflow;
+
+  const trigger = characterResultDialogTrigger;
+  characterResultDialogTrigger = null;
+  if (trigger?.isConnected) requestAnimationFrame(() => trigger.focus());
+}
+
 function updateLoginValidity(screenNode) {
   if (!screenNode?.classList.contains("login-screen")) return;
   const nickname = screenNode.querySelector(".nickname-input input")?.value.trim() ?? "";
@@ -1297,6 +1585,30 @@ if (initialScreen && document.querySelector(`[data-screen="${initialScreen}"]`))
 }
 
 document.addEventListener("click", async (event) => {
+  const characterCardTrigger = event.target.closest("[data-character-card-open]");
+  if (characterCardTrigger) {
+    event.preventDefault();
+    openCharacterResultDialog(characterCardTrigger);
+    return;
+  }
+
+  if (event.target.closest("[data-character-card-close]")) {
+    event.preventDefault();
+    closeCharacterResultDialog();
+    return;
+  }
+
+  const track2AxisInfoButton = event.target.closest(".track2-axis-info-button");
+  if (track2AxisInfoButton) {
+    event.preventDefault();
+    toggleTrack2AxisTooltip(track2AxisInfoButton);
+    return;
+  }
+
+  if (!event.target.closest(".track2-axis-tooltip")) {
+    closeTrack2AxisTooltips();
+  }
+
   if (event.target.closest("[data-menu-open]")) {
     event.preventDefault();
     openMenu();
@@ -1354,8 +1666,10 @@ document.addEventListener("click", async (event) => {
       const outcome = await ShareService.shareResult(shareTarget.dataset.shareResult);
       shareTarget.textContent = outcome === "shared" ? "결과 공유창 열림" : "이미지 저장됨";
     } catch (error) {
-      shareTarget.textContent = "공유 실패";
-      console.error(error);
+      if (error?.name !== "AbortError") {
+        shareTarget.textContent = "공유 실패";
+        console.error(error);
+      }
     } finally {
       setTimeout(() => {
         shareTarget.textContent = originalText;
@@ -1390,6 +1704,9 @@ document.addEventListener("click", async (event) => {
   const shareOpenTarget = event.target.closest("[data-share-open]");
   if (shareOpenTarget) {
     event.preventDefault();
+    window.PookieAnalytics?.sendGaEvent("share_open", {
+      track_id: shareOpenTarget.dataset.shareOpen,
+    });
     const shareScreen = shareOpenTarget.dataset.shareOpen === "track2" ? "t2-share" : "t1-share";
     if (shareOpenTarget.dataset.shareOpen === "track1" || shareOpenTarget.dataset.shareOpen === "track2") {
       state.currentScreen = shareScreen;
@@ -1403,6 +1720,19 @@ document.addEventListener("click", async (event) => {
   if (!target) return;
   if (target.matches("[data-login-next]") && target.disabled) return;
   event.preventDefault();
+
+  const selectedTrackId = analyticsTrackId(target.dataset.go);
+  if (selectedTrackId && /^(?:t[12]|track3)-login$/.test(target.dataset.go)) {
+    window.PookieAnalytics?.trackSelected(selectedTrackId, analyticsEntryScreen());
+  }
+
+  const activeScreenName = document.querySelector(".screen.active")?.dataset.screen || "";
+  if (
+    target.dataset.go === "track"
+    && (activeScreenName === "t1-result" || activeScreenName === "t2-result")
+  ) {
+    window.PookieAnalytics?.otherTrackClicked(analyticsTrackId(activeScreenName));
+  }
 
   if (!ensureQuestionAnsweredBeforeMove(target.dataset.go)) {
     return;
@@ -1457,6 +1787,17 @@ document.addEventListener("click", async (event) => {
   showScreen(target.dataset.go);
 });
 
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    if (document.querySelector("[data-character-result-dialog]:not([hidden])")) {
+      event.preventDefault();
+      closeCharacterResultDialog();
+      return;
+    }
+    closeTrack2AxisTooltips();
+  }
+});
+
 document.addEventListener("input", (event) => {
   const field = event.target.closest("[data-field]");
   if (field?.dataset.field === "t1-paste") state.t1LlmText = field.value;
@@ -1482,6 +1823,7 @@ function resetTrack1() {
   state.t1LlmText = "";
   state.t1Result = null;
   state.t1Error = "";
+  window.PookieAnalytics?.resetTrack("track1");
 }
 
 function resetTrack2() {
@@ -1490,6 +1832,7 @@ function resetTrack2() {
   state.t2FreeText = "";
   state.t2Result = null;
   state.t2Error = "";
+  window.PookieAnalytics?.resetTrack("track2");
 }
 
 function ensureQuestionAnsweredBeforeMove(nextScreen) {
@@ -1595,11 +1938,16 @@ async function submitTrack1() {
     }
 
     state.t1Result = result;
+    window.PookieAnalytics?.trackSubmitted("track1");
     await waitForMinimumLoading(loadingStartedAt);
     render();
     showScreen("t1-result");
+    window.PookieAnalytics?.resultViewed("track1", result.resultId, {
+      result_type: result.type?.name || "unknown",
+    });
     persistTrack1Result(result);
   } catch (error) {
+    window.PookieAnalytics?.trackError("track1", "track_submit", error);
     state.t1Error = friendlyTrack1Error(error);
     render();
     showScreen("t1-paste");
@@ -1695,11 +2043,18 @@ async function submitTrack2() {
     }
 
     state.t2Result = result;
+    const track2Result = result.result || {};
+    window.PookieAnalytics?.trackSubmitted("track2");
     await waitForMinimumLoading(loadingStartedAt);
     render();
     showScreen("t2-result");
+    window.PookieAnalytics?.resultViewed("track2", result.resultId, {
+      score: Math.round(Number(track2Result.total) || 0),
+      grade: displayTrack2Grade(track2Result),
+    });
     persistTrack2Result(result);
   } catch (error) {
+    window.PookieAnalytics?.trackError("track2", "track_submit", error);
     state.t2Error = error.message;
     render();
     showScreen("t2-paste");
@@ -1788,7 +2143,7 @@ function persistTrack1Result(result) {
     questionnaireVersion: "track1-12",
     questionnaire: { answers: state.t1Answers },
     llmResult: state.t1LlmText,
-  });
+  }, { trackId: "track1", errorStage: "result_save" });
 }
 
 function persistTrack2Result(result) {
@@ -1801,10 +2156,10 @@ function persistTrack2Result(result) {
     answers: state.t2Answers,
     freeText: state.t2FreeText,
     feedbackResult: result.result?.feedback || null,
-  });
+  }, { trackId: "track2", errorStage: "result_save" });
 }
 
-function fireAndForgetPostJson(url, payload) {
+function fireAndForgetPostJson(url, payload, analyticsContext = null) {
   const body = JSON.stringify(payload);
   fetch(url, {
     method: "POST",
@@ -1813,11 +2168,20 @@ function fireAndForgetPostJson(url, payload) {
     keepalive: body.length < 60000,
   }).catch((error) => {
     console.error("[background-save]", error);
+    if (analyticsContext) {
+      window.PookieAnalytics?.trackError(
+        analyticsContext.trackId,
+        analyticsContext.errorStage,
+        error,
+      );
+    }
   });
 }
 
 function beginPrepareRespondent(screenNode) {
   const user = readRespondentInput(screenNode);
+  const trackId = analyticsTrackId(screenNode?.dataset.screen)
+    || window.PookieAnalytics?.getActiveTrack?.();
   const previousUser = state.respondent || state.user;
   const userChanged = Boolean(previousUser && !isSameUserIdentity(previousUser, user));
 
@@ -1838,7 +2202,8 @@ function beginPrepareRespondent(screenNode) {
     return state.respondent;
   }
 
-  state.respondentPromise = createRespondent(user).catch((error) => {
+  state.respondentPromise = createRespondent(user, trackId).catch((error) => {
+    window.PookieAnalytics?.trackError(trackId, "respondent_create", error);
     console.error("[respondent]", error);
     state.respondentPromise = null;
     return null;
@@ -1873,7 +2238,7 @@ function resetUserTrackProgress() {
   window.__resetTrack3Progress?.();
 }
 
-async function createRespondent(user) {
+async function createRespondent(user, trackId = window.PookieAnalytics?.getActiveTrack?.()) {
   const respondent = await postJson("/api/respondents", {
     nickname: user.nickname,
     birthYear: user.birthYear,
@@ -1895,6 +2260,7 @@ async function createRespondent(user) {
 
   state.respondent = respondentState;
   state.respondentPromise = null;
+  if (trackId) window.PookieAnalytics?.profileSubmitted(trackId);
 
   return respondentState;
 }
@@ -1906,8 +2272,14 @@ async function ensureRespondentReady() {
     if (respondent?.respondentId && respondent?.accessToken) return respondent;
   }
   if (state.user?.nickname) {
-    state.respondentPromise = createRespondent(state.user);
-    return await state.respondentPromise;
+    const trackId = window.PookieAnalytics?.getActiveTrack?.();
+    state.respondentPromise = createRespondent(state.user, trackId);
+    try {
+      return await state.respondentPromise;
+    } catch (error) {
+      window.PookieAnalytics?.trackError(trackId, "respondent_create", error);
+      throw error;
+    }
   }
   return null;
 }

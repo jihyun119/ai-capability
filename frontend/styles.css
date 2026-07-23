@@ -1269,6 +1269,7 @@ img {
 }
 
 .radar-chart {
+  position: relative;
   width: min(270px, 100%);
   height: auto;
   aspect-ratio: 1 / 1;
@@ -1307,6 +1308,177 @@ img {
   font-family: Pretendard, sans-serif;
   font-size: 10px;
   font-weight: 800;
+}
+
+.track2-axis-label-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.track2-axis-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #000;
+  font-family: Pretendard, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.track2-axis-label-1 {
+  top: 0;
+  left: 0;
+  justify-content: center;
+  width: 100%;
+}
+
+.track2-axis-label-2 {
+  top: 22%;
+  right: 0;
+}
+
+.track2-axis-label-3 {
+  right: 0;
+  bottom: 25%;
+}
+
+.track2-axis-label-4 {
+  bottom: 2%;
+  left: 0;
+  justify-content: center;
+  width: 100%;
+}
+
+.track2-axis-label-5 {
+  bottom: 25%;
+  left: 0;
+}
+
+.track2-axis-label-6 {
+  top: 22%;
+  left: 0;
+}
+
+.track2-axis-info-button {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  margin: -8px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #000;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.track2-axis-info-button i {
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.track2-axis-info-button:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 1px;
+}
+
+.track2-axis-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 20;
+  width: min(240px, calc(100vw - 48px));
+  padding: 16px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  color: #222;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(-4px);
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms ease;
+  pointer-events: auto;
+}
+
+.track2-axis-tooltip strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #111;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.track2-axis-tooltip p {
+  margin: 0;
+}
+
+.track2-axis-label-2 .track2-axis-tooltip,
+.track2-axis-label-3 .track2-axis-tooltip {
+  right: 0;
+  left: auto;
+  transform: translateY(-4px);
+}
+
+.track2-axis-label-5 .track2-axis-tooltip,
+.track2-axis-label-6 .track2-axis-tooltip {
+  left: 0;
+  transform: translateY(-4px);
+}
+
+.track2-axis-info-button:focus-visible + .track2-axis-tooltip,
+.track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.track2-axis-label-2 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
+.track2-axis-label-2 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip,
+.track2-axis-label-3 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
+.track2-axis-label-3 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip,
+.track2-axis-label-5 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
+.track2-axis-label-5 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip,
+.track2-axis-label-6 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
+.track2-axis-label-6 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip {
+  transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .track2-axis-info-button:hover + .track2-axis-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .track2-axis-label-2 .track2-axis-info-button:hover + .track2-axis-tooltip,
+  .track2-axis-label-3 .track2-axis-info-button:hover + .track2-axis-tooltip,
+  .track2-axis-label-5 .track2-axis-info-button:hover + .track2-axis-tooltip,
+  .track2-axis-label-6 .track2-axis-info-button:hover + .track2-axis-tooltip {
+    transform: translateY(0);
+  }
 }
 
 .t2-result-left,
@@ -1601,17 +1773,128 @@ img {
 }
 
 .character-tile {
+  width: 100%;
   display: grid;
   place-items: center;
   min-height: 164px;
   padding: 18px;
   border: 1.4px solid #000;
   border-radius: 8px;
+  background: #fff;
+  color: #000;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+}
+
+.character-tile:hover,
+.character-tile:focus-visible {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 2px var(--purple) inset;
+  outline: none;
 }
 
 .character-tile img {
   max-height: 130px;
   object-fit: contain;
+}
+
+.character-result-dialog[hidden] {
+  display: none;
+}
+
+.character-result-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  overflow-y: auto;
+}
+
+.character-result-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.68);
+  cursor: pointer;
+}
+
+.character-result-dialog-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: fit-content;
+  max-width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.32);
+  overscroll-behavior: contain;
+}
+
+.character-result-dialog-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.character-result-dialog-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #000;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  font: 400 32px/1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.character-result-dialog-close:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+}
+
+.character-result-dialog-image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 32px);
+  object-fit: contain;
+}
+
+.character-result-dialog-status,
+.character-result-dialog-error {
+  width: min(420px, calc(100vw - 64px));
+  margin: 0;
+  padding: 72px 24px 44px;
+  font: 600 16px/1.5 "Pretendard", sans-serif;
+  text-align: center;
+}
+
+.character-result-dialog-error {
+  color: #a01919;
 }
 
 .menu-overlay {
@@ -1728,6 +2011,22 @@ img {
 }
 
 @media (max-width: 1180px) {
+  .t2-result-screen .track2-axis-tooltip {
+    position: fixed;
+    top: 50%;
+    right: 24px;
+    left: 24px;
+    width: auto;
+    max-width: 360px;
+    margin: 0 auto;
+    transform: translateY(-50%);
+  }
+
+  .t2-result-screen .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
+  .t2-result-screen .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip {
+    transform: translateY(-50%);
+  }
+
   .screen.active {
     width: var(--mobile-w);
     max-width: 100%;
@@ -2224,6 +2523,15 @@ img {
     min-height: 156px;
     border-width: 1px;
     border-radius: 12px;
+  }
+
+  .character-result-dialog-panel {
+    width: 100%;
+  }
+
+  .character-result-dialog-image {
+    width: 100%;
+    max-height: none;
   }
 
   .t1-question-screen .desktop-page-footer,
@@ -3261,6 +3569,14 @@ img {
 }
 
 @media (min-width: 1181px) {
+  .character-result-dialog-panel {
+    max-height: 90dvh;
+  }
+
+  .character-result-dialog-image {
+    max-height: 88dvh;
+  }
+
   .screen.active.character-gallery-screen {
     position: relative;
     width: 1440px;
