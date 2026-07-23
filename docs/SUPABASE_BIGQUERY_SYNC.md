@@ -105,16 +105,18 @@ FROM `pookie-analytics.pookie_supabase.track3_results`;
 - 키나 JSON 전체를 로그로 출력하지 않습니다.
 - `SUPABASE_SECRET_KEY`를 브라우저에서 접근 가능한 공개 환경변수로 사용하지 않습니다.
 - GitHub Actions 로그를 공유할 때 Secret이나 사용자 데이터가 포함되지 않았는지 다시 확인합니다.
-- BigQuery에는 닉네임, access token, 공유 slug, 사용자 채팅 원문, 사용자 최종 제출 원문을 복제하지 않습니다.
+- `respondents.nickname`, access token, 공유 slug, 사용자 입력·채팅·최종 제출 원문은 BigQuery에 복제하지 않습니다.
+- Track 1·2·3의 `nickname_snapshot`은 운영용 순위와 최고점 사용자 표시를 위해 적재하며, 외부 공개 대시보드가 아닌 내부 운영용 대시보드에서만 사용하는 것을 권장합니다.
 
 ## 동기화되는 데이터와 제외 데이터
 
 스크립트는 Supabase의 실제 컬럼을 `select=*`로 조회하므로 배포 스키마의 일반 분석 컬럼을 자동으로 반영합니다. 저장소에서 확인된 다음 값은 BigQuery에서 제외하거나 원문을 제거합니다.
 
 - `respondents`: `nickname`, `access_token` 제외
-- Track 1: 닉네임, 붙여넣은 LLM 원문, 자유 서술형 노트·판정문, 공유 slug 제외
-- Track 2: 닉네임, `free_text`, 근거 원문, 상세 피드백 원문, 공유 slug 제외
-- Track 3: 닉네임, 전체 채팅 `turns`, `final_output`, 자유 서술형 개입·피드백, 공유 slug 제외
+- Track 1: `nickname`과 붙여넣은 LLM 원문, 자유 서술형 노트·판정문, 공유 slug 제외
+- Track 2: `nickname`, `free_text`, 근거 원문, 상세 피드백 원문, 공유 slug 제외
+- Track 3: 전체 채팅 `turns`, `final_output`, 자유 서술형 개입·피드백, 공유 slug 제외
 - Track 3 축 점수는 `key`, `axis`, `score`, `max`, `rate`만 JSON 문자열로 보존
+- Track 1·2·3의 `nickname_snapshot`은 운영용 순위와 최고점 표시를 위해 유지하며 내부 운영용 대시보드에서만 사용 권장
 
-`respondent_id`, `birth_year`, `gender`, 문항별 답변은 분석과 테이블 연결을 위해 유지합니다. 이 값들도 조합에 따라 재식별 위험이 있을 수 있으므로 BigQuery와 Looker Studio 접근 권한을 최소 인원으로 제한하고, 외부 공개 대시보드에서는 집계값만 사용하세요.
+사용자의 입력 원문, 채팅 원문, 최종 제출 원문은 계속 제외됩니다. `respondent_id`, `birth_year`, `gender`, 문항별 답변은 분석과 테이블 연결을 위해 유지합니다. 이 값들과 `nickname_snapshot`은 조합에 따라 재식별 위험이 있을 수 있으므로 BigQuery와 Looker Studio 접근 권한을 최소 인원으로 제한하고, 외부 공개 대시보드에서는 집계값만 사용하세요.

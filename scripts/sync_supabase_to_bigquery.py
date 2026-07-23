@@ -34,7 +34,6 @@ EXCLUDED_COLUMNS = {
     "diagnosis_answers": set(),
     "track1_results": {
         "nickname",
-        "nickname_snapshot",
         "raw_pasted_llm_result",
         "parsed_llm_result",
         "llm_raw_json",
@@ -51,7 +50,6 @@ EXCLUDED_COLUMNS = {
     },
     "track2_results": {
         "nickname",
-        "nickname_snapshot",
         "free_text",
         "evidence_task_clarity",
         "evidence_context",
@@ -66,7 +64,6 @@ EXCLUDED_COLUMNS = {
         "share_slug",
     },
     "track3_results": {
-        "nickname_snapshot",
         "turns",
         "final_output",
         "best_intervention",
