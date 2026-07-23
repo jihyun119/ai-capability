@@ -1472,6 +1472,22 @@ img {
   pointer-events: auto;
 }
 
+.axis-info-tooltip.is-floating {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+  z-index: 1000;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  transform: none;
+}
+
+.axis-info-tooltip.is-floating.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
 .axis-info-tooltip > .axis-info-title {
   display: block;
   margin-bottom: 8px;

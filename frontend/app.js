@@ -1231,16 +1231,73 @@ function renderAxisInfoButton(trackId, axisId) {
   </span>`;
 }
 
+let activeAxisInfoButton = null;
+let activeAxisInfoTooltip = null;
+let activeAxisInfoMode = null;
+
+function positionAxisInfoTooltip(buttonNode, tooltipNode) {
+  const triggerRect = buttonNode.getBoundingClientRect();
+  const viewportWidth = window.visualViewport?.width || window.innerWidth;
+  const viewportHeight = window.visualViewport?.height || window.innerHeight;
+  const viewportMargin = 16;
+  const tooltipGap = 8;
+
+  tooltipNode.style.left = "0px";
+  tooltipNode.style.top = "0px";
+
+  const tooltipRect = tooltipNode.getBoundingClientRect();
+  const centeredLeft = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
+  const maxLeft = Math.max(viewportMargin, viewportWidth - tooltipRect.width - viewportMargin);
+  const left = Math.min(Math.max(centeredLeft, viewportMargin), maxLeft);
+  const belowTop = triggerRect.bottom + tooltipGap;
+  const aboveTop = triggerRect.top - tooltipRect.height - tooltipGap;
+  const top = belowTop + tooltipRect.height <= viewportHeight - viewportMargin
+    ? belowTop
+    : Math.max(viewportMargin, aboveTop);
+
+  tooltipNode.style.left = `${Math.round(left)}px`;
+  tooltipNode.style.top = `${Math.round(top)}px`;
+}
+
+function openAxisInfoTooltip(buttonNode, mode = "pinned") {
+  const tooltipId = buttonNode.getAttribute("aria-describedby");
+  const tooltipNode = tooltipId ? document.getElementById(tooltipId) : null;
+  if (!tooltipNode) return;
+
+  closeAxisInfoTooltips(buttonNode);
+  activeAxisInfoButton = buttonNode;
+  activeAxisInfoTooltip = tooltipNode;
+  activeAxisInfoMode = mode;
+  buttonNode.setAttribute("aria-expanded", "true");
+  tooltipNode.classList.add("is-floating", "is-visible");
+  document.body.appendChild(tooltipNode);
+  positionAxisInfoTooltip(buttonNode, tooltipNode);
+}
+
 function closeAxisInfoTooltips(exceptButton = null) {
   document.querySelectorAll(".axis-info-button").forEach((buttonNode) => {
     if (buttonNode !== exceptButton) buttonNode.setAttribute("aria-expanded", "false");
   });
+
+  if (activeAxisInfoButton && activeAxisInfoButton !== exceptButton) {
+    activeAxisInfoTooltip?.classList.remove("is-floating", "is-visible");
+    activeAxisInfoTooltip?.removeAttribute("style");
+    if (activeAxisInfoButton.isConnected && activeAxisInfoTooltip) {
+      activeAxisInfoButton.insertAdjacentElement("afterend", activeAxisInfoTooltip);
+    } else {
+      activeAxisInfoTooltip?.remove();
+    }
+    activeAxisInfoButton = null;
+    activeAxisInfoTooltip = null;
+    activeAxisInfoMode = null;
+  }
 }
 
 function toggleAxisInfoTooltip(buttonNode) {
-  const willOpen = buttonNode.getAttribute("aria-expanded") !== "true";
-  closeAxisInfoTooltips();
-  buttonNode.setAttribute("aria-expanded", String(willOpen));
+  const willOpen = buttonNode.getAttribute("aria-expanded") !== "true"
+    || activeAxisInfoMode !== "pinned";
+  if (willOpen) openAxisInfoTooltip(buttonNode);
+  else closeAxisInfoTooltips();
   if (willOpen) {
     window.PookieAnalytics?.sendGaEvent("axis_info_open", {
       track_id: buttonNode.dataset.axisInfoTrack,
@@ -1898,6 +1955,46 @@ document.addEventListener("click", async (event) => {
   closeMenu();
   showScreen(target.dataset.go);
 });
+
+document.addEventListener("mouseover", (event) => {
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  const axisInfoButton = event.target.closest(".axis-info-button");
+  if (axisInfoButton && activeAxisInfoButton !== axisInfoButton) {
+    openAxisInfoTooltip(axisInfoButton, "hover");
+  }
+});
+
+document.addEventListener("mouseout", (event) => {
+  const axisInfoButton = event.target.closest(".axis-info-button");
+  if (
+    axisInfoButton
+    && activeAxisInfoButton === axisInfoButton
+    && activeAxisInfoMode === "hover"
+    && !axisInfoButton.contains(event.relatedTarget)
+  ) {
+    closeAxisInfoTooltips();
+  }
+});
+
+document.addEventListener("focusin", (event) => {
+  const axisInfoButton = event.target.closest(".axis-info-button");
+  if (axisInfoButton && activeAxisInfoButton !== axisInfoButton) {
+    openAxisInfoTooltip(axisInfoButton, "focus");
+  }
+});
+
+document.addEventListener("focusout", (event) => {
+  if (
+    activeAxisInfoButton === event.target
+    && activeAxisInfoMode === "focus"
+    && event.relatedTarget !== activeAxisInfoTooltip
+  ) {
+    closeAxisInfoTooltips();
+  }
+});
+
+window.addEventListener("resize", () => closeAxisInfoTooltips());
+document.addEventListener("scroll", () => closeAxisInfoTooltips(), true);
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
