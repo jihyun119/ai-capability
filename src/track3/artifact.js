@@ -15,12 +15,6 @@ export function splitTrack3ArtifactSections(value, artifactSections = []) {
   return { matched: markers.length > 0, values };
 }
 
-export function getTrack3FinalArtifactContent(value, scenario) {
-  const finalSection = String(scenario?.final_artifact_section || "").trim();
-  if (!finalSection) return "";
-  return splitTrack3ArtifactSections(value, scenario.artifact_sections).values.get(finalSection) || "";
-}
-
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

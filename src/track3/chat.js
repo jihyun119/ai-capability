@@ -26,21 +26,12 @@ export async function generateTrack3Chat(
   const sectionUpdates = usesStructuredUpdates && result.request_kind === "artifact_update"
     ? normalizeTrack3SectionUpdates(result.section_updates, {
       artifactSections: scenario.artifact_sections,
-      finalSection: scenario.final_artifact_section,
-      finalizationRequested: result.finalization_requested === true,
       lastUserMessage: validation.userMessage
     })
     : [];
   const updatedSections = usesStructuredUpdates
     ? sectionUpdates.map((update) => update.section)
-    : normalizeUpdatedSections(
-      result.updated_sections,
-      scenario.artifact_sections,
-      {
-        finalSection: scenario.final_artifact_section,
-        finalizationRequested: result.finalization_requested === true
-      }
-    );
+    : normalizeUpdatedSections(result.updated_sections, scenario.artifact_sections);
   const invalidStructuredUpdate = usesStructuredUpdates
     && result.request_kind === "artifact_update"
     && sectionUpdates.length === 0;
@@ -137,8 +128,7 @@ export function buildTrack3ChatMessages({ turns = [], artifact = "", artifactSec
       "The following trusted contract defines canonical names and the expected output structure only:",
       `<scenario_reference>${JSON.stringify({
         expected_output: scenario.expected_output,
-        canonical_terms: scenario.canonical_terms,
-        final_artifact_section: scenario.final_artifact_section
+        canonical_terms: scenario.canonical_terms
       })}</scenario_reference>`,
       "Use canonical terms exactly even when the user misspells or substitutes a similar real-world name.",
       "You do not know the scenario situation, metrics, resources, constraints, or business facts unless the user states them in the conversation.",
@@ -165,7 +155,6 @@ function buildTrack3ChatResponseFormat(artifactSections = []) {
         properties: {
           assistant_message: { type: "string" },
           request_kind: { type: "string", enum: ["artifact_update", "clarification", "context_only"] },
-          finalization_requested: { type: "boolean" },
           section_updates: {
             type: "array",
             items: {
@@ -179,27 +168,19 @@ function buildTrack3ChatResponseFormat(artifactSections = []) {
             }
           }
         },
-        required: ["assistant_message", "request_kind", "finalization_requested", "section_updates"]
+        required: ["assistant_message", "request_kind", "section_updates"]
       }
     }
   };
 }
 
-export function normalizeUpdatedSections(value, artifactSections = [], {
-  finalSection = "",
-  finalizationRequested = false
-} = {}) {
+export function normalizeUpdatedSections(value, artifactSections = []) {
   if (!Array.isArray(value) || !Array.isArray(artifactSections)) return [];
-  return artifactSections.filter((section) => {
-    if (section === finalSection && !finalizationRequested) return false;
-    return value.some((item) => String(item).trim() === section);
-  });
+  return artifactSections.filter((section) => value.some((item) => String(item).trim() === section));
 }
 
 export function normalizeTrack3SectionUpdates(value, {
   artifactSections = [],
-  finalSection = "",
-  finalizationRequested = false,
   lastUserMessage = ""
 } = {}) {
   if (!Array.isArray(value) || !artifactSections.length) return [];
@@ -209,7 +190,6 @@ export function normalizeTrack3SectionUpdates(value, {
   for (const item of value) {
     const section = String(item?.section || "").trim();
     if (!allowed.has(section)) continue;
-    if (section === finalSection && !finalizationRequested) continue;
 
     const content = stripLeadingSectionHeading(normalizeTrack3Artifact(item?.content, {
       lastUserMessage
@@ -321,11 +301,10 @@ function buildFallbackChat({ artifact }) {
   const currentArtifact = normalizeArtifactText(artifact);
   return {
     assistant_message: currentArtifact
-      ? "요청을 처리하지 못해 기존 최종 제출물 초안을 유지했어요. 잠시 후 다시 시도해주세요."
-      : "요청을 처리하지 못해 최종 제출물 초안을 만들지 못했어요. 잠시 후 다시 시도해주세요.",
+      ? "요청을 처리하지 못해 기존 작업 영역을 유지했어요. 잠시 후 다시 시도해주세요."
+      : "요청을 처리하지 못해 작업 영역을 만들지 못했어요. 잠시 후 다시 시도해주세요.",
     artifact: currentArtifact,
     request_kind: "context_only",
-    finalization_requested: false,
     section_updates: []
   };
 }

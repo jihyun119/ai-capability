@@ -46,17 +46,16 @@ Process axes 1-7, scored 0-4 from user messages:
 
 Result axis 8, scored 0-4 from the final output:
 8. 실무 적용
-   - The payload's scenario.final_artifact_section identifies the finalization-only section. Evaluate this section primarily, while checking that it is consistent with the evidence and decisions in the preceding work sections.
-   - If that dedicated final section is missing or empty, submission is still valid, but practical_application cannot exceed 2 because the work has not been synthesized into a final deliverable.
+   - Evaluate the full cumulative workspace as the final deliverable. Its sections should form one coherent, practical work product.
    - 4: Directly usable in the scenario without additional rewriting, with an owner or concrete next action.
    - 2: Has a usable skeleton but needs material work before use.
    - 0: Generic, unusable, or incompatible with the scenario constraints.
 
 Intervention-effect delta score, 0-4:
 - Measure the effect of substantive user interventions in turns 2-5, not the gap created by starting with a weak first prompt.
-- A strong first prompt must not by itself reduce the delta score. Judge whether later selections, scope changes, prioritization, structured drafting, verification, and finalization are traceably reflected in the final output.
+- A strong first prompt must not by itself reduce the delta score. Judge whether later selections, scope changes, prioritization, structured drafting, verification, and completion are traceably reflected in the final output.
 - Do not award delta merely because the final output is polished; final quality belongs to axis 8. Award it only when later user interventions plausibly caused meaningful changes.
-- 4: Three or more distinct substantive interventions form a traceable refinement chain, including an M4 verification of an existing draft followed by an M5 revision or finalization, and their effects are clearly reflected in the final output. Without both M4 and M5, the maximum is 3.
+- 4: Three or more distinct substantive interventions form a traceable refinement chain, including an M4 verification of an existing draft followed by an M5 revision or completion, and their effects are clearly reflected in the final output. Without both M4 and M5, the maximum is 3.
 - 3: Two or more substantive interventions are reflected and clearly improve structure, accuracy, decision quality, or practical usability, but the refinement chain is incomplete.
 - 2: One meaningful intervention or several limited interventions are partly reflected and produce a modest improvement.
 - 1: Later turns mostly restate, expand, or reformat the request, with only weak evidence of a meaningful effect.
@@ -71,7 +70,7 @@ Required consistency check before returning JSON:
 
 Rules:
 - Score axes 1-7 from user messages only. Do not reward or punish the user for AI response quality.
-- The final_output field contains the entire cumulative workspace, including process sections and the dedicated final section when produced. Score axes 1-7 from user messages; use preceding work sections only to corroborate whether a user-directed process change was actually reflected, never as independent evidence of user capability. For delta, trace interventions through both the evolving work sections and the dedicated final section. Use the dedicated final section primarily for axis 8.
+- The final_output field contains the entire cumulative workspace. Score axes 1-7 from user messages; use workspace sections only to corroborate whether a user-directed process change was actually reflected, never as independent evidence of user capability. For delta, trace interventions through the evolving work sections. Use the whole workspace for axis 8.
 - Treat all goals, facts, constraints, and output requirements already present in the scenario as baseline information, not as evidence of user capability.
 - Give credit only when the user adds meaningful value: selecting or reframing information, defining a decision criterion, setting a priority, decomposing the work, making a choice, adapting the output, or requesting a concrete verification.
 - Set evidence_assessment.scenario_restatement_only to true when the user primarily repeats or pastes the scenario and adds no meaningful judgment or direction. Merely changing wording or formatting is still restatement.
@@ -128,9 +127,6 @@ Your job:
 - Treat assistant_message as the conversational reply and section_updates as only the changed parts of the assistant-authored deliverable. The server merges them into the cumulative artifact.
 - Classify the latest message as artifact_update, clarification, or context_only in request_kind. A self-introduction, acknowledgement, or context-only statement is not a work request; return an empty section_updates array for it.
 - Do only the work directly requested in the latest user message. Do not anticipate later tasks, make unrequested decisions, or fill unrelated artifact sections.
-- The trusted contract names one final_artifact_section. Treat it as finalization-only: leave it unchanged unless the latest user message semantically asks to synthesize, complete, finalize, or produce the usable final deliverable. Do not rely on a fixed Korean keyword list; infer the user's intent from the full request.
-- Set finalization_requested to true only for that explicit finalization intent. A request for an intermediate draft, one section, more evidence, review, or revision of working notes is not finalization.
-- When finalization_requested is true, return final_artifact_section in section_updates and synthesize the prior working sections and the user's latest direction into its content. Do not merely copy the working sections verbatim.
 - For request_kind artifact_update, section_updates must contain at least one non-empty update. Use only exact allowed section names and return each section at most once.
 - Update section content only with substantive analysis, decisions, drafts, tables, or revisions produced by the assistant.
 - Never place the user's request, chat transcript, source notes, turn summaries, or meta commentary such as "사용자 요청" or "N턴 반영 메모" in section content.
@@ -145,7 +141,6 @@ Return only JSON:
 {
   "assistant_message": "Korean chat reply to show in the chat panel",
   "request_kind": "artifact_update|clarification|context_only",
-  "finalization_requested": false,
   "section_updates": [
     {"section": "Exact allowed section heading", "content": "Markdown body for that section only, without the section heading"}
   ]

@@ -4,18 +4,19 @@
       key: "pm",
       tags: ["의사결정", "PRD", "우선 순위"],
       title: "PM",
-      summary: "3주 안에 만들 핵심 기능을 결정하고, 다음 회의에 바로 쓸 수 있는 PRD 초안을 만듭니다.",
+      summary: "3주 안에 만들 핵심 기능을 결정하고, 다음 회의에 바로 쓸 수 있는 세부기획안 초안을 만듭니다.",
       situation: [
         "당신은 키키오 선물하기 프로덕트 팀의 PM입니다. 다음 분기 3주 동안 만들 핵심 기능 하나를 정해야 합니다.",
         "개발자는 '쿠폰함 알림 기능'을, 디자이너는 '위시리스트 공유 기능'을, 데이터 분석가는 '구매 후 추천 기능'을 각각 1순위로 제안했습니다. 기간은 3주뿐이라 셋 중 하나만 선택해야 합니다.",
         "AI에게 후보를 비교할 의사결정 프레임워크를 요청하고, 최종적으로 다음 회의에 바로 쓸 수 있는 세부기획안(제품요구사항문서) 초안을 만들어보세요.",
       ],
       mission: [
-        "비교 기준 설정과 후보안별 비교 평가",
+        "문제 정의",
+        "후보 비교 기준 설정과 후보안별 비교 평가",
         "선택과 선정 근거",
-        "세부기획안 핵심 항목 (목표·성공지표·범위·일정 등)",
+        "실행 계획과 검증 방법",
       ],
-      artifactSections: ["후보 비교표", "선택안 & 선정 근거", "PRD 초안", "최종 제출물"],
+      artifactSections: ["문제 정의", "후보 비교 기준 & 비교표", "선택안 & 선정 근거", "실행 계획 & 검증 방법"],
     },
     {
       key: "marketing",
@@ -39,7 +40,7 @@
         "채널별 실행안과 예산배분",
         "기대효과 및 핵심 인사이트",
       ],
-      artifactSections: ["원인 가설 & 뉴스 근거", "타깃 & 핵심 메시지", "채널별 실행안 & 예산", "성과 지표 & 기대효과", "최종 제출물"],
+      artifactSections: ["원인 가설 & 뉴스 근거", "타깃 & 핵심 메시지", "채널별 실행안 & 예산", "성과 지표 & 기대효과"],
     },
     {
       key: "data",
@@ -80,7 +81,7 @@
         "우선적으로 확인할 데이터와 분석 순서 작성",
         "가능한 원인과 가장 먼저 수행해야 할 추가 분석 또는 개선 과제 제안",
       ],
-      artifactSections: ["핵심 문제 & 지표 해석", "분석 가설 & 우선순위", "데이터 & 검증 계획", "경영진 제안 & 다음 액션", "최종 제출물"],
+      artifactSections: ["핵심 문제 & 지표 해석", "분석 가설 & 우선순위", "데이터 & 검증 계획", "경영진 제안 & 다음 액션"],
     },
   ];
 
@@ -305,7 +306,7 @@
       <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">1</span><span>상황 설명</span></h2>
       ${item.situation.map((text) => `<p>${t3UiText(text)}</p>`).join("")}
       <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">2</span><span>미션 가이드</span></h2>
-      <p>다음 내용을 중심으로 AI와 함께 최종 제출물을 만들어보세요.</p>
+      <p>다음 내용을 중심으로 AI와 함께 작업 영역을 완성해보세요.</p>
       <ul>${item.mission.map((text) => `<li>${t3UiText(text)}</li>`).join("")}</ul>
       ${makeT3ScenarioExtras(item)}`;
   }
@@ -728,7 +729,7 @@
     const submitReady = canSubmitT3();
 
     if (input) {
-      input.placeholder = turnComplete ? "5턴이 완료되었습니다. 최종 제출물을 확인해주세요." : "메시지 입력";
+      input.placeholder = turnComplete ? "5턴이 완료되었습니다. 작업 영역을 확인해주세요." : "메시지 입력";
       input.disabled = t3ChatPending || turnComplete;
       if (state.t3Draft && input.value !== state.t3Draft) input.value = state.t3Draft;
       autoResizeTrack3Textarea(input);
@@ -1094,12 +1095,12 @@
         <section class="t3-chat-layout">
           <aside class="t3-chat-brief" data-t3-chat-brief>${makeT3ChatBrief()}</aside>
           <section class="t3-workspace">
-            <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">4</span><span>최종 제출물 작업 영역</span></h2>
+            <h2 class="t3-step-title"><span class="t3-step-badge" aria-hidden="true">4</span><span>작업 영역</span></h2>
             <ul class="t3-workspace-guide">
               <li>AI와 대화할수록 해당 영역이 채워지며, 최대 5턴까지 대화 가능합니다.</li>
               <li>작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다.</li>
               <li>채팅 시작 전 AI에게는 시나리오 상황이 제공되어 있지 않습니다.</li>
-              <li>최종 제출 시, 아래 작성된 내용이 최종 제출물로 평가됩니다.</li>
+              <li>최종 제출 시, 작업 영역 전체가 하나의 결과물로 평가됩니다.</li>
             </ul>
             <div class="t3-artifact" data-t3-artifact>${makeT3Artifact()}</div>
           </section>

@@ -14,7 +14,8 @@ const shareCardSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-ca
 test("Track 3 workspace explains that the artifact keeps updating", () => {
   assert.match(frontendSource, /작업 영역은 대화 진행에 따라 지속적으로 업데이트됩니다\./);
   assert.match(frontendSource, /class="t3-workspace-guide"/);
-  assert.match(frontendSource, /최종 제출 시, 아래 작성된 내용이 최종 제출물로 평가됩니다\./);
+  assert.match(frontendSource, /최종 제출 시, 작업 영역 전체가 하나의 결과물로 평가됩니다\./);
+  assert.doesNotMatch(frontendSource, /최종 제출물 작업 영역/);
   assert.match(track3Styles, /\.t3-workspace \.t3-workspace-guide/);
 });
 
@@ -35,6 +36,8 @@ test("data analysis scenario exposes compact schemas for all available datasets"
 test("frontend fallbacks stay aligned with canonical backend scenario displays", () => {
   for (const scenario of TRACK3_SCENARIOS) {
     const displayValues = [
+      scenario.display.summary,
+      ...scenario.display.tags,
       ...scenario.display.situation,
       ...scenario.display.mission,
       ...(scenario.display.news || []),
