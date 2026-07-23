@@ -301,6 +301,17 @@ const t2Questions = [
   },
 ];
 
+// 화면에서는 문항마다 보기 순서를 고정해 다르게 보여준다.
+// 값은 원래의 A~E 키로 저장하므로, 화면 순서와 무관하게 채점 매핑은 유지된다.
+const t2OptionOrders = [
+  ["C", "D", "A", "E", "B"],
+  ["A", "E", "D", "C", "B"],
+  ["B", "E", "C", "A", "D"],
+  ["E", "B", "D", "A", "C"],
+  ["B", "D", "A", "E", "C"],
+  ["C", "A", "E", "B", "D"],
+];
+
 const state = {
   currentScreen: "home",
   user: null,
@@ -493,9 +504,10 @@ function questionScreen(prefix, index, total, title, options, prev, next) {
       ${questionError ? `<em class="question-error">${questionError}</em>` : ""}
       <div class="answer-list">
         ${options.map((option) => {
-          const value = option.slice(0, 1);
+          const value = typeof option === "string" ? option.slice(0, 1) : option.value;
+          const label = typeof option === "string" ? option : option.label;
           const selected = state[`${prefix}Answers`]?.[`Q${index}`] === value ? " is-selected" : "";
-          return `<button class="${selected}" type="button" data-${prefix}-question="Q${index}" data-${prefix}-answer="${value}">${option}</button>`;
+          return `<button class="${selected}" type="button" data-${prefix}-question="Q${index}" data-${prefix}-answer="${value}">${label}</button>`;
         }).join("")}
       </div>
     </section>
@@ -897,7 +909,14 @@ function t2QuestionScreens() {
   return t2Questions
     .map((question, index) => {
       const n = index + 1;
-      return questionScreen("t2", n, t2Questions.length, question.title, question.options, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === t2Questions.length ? "t2-prompt" : `t2-q-${n + 1}`);
+      const originalOptions = Object.fromEntries(
+        question.options.map((option) => [option.slice(0, 1), option.slice(3)])
+      );
+      const displayOptions = t2OptionOrders[index].map((answerKey, displayIndex) => ({
+        value: answerKey,
+        label: `${String.fromCharCode(65 + displayIndex)}. ${originalOptions[answerKey]}`,
+      }));
+      return questionScreen("t2", n, t2Questions.length, question.title, displayOptions, n === 1 ? "t2-intro" : `t2-q-${n - 1}`, n === t2Questions.length ? "t2-prompt" : `t2-q-${n + 1}`);
     })
     .join("");
 }
