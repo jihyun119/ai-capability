@@ -1,19 +1,19 @@
 ﻿@font-face {
   font-family: Pretendard;
-  src: url("./fonts/Pretendard/Pretendard-Regular.ttf") format("truetype");
-  font-weight: 400;
+  src: url("./fonts/Pretendard/Pretendard-Thin.ttf") format("truetype");
+  font-weight: 100;
 }
 
 @font-face {
   font-family: Pretendard;
-  src: url("./fonts/Pretendard/Pretendard-Light.ttf") format("truetype");
-  font-weight: 300;
+  src: url("./fonts/Pretendard/Pretendard-ExtraLight.ttf") format("truetype");
+  font-weight: 200;
 }
 
 @font-face {
   font-family: Pretendard;
-  src: url("./fonts/Pretendard/Pretendard-SemiBold.ttf") format("truetype");
-  font-weight: 600;
+  src: url("./fonts/Pretendard/Pretendard-Medium.ttf") format("truetype");
+  font-weight: 500;
 }
 
 @font-face {
@@ -24,8 +24,8 @@
 
 @font-face {
   font-family: Pretendard;
-  src: url("./fonts/Pretendard/Pretendard-ExtraBold.ttf") format("truetype");
-  font-weight: 800;
+  src: url("./fonts/Pretendard/Pretendard-Black.ttf") format("truetype");
+  font-weight: 900;
 }
 
 @font-face {
@@ -965,6 +965,11 @@ img {
   margin-top: 28px;
 }
 
+.t2-intro-screen .intro-hero h1,
+.t2-intro-screen .info-list article > strong {
+  font-weight: 700;
+}
+
 .t1-intro-screen .info-list,
 .t2-intro-screen .info-list {
   margin-top: 24px;
@@ -1330,6 +1335,27 @@ img {
   white-space: nowrap;
 }
 
+.axis-score-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 4px;
+}
+
+.axis-score-label .axis-info-button {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  margin: -4px;
+}
+
+.axis-score-label .axis-info-glyph {
+  width: 14px;
+  height: 14px;
+  font-size: 9px;
+}
+
 .track2-axis-label-1 {
   top: 0;
   left: 0;
@@ -1364,7 +1390,7 @@ img {
   left: 0;
 }
 
-.track2-axis-info-button {
+.axis-info-button {
   display: inline-grid;
   width: 32px;
   height: 32px;
@@ -1379,7 +1405,7 @@ img {
   pointer-events: auto;
 }
 
-.track2-axis-info-button i {
+.axis-info-glyph {
   display: grid;
   width: 15px;
   height: 15px;
@@ -1393,12 +1419,12 @@ img {
   line-height: 1;
 }
 
-.track2-axis-info-button:focus-visible {
+.axis-info-button:focus-visible {
   outline: 2px solid var(--purple);
   outline-offset: 1px;
 }
 
-.track2-axis-tooltip {
+.axis-info-tooltip {
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
@@ -1423,60 +1449,73 @@ img {
   pointer-events: auto;
 }
 
-.track2-axis-tooltip strong {
+.axis-info-tooltip > .axis-info-title {
   display: block;
   margin-bottom: 8px;
   color: #111;
   font-size: 15px;
   font-weight: 800;
+  white-space: normal;
 }
 
-.track2-axis-tooltip p {
-  margin: 0;
+.axis-info-tooltip > .axis-info-description {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: normal;
 }
 
-.track2-axis-label-2 .track2-axis-tooltip,
-.track2-axis-label-3 .track2-axis-tooltip {
+.axis-score-label > .axis-info-tooltip {
+  display: block;
+  justify-content: initial;
+  gap: 0;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: normal;
+}
+
+.track2-axis-label-2 .axis-info-tooltip,
+.track2-axis-label-3 .axis-info-tooltip {
   right: 0;
   left: auto;
   transform: translateY(-4px);
 }
 
-.track2-axis-label-5 .track2-axis-tooltip,
-.track2-axis-label-6 .track2-axis-tooltip {
+.track2-axis-label-5 .axis-info-tooltip,
+.track2-axis-label-6 .axis-info-tooltip {
   left: 0;
   transform: translateY(-4px);
 }
 
-.track2-axis-info-button:focus-visible + .track2-axis-tooltip,
-.track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip {
+.axis-info-button:focus-visible + .axis-info-tooltip,
+.axis-info-button[aria-expanded="true"] + .axis-info-tooltip {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
 
-.track2-axis-label-2 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
-.track2-axis-label-2 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip,
-.track2-axis-label-3 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
-.track2-axis-label-3 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip,
-.track2-axis-label-5 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
-.track2-axis-label-5 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip,
-.track2-axis-label-6 .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
-.track2-axis-label-6 .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip {
+.track2-axis-label-2 .axis-info-button:focus-visible + .axis-info-tooltip,
+.track2-axis-label-2 .axis-info-button[aria-expanded="true"] + .axis-info-tooltip,
+.track2-axis-label-3 .axis-info-button:focus-visible + .axis-info-tooltip,
+.track2-axis-label-3 .axis-info-button[aria-expanded="true"] + .axis-info-tooltip,
+.track2-axis-label-5 .axis-info-button:focus-visible + .axis-info-tooltip,
+.track2-axis-label-5 .axis-info-button[aria-expanded="true"] + .axis-info-tooltip,
+.track2-axis-label-6 .axis-info-button:focus-visible + .axis-info-tooltip,
+.track2-axis-label-6 .axis-info-button[aria-expanded="true"] + .axis-info-tooltip {
   transform: translateY(0);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .track2-axis-info-button:hover + .track2-axis-tooltip {
+  .axis-info-button:hover + .axis-info-tooltip {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
   }
 
-  .track2-axis-label-2 .track2-axis-info-button:hover + .track2-axis-tooltip,
-  .track2-axis-label-3 .track2-axis-info-button:hover + .track2-axis-tooltip,
-  .track2-axis-label-5 .track2-axis-info-button:hover + .track2-axis-tooltip,
-  .track2-axis-label-6 .track2-axis-info-button:hover + .track2-axis-tooltip {
+  .track2-axis-label-2 .axis-info-button:hover + .axis-info-tooltip,
+  .track2-axis-label-3 .axis-info-button:hover + .axis-info-tooltip,
+  .track2-axis-label-5 .axis-info-button:hover + .axis-info-tooltip,
+  .track2-axis-label-6 .axis-info-button:hover + .axis-info-tooltip {
     transform: translateY(0);
   }
 }
@@ -1593,10 +1632,6 @@ img {
   order: 6;
 }
 
-.t2-result-screen .t2-character-link {
-  order: 7;
-}
-
 .t2-feedback-list {
   display: grid;
   gap: 16px;
@@ -1626,12 +1661,6 @@ img {
   font-size: 15px;
   font-weight: 400;
   line-height: 1.45;
-}
-
-.t2-character-link,
-.t1-character-link {
-  width: var(--mobile-inner);
-  margin: 18px auto 0;
 }
 
 .share-export {
@@ -2011,7 +2040,7 @@ img {
 }
 
 @media (max-width: 1180px) {
-  .t2-result-screen .track2-axis-tooltip {
+  .screen.active .axis-info-tooltip {
     position: fixed;
     top: 50%;
     right: 24px;
@@ -2022,8 +2051,8 @@ img {
     transform: translateY(-50%);
   }
 
-  .t2-result-screen .track2-axis-info-button:focus-visible + .track2-axis-tooltip,
-  .t2-result-screen .track2-axis-info-button[aria-expanded="true"] + .track2-axis-tooltip {
+  .screen.active .axis-info-button:focus-visible + .axis-info-tooltip,
+  .screen.active .axis-info-button[aria-expanded="true"] + .axis-info-tooltip {
     transform: translateY(-50%);
   }
 
@@ -3358,8 +3387,7 @@ img {
     margin-top: 0;
   }
 
-  .t2-result-nav,
-  .t2-character-link {
+  .t2-result-nav {
     grid-column: 1 / -1;
     justify-self: center;
   }
@@ -3501,17 +3529,6 @@ img {
   .screen.active.t1-result-screen > .t1-result-nav .cta {
     min-height: 64px;
     font-size: 20px;
-  }
-
-  .t2-character-link {
-    width: min(720px, 100%);
-  }
-
-  .screen.active.t1-result-screen > .t1-character-link {
-    width: min(1130px, calc(100vw - 80px));
-    min-height: 64px;
-    margin-top: 24px;
-    font-size: 18px;
   }
 
   .t1-result-screen .desktop-page-footer {
@@ -4022,10 +4039,6 @@ img {
     min-height: 90px;
     border-radius: 12px;
     font-size: 24px;
-  }
-
-  .t2-result-screen .t2-character-link {
-    display: none;
   }
 
   .t2-result-screen > .footer {

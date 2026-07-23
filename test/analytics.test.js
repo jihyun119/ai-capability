@@ -139,3 +139,22 @@ test("character_card_open keeps the fixed character key without image details", 
     },
   );
 });
+
+test("axis_info_open keeps only fixed track and axis identifiers", () => {
+  const { analytics, window } = loadAnalytics();
+
+  analytics.sendGaEvent("axis_info_open", {
+    track_id: "track3",
+    axis_id: "goal_definition",
+    description: "설명 전문은 전송하지 않습니다",
+  });
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(window.dataLayer[0])),
+    {
+      event: "axis_info_open",
+      track_id: "track3",
+      axis_id: "goal_definition",
+    },
+  );
+});

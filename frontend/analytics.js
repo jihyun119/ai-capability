@@ -13,6 +13,7 @@ window.PookieAnalytics = (() => {
     "chat_start",
     "message_send",
     "character_card_open",
+    "axis_info_open",
   ]);
   const ALLOWED_PARAMS = new Set([
     "track_id",
@@ -32,6 +33,7 @@ window.PookieAnalytics = (() => {
     "error_code",
     "character_type",
     "source_screen",
+    "axis_id",
   ]);
   const MAX_STRING_LENGTH = 100;
   const analyticsState = {

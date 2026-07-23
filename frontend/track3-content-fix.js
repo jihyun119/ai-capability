@@ -495,7 +495,7 @@
       return `<p><b>평가 결과 없음</b><strong>-</strong><i><span style="width:0%"></span></i></p>`;
     }
 
-    return rows.map(({ label, level, percent }) => `<p><b>${escapeHtml(label)}</b><strong>${escapeHtml(level)}</strong><i><span style="width:${percent}%"></span></i></p>`).join("");
+    return rows.map(({ key, label, level, percent }) => `<p><span class="axis-score-label"><b>${escapeHtml(label)}</b>${renderAxisInfoButton("track3", key)}</span><strong>${escapeHtml(level)}</strong><i><span style="width:${percent}%"></span></i></p>`).join("");
   }
 
   function makeT3DetailRows() {
@@ -1132,6 +1132,7 @@
           <article class="t3-result-report">
             <h2>${escapeHtml(t3ResultHeadline())}</h2>
             <p>${escapeHtml(t3ResultSummary())}</p>
+            <h3 class="t3-weakness-title">취약 영역 Top 3</h3>
             <div class="t3-detail-list">${makeT3DetailRows()}</div>
           </article>
         </section>
@@ -1149,6 +1150,7 @@
         <section class="t3-report-mobile">
           <h1>${escapeHtml(t3ResultHeadline())}</h1>
           <p class="t3-report-summary">${escapeHtml(t3ResultSummary())}</p>
+          <h3 class="t3-weakness-title">취약 영역 Top 3</h3>
           <div class="t3-detail-list">${makeT3DetailRows()}</div>
           <nav class="t3-report-nav">
             ${button("다른 Track 도전", "home", "primary", "t3-result-home t3-report-next")}

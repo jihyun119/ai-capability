@@ -6,6 +6,7 @@ const test = require("node:test");
 const ROOT = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
 const cssSource = fs.readFileSync(path.join(ROOT, "frontend/track3-desktop.css"), "utf8");
+const shareSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-cards.js"), "utf8");
 
 function between(start, end) {
   const startIndex = source.indexOf(start);
@@ -45,6 +46,30 @@ test("Track 3 detail rows keep the three lowest scored areas", () => {
   const detailRows = between("function t3DetailRowsFromEvaluation()", "function makeT3ScoreRows()");
   assert.match(detailRows, /sort\(\(a, b\) => a\.score - b\.score\)/);
   assert.match(detailRows, /slice\(0, 3\)/);
+});
+
+test("Track 3 desktop and mobile detail views label the existing weakest-area list once", () => {
+  assert.equal((resultScreen.match(/취약 영역 Top 3/g) || []).length, 1);
+  assert.equal((reportScreen.match(/취약 영역 Top 3/g) || []).length, 1);
+  assert.ok(resultScreen.indexOf("t3ResultSummary()") < resultScreen.indexOf("취약 영역 Top 3"));
+  assert.ok(resultScreen.indexOf("취약 영역 Top 3") < resultScreen.indexOf("makeT3DetailRows()"));
+  assert.ok(reportScreen.indexOf("t3ResultSummary()") < reportScreen.indexOf("취약 영역 Top 3"));
+  assert.ok(reportScreen.indexOf("취약 영역 Top 3") < reportScreen.indexOf("makeT3DetailRows()"));
+});
+
+test("Track 3 title keeps desktop overflow local and mobile page scrolling intact", () => {
+  assert.match(
+    cssSource,
+    /\.t3-result-screen \.t3-result-report\s*\{[\s\S]*?min-height:\s*0 !important;[\s\S]*?overflow-y:\s*auto !important;/,
+  );
+  assert.match(
+    cssSource,
+    /\.t3-result-screen,\s*[\s\S]*?\.t3-report-screen\s*\{[\s\S]*?height:\s*auto !important;[\s\S]*?overflow:\s*visible !important;/,
+  );
+});
+
+test("Track 3 shared image template does not include the screen-only weakest-area title", () => {
+  assert.doesNotMatch(shareSource, /취약 영역 Top 3|t3-weakness-title/);
 });
 
 test("Track 3 desktop result is two columns without mobile navigation actions", () => {

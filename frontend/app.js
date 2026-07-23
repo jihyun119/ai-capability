@@ -448,9 +448,9 @@ function t1IntroScreen() {
       </div>
     </section>
     <section class="info-list">
-      <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">객관식 12문항</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">의존도, 친밀도, 신뢰도, 통제욕구를 측정해요.</p></article>
-      <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">AI 답변 활용</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">내 AI가 말하는 나의 사용 습관을 붙여넣어요.</p></article>
-      <article><h3 style="font-family:PretendardBold,Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">캐릭터 결과</h3><p style="font-family:PretendardRegular,Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">16개 유형 중 가장 가까운 유형을 보여줘요.</p></article>
+      <article><h3 style="font-family:Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">객관식 12문항</h3><p style="font-family:Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">의존도, 친밀도, 신뢰도, 통제욕구를 측정해요.</p></article>
+      <article><h3 style="font-family:Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">AI 답변 활용</h3><p style="font-family:Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">내 AI가 말하는 나의 사용 습관을 붙여넣어요.</p></article>
+      <article><h3 style="font-family:Pretendard,sans-serif;font-weight:700;font-size:24px;line-height:normal;margin:0;">캐릭터 결과</h3><p style="font-family:Pretendard,sans-serif;font-weight:400;font-size:14px;line-height:normal;margin:8px 0 0;">16개 유형 중 가장 가까운 유형을 보여줘요.</p></article>
     </section>
     ${button("테스트 시작하기", "t1-q-1", "primary", "intro-start")}
     ${footer()}`,
@@ -797,6 +797,7 @@ function t1ResultScreen() {
     ["D", axes.D || { label: "통제욕구", score: 0, level: "-" }],
   ];
   const axisDisplayLabels = { A: "의존도", B: "친밀도", C: "신뢰도", D: "통제력" };
+  const axisInfoKeys = { A: "dependency", B: "intimacy", C: "trust", D: "control" };
   const reasonStory = Array.isArray(card.reasonStory) ? card.reasonStory : [];
 
   return screen(
@@ -819,7 +820,7 @@ function t1ResultScreen() {
       <section class="scores t1-score-bars">
         ${axisEntries.map(([key, axis]) => {
           const score = Math.round(Number(axis.score) || 0);
-          return `<p><span><b>${axisDisplayLabels[key]}</b> <strong>${score}점 ${axis.level}</strong></span><i style="--score:${score}%"></i></p>`;
+          return `<p><span class="t1-score-meta"><span class="axis-score-label"><b>${axisDisplayLabels[key]}</b>${renderAxisInfoButton("track1", axisInfoKeys[key])}</span><strong>${score}점 ${axis.level}</strong></span><i style="--score:${score}%"></i></p>`;
         }).join("")}
       </section>
     </section>
@@ -962,30 +963,84 @@ const track2TypeDistribution = [
   { name: "AI 전략가", percentage: 15, min: 85, max: 100, className: "strategic" },
 ];
 
-const TRACK2_AXIS_INFO = {
-  task_clarity: {
-    label: "작업 명확성",
-    description: "원하는 작업을 목표·조건·범위까지 구체적으로 정의하는가",
+const TRACK_AXIS_INFO = {
+  track1: {
+    dependency: {
+      label: "의존도",
+      description: "AI가 일상·학습·업무 흐름에 얼마나 깊게 활용되고 있는가",
+    },
+    intimacy: {
+      label: "친밀도",
+      description: "AI를 단순한 도구가 아닌 대화 상대처럼 느끼는가",
+    },
+    trust: {
+      label: "신뢰도",
+      description: "AI의 답변을 얼마나 믿고 실제 판단과 행동에 활용하는가",
+    },
+    control: {
+      label: "통제욕구",
+      description: "AI에게 맡기기보다 방향·조건·형식을 직접 설계하고 주도하는가",
+    },
   },
-  context: {
-    label: "배경·맥락 설명",
-    description: "요청 전에 목적·배경·대상을 충분히 설명하는가",
+  track2: {
+    task_clarity: {
+      label: "작업 명확성",
+      description: "원하는 작업을 목표·조건·범위까지 구체적으로 정의하는가",
+    },
+    context: {
+      label: "배경·맥락 설명",
+      description: "요청 전에 목적·배경·대상을 충분히 설명하는가",
+    },
+    role: {
+      label: "역할 지정",
+      description: "AI에게 구체적인 전문가 역할이나 페르소나를 부여하는가",
+    },
+    output_format: {
+      label: "출력 형식 지정",
+      description: "원하는 형식·길이·톤을 사전에 명시하는가",
+    },
+    iteration: {
+      label: "반복 개선 능력",
+      description: "답변이 기대와 다를 때 정확히 짚어 수정 요청하는가",
+    },
+    critical_review: {
+      label: "비판적 검토",
+      description: "AI 답변을 그대로 수용하지 않고 검증·반박하는가",
+    },
   },
-  role: {
-    label: "역할 지정",
-    description: "AI에게 구체적인 전문가 역할이나 페르소나를 부여하는가",
-  },
-  output_format: {
-    label: "출력 형식 지정",
-    description: "원하는 형식·길이·톤을 사전에 명시하는가",
-  },
-  iteration: {
-    label: "반복 개선 능력",
-    description: "답변이 기대와 다를 때 정확히 짚어 수정 요청하는가",
-  },
-  critical_review: {
-    label: "비판적 검토",
-    description: "AI 답변을 그대로 수용하지 않고 검증·반박하는가",
+  track3: {
+    goal_definition: {
+      label: "목표 정의 능력",
+      description: "수행해야 할 과업의 목적과 기대 결과를 구체적으로 명시하는가",
+    },
+    context: {
+      label: "맥락 제공 능력",
+      description: "과업 수행에 필요한 배경정보, 참고자료 및 제약조건을 충분히 제공하는가",
+    },
+    information_structure: {
+      label: "정보 구조화 능력",
+      description: "지시사항과 본문을 구분하고, 내용을 논리적인 구조와 우선순위로 제시하는가",
+    },
+    task_decomposition: {
+      label: "작업 분해 능력",
+      description: "복합적인 과업을 실행 가능한 하위 단계로 체계적으로 분해하는가",
+    },
+    output_design: {
+      label: "출력 설계 능력",
+      description: "결과물의 형식, 분량, 어조, 구성 및 예시를 명확히 지정하는가",
+    },
+    interaction_control: {
+      label: "상호작용 조율 능력",
+      description: "AI의 응답을 바탕으로 핵심 방향을 신속하고 구체적으로 조정하는가",
+    },
+    verification: {
+      label: "검증 유도 능력",
+      description: "오류 가능성, 반대 근거, 누락 요소 및 보완점을 점검하도록 요청하는가",
+    },
+    practical_application: {
+      label: "실무 적용 능력",
+      description: "산출물이 실제 업무·학습 맥락에서 즉시 활용 가능한 수준으로 완성되었는가",
+    },
   },
 };
 
@@ -1067,7 +1122,6 @@ function t2ResultScreen() {
         <button class="cta secondary" type="button" data-share-open="track2">공유하기</button>
         ${button("다른 Track 도전", "track")}
       </nav>
-      ${button("푸키 캐릭터 더 알아보기", "pooky-characters", "secondary", "t2-character-link")}
     </section>
     ${footer()}`,
     "t2-result-screen scroll-screen"
@@ -1110,34 +1164,48 @@ function renderTrack2Radar(result, interactive = true) {
 }
 
 function renderTrack2AxisLabel(key, index) {
-  const info = TRACK2_AXIS_INFO[key];
-  const tooltipId = `track2-axis-tooltip-${key}`;
+  const info = TRACK_AXIS_INFO.track2[key];
   return `<div class="track2-axis-label track2-axis-label-${index + 1}">
     <span>${escapeHtml(info.label)}</span>
-    <button
-      class="track2-axis-info-button"
-      type="button"
-      aria-label="${escapeHtml(info.label)} 설명 보기"
-      aria-expanded="false"
-      aria-describedby="${tooltipId}"
-    ><i aria-hidden="true">i</i></button>
-    <div class="track2-axis-tooltip" id="${tooltipId}" role="tooltip">
-      <strong>${escapeHtml(info.label)}</strong>
-      <p>${escapeHtml(info.description)}</p>
-    </div>
+    ${renderAxisInfoButton("track2", key)}
   </div>`;
 }
 
-function closeTrack2AxisTooltips(exceptButton = null) {
-  document.querySelectorAll(".track2-axis-info-button").forEach((buttonNode) => {
+function renderAxisInfoButton(trackId, axisId) {
+  const info = TRACK_AXIS_INFO[trackId]?.[axisId];
+  if (!info) return "";
+  const tooltipId = `axis-info-tooltip-${trackId}-${axisId}`;
+  return `<button
+    class="axis-info-button"
+    type="button"
+    data-axis-info-track="${trackId}"
+    data-axis-info-id="${axisId}"
+    aria-label="${escapeHtml(info.label)} 설명 보기"
+    aria-expanded="false"
+    aria-describedby="${tooltipId}"
+  ><span class="axis-info-glyph" aria-hidden="true">i</span></button>
+  <span class="axis-info-tooltip" id="${tooltipId}" role="tooltip">
+    <span class="axis-info-title">${escapeHtml(info.label)}</span>
+    <span class="axis-info-description">${escapeHtml(info.description)}</span>
+  </span>`;
+}
+
+function closeAxisInfoTooltips(exceptButton = null) {
+  document.querySelectorAll(".axis-info-button").forEach((buttonNode) => {
     if (buttonNode !== exceptButton) buttonNode.setAttribute("aria-expanded", "false");
   });
 }
 
-function toggleTrack2AxisTooltip(buttonNode) {
+function toggleAxisInfoTooltip(buttonNode) {
   const willOpen = buttonNode.getAttribute("aria-expanded") !== "true";
-  closeTrack2AxisTooltips();
+  closeAxisInfoTooltips();
   buttonNode.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) {
+    window.PookieAnalytics?.sendGaEvent("axis_info_open", {
+      track_id: buttonNode.dataset.axisInfoTrack,
+      axis_id: buttonNode.dataset.axisInfoId,
+    });
+  }
 }
 
 function t3Screens() {
@@ -1438,7 +1506,7 @@ function render() {
 
 function showScreen(name) {
   state.currentScreen = name;
-  closeTrack2AxisTooltips();
+  closeAxisInfoTooltips();
   clearQuestionErrorOutsideScreen(name);
   document.querySelectorAll(".screen").forEach((screenNode) => {
     screenNode.classList.toggle("active", screenNode.dataset.screen === name);
@@ -1598,15 +1666,15 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  const track2AxisInfoButton = event.target.closest(".track2-axis-info-button");
-  if (track2AxisInfoButton) {
+  const axisInfoButton = event.target.closest(".axis-info-button");
+  if (axisInfoButton) {
     event.preventDefault();
-    toggleTrack2AxisTooltip(track2AxisInfoButton);
+    toggleAxisInfoTooltip(axisInfoButton);
     return;
   }
 
-  if (!event.target.closest(".track2-axis-tooltip")) {
-    closeTrack2AxisTooltips();
+  if (!event.target.closest(".axis-info-tooltip")) {
+    closeAxisInfoTooltips();
   }
 
   if (event.target.closest("[data-menu-open]")) {
@@ -1794,7 +1862,7 @@ document.addEventListener("keydown", (event) => {
       closeCharacterResultDialog();
       return;
     }
-    closeTrack2AxisTooltips();
+    closeAxisInfoTooltips();
   }
 });
 

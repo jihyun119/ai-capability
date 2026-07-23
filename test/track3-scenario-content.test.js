@@ -64,8 +64,8 @@ test("Track 3 highlights only latest artifact changes with typography", () => {
 
 test("Track 3 artifact assets use their current cache versions", () => {
   const indexSource = fs.readFileSync(path.join(ROOT, "frontend/index.html"), "utf8");
-  assert.match(indexSource, /track3-desktop\.css\?v=20260721-t3-qa8/);
-  assert.match(indexSource, /track3-content-fix\.js\?v=20260723-ga4-events/);
+  assert.match(indexSource, /track3-desktop\.css\?v=20260723-weakness-title/);
+  assert.match(indexSource, /track3-content-fix\.js\?v=20260723-weakness-title/);
 });
 
 test("Track 3 displays five-level axis labels while preserving numeric progress", () => {
