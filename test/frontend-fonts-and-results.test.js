@@ -65,6 +65,6 @@ test("Track 2 intro titles explicitly use the Bold face while body typography re
     stylesSource,
     /\.t2-intro-screen \.intro-hero h1,\s*\.t2-intro-screen \.info-list article > strong\s*\{\s*font-weight: 700;/,
   );
-  assert.match(appSource, /<strong>객관식 4문항<\/strong>/);
+  assert.match(appSource, /<strong>객관식 6문항<\/strong>/);
   assert.match(appSource, /<strong>AI 답변 활용<\/strong>/);
 });

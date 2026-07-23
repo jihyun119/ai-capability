@@ -14,7 +14,7 @@ I occasionally challenge the AI when its suggestions seem inconsistent with my d
 I always specify the format I want — usually a table or bullet points with a specific length.
 `.trim();
 
-const sampleAnswers = { Q1: "D", Q2: "D", Q3: "B", Q4: "C" };
+const sampleAnswers = { Q1: "D", Q2: "D", Q3: "B", Q4: "C", Q5: "D", Q6: "D" };
 
 const result = score(sampleEssay, sampleAnswers);
 

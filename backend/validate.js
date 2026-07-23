@@ -1,7 +1,7 @@
 import { AXIS_KEYWORDS, FREQ_WORDS } from "../src/track2/constants.js";
 
 const VALID_CHOICES = new Set(["A", "B", "C", "D", "E"]);
-const MC_QUESTIONS = ["Q1", "Q2", "Q3", "Q4"];
+const MC_QUESTIONS = ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"];
 const TRACK2_PROMPT_MARKERS = [
   "look back at our entire conversation history",
   "write a single cohesive paragraph",

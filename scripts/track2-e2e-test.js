@@ -25,7 +25,7 @@ const supabase = createClient(
 
 // ── 테스트 데이터 ─────────────────────────────────────────────────────────────
 const TEST_NICKNAME = "테스트_" + Date.now();
-const TEST_ANSWERS  = { Q1: "D", Q2: "D", Q3: "B", Q4: "C" };
+const TEST_ANSWERS  = { Q1: "D", Q2: "D", Q3: "B", Q4: "C", Q5: "D", Q6: "D" };
 const TEST_FREE_TEXT = `
 I always define the goal and constraints clearly before asking Claude anything.
 I consistently provide background context and explain the purpose and audience upfront.
