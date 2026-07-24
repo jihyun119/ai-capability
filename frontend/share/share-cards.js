@@ -127,6 +127,18 @@ window.ShareCards = (() => {
   // ── Track 2 카드 ─────────────────────────────────────────────────────────
 
   function drawTrack2Card(ctx, canvas, { total, grade, axes, summary, strength, weakness }) {
+    const summaryLines = K.wrapText(ctx, summary, 840, 32, 300);
+    const strengthLines = K.wrapText(ctx, strength, 820, 24, 400);
+    const weaknessLines = K.wrapText(ctx, weakness, 820, 24, 400);
+    const summaryY = 936;
+    const summaryLineHeight = 42;
+    const summaryBottom = summaryY + (Math.max(1, summaryLines.length) - 1) * summaryLineHeight;
+    const strengthY = Math.max(1050, summaryBottom + 82);
+    const strengthHeight = track2FeedbackCardHeight(strengthLines.length);
+    const weaknessY = strengthY + strengthHeight + 36;
+    const weaknessHeight = track2FeedbackCardHeight(weaknessLines.length);
+
+    canvas.height = Math.max(theme.canvas.height, weaknessY + weaknessHeight + 80);
     fillSurface(ctx, canvas);
     drawBrandMark(ctx);
     drawCloseIcon(ctx, 958, 80, 46);
@@ -137,16 +149,30 @@ window.ShareCards = (() => {
     drawRadar(ctx, axes, 380, 378, 320);
 
     drawPill(ctx, grade, 326, 782, 428, 72, 36);
-    K.drawCenteredMultilineText(ctx, summary, 936, 840, 42, 32, 300, color.inkSoft);
-    drawFeedbackCard(ctx, 56, 1050, "Strength", "강점", strength);
-    drawFeedbackCard(ctx, 56, 1202, "Weakness", "약점", weakness);
+    drawCenteredLines(ctx, summaryLines, summaryY, summaryLineHeight, 32, 300, color.inkSoft);
+    drawFeedbackCard(ctx, 56, strengthY, strengthHeight, "Strength", "강점", strengthLines);
+    drawFeedbackCard(ctx, 56, weaknessY, weaknessHeight, "Weakness", "약점", weaknessLines);
   }
 
-  function drawFeedbackCard(ctx, x, y, labelEn, labelKo, body) {
+  function track2FeedbackCardHeight(lineCount) {
+    return Math.max(116, 108 + (Math.max(1, lineCount) - 1) * 29);
+  }
+
+  function drawCenteredLines(ctx, lines, y, lineHeight, fontSize, fontWeight, textColor) {
+    ctx.font = `${fontWeight} ${fontSize}px ${font.body}`;
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    (lines.length ? lines : [""]).forEach((line, index) => {
+      ctx.fillText(line, theme.canvas.centerX, y + index * lineHeight);
+    });
+    ctx.textAlign = "left";
+  }
+
+  function drawFeedbackCard(ctx, x, y, height, labelEn, labelKo, bodyLines) {
     ctx.fillStyle = color.surface;
-    K.roundRect(ctx, x, y, 968, 116, 16);
+    K.roundRect(ctx, x, y, 968, height, 16);
     ctx.fill();
-    strokeCard(ctx, x, y, 968, 116, 16, 3);
+    strokeCard(ctx, x, y, 968, height, 16, 3);
 
     ctx.font = `800 30px ${font.body}`;
     ctx.fillStyle = color.brand;
@@ -156,7 +182,12 @@ window.ShareCards = (() => {
     ctx.fillStyle = color.ink;
     ctx.fillText(` ${labelKo}`, x + 62 + labelWidth, y + 44);
 
-    K.drawMultilineText(ctx, body, x + 62, y + 82, 820, 29, 24, 400, color.ink, 2);
+    ctx.font = `400 24px ${font.body}`;
+    ctx.fillStyle = color.ink;
+    ctx.textAlign = "left";
+    (bodyLines.length ? bodyLines : [""]).forEach((line, index) => {
+      ctx.fillText(line, x + 62, y + 82 + index * 29);
+    });
   }
 
   const RADAR_AXIS_ORDER = ["task_clarity", "context", "role", "output_format", "iteration", "critical_review"];
