@@ -8,13 +8,6 @@
     --t3-panel: #f2f2f2;
   }
 
-  html,
-  body {
-    min-width: 1440px;
-    margin: 0;
-    background: var(--t3-white);
-  }
-
   main#app.app-shell {
     width: 100%;
     max-width: none;
