@@ -192,21 +192,16 @@ window.ShareService = (() => {
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
-    link.target = "_blank";
+    // iOS 계열은 download 속성을 무시할 수 있으므로 새 탭에서 이미지를 열되,
+    // 별도의 window.open은 호출하지 않아 한 번의 사용자 동작이 한 번만 전달되게 합니다.
+    if (isTouchShareDevice()) {
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // iOS/모바일 웹뷰는 download 속성을 무시하는 경우가 있어 새 탭으로 한 번 더 엽니다.
-    if (isTouchShareDevice()) {
-      setTimeout(() => {
-        try {
-          window.open(url, "_blank", "noopener,noreferrer");
-        } catch {
-          // 다운로드 동작은 모바일 브라우저/웹뷰 버전마다 다릅니다.
-        }
-      }, 120);
-    }
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
 
