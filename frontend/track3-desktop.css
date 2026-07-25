@@ -2017,12 +2017,11 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
   main#app.app-shell > .screen.active.t3-chat-screen {
     min-height: 100vh !important;
     min-height: 100dvh !important;
-    height: 100vh !important;
-    height: 100dvh !important;
+    height: auto !important;
     display: flex !important;
     flex-direction: column !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-mobile-flow-head {
@@ -2074,7 +2073,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-layout {
-    flex: 1 1 auto !important;
+    flex: 0 0 auto !important;
     width: var(--t3-mobile-inner) !important;
     height: auto !important;
     min-height: 0 !important;
@@ -2085,7 +2084,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
     box-sizing: border-box !important;
     border: 0 !important;
     border-radius: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     background: var(--t3-white) !important;
   }
 
@@ -2096,11 +2095,11 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
     width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
-    flex: 1 1 auto !important;
+    flex: 0 0 auto !important;
     padding: 0 !important;
     border: 0 !important;
     background: transparent !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen[data-t3-tab="brief"] .t3-chat-brief,
@@ -2113,7 +2112,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief {
     max-height: none !important;
-    overflow-y: auto !important;
+    overflow-y: visible !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-chat-brief h2 {
@@ -2226,7 +2225,7 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
   main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace {
     min-height: 0 !important;
     position: static !important;
-    overflow-y: auto !important;
+    overflow-y: visible !important;
   }
 
   main#app.app-shell > .screen.active.t3-chat-screen .t3-submit {
@@ -2274,8 +2273,8 @@ main#app.app-shell > .screen.active.t3-chat-screen .t3-workspace .t3-workspace-g
     flex: 1 1 auto !important;
     min-height: 0 !important;
     overflow-x: hidden !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
+    overflow-y: visible !important;
+    overscroll-behavior: auto !important;
     -webkit-overflow-scrolling: touch;
   }
 
