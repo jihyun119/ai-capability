@@ -67,6 +67,15 @@ test("artifact cards stay within the workspace instead of inheriting a fixed pla
   assert.match(track3Styles, /\.t3-artifact-body\s*\{[^}]*grid-auto-rows:\s*max-content\s*!important;/s);
 });
 
+test("Track 3 mobile chat uses document scrolling instead of nested viewport locks", () => {
+  assert.match(track3Styles, /\.screen\.active\.t3-chat-screen\s*\{[^}]*min-height:\s*100dvh\s*!important;[^}]*height:\s*auto\s*!important;[^}]*overflow:\s*visible\s*!important;/s);
+  assert.match(track3Styles, /\.t3-chat-layout\s*\{[^}]*flex:\s*0 0 auto\s*!important;[^}]*overflow:\s*visible\s*!important;/s);
+  assert.match(track3Styles, /\.t3-chat-layout\s*>\s*\.t3-chat-brief,[\s\S]*?overflow:\s*visible\s*!important;/);
+  assert.match(track3Styles, /\.t3-chat-brief\s*\{[^}]*overflow-y:\s*visible\s*!important;/s);
+  assert.match(track3Styles, /\.t3-workspace\s*\{[^}]*overflow-y:\s*visible\s*!important;/s);
+  assert.match(track3Styles, /\[data-t3-tab="chat"\]\s*\.t3-chat-messages\s*\{[^}]*overflow-y:\s*visible\s*!important;/s);
+});
+
 test("sending a Track 3 message clears the composer while the request is pending", () => {
   const sendStart = frontendSource.indexOf("async function sendTrack3Chat()");
   const sendEnd = frontendSource.indexOf("function persistTrack3Result", sendStart);
@@ -96,7 +105,7 @@ test("Track 3 highlights only latest artifact changes with typography", () => {
 
 test("Track 3 artifact assets use their current cache versions", () => {
   const indexSource = fs.readFileSync(path.join(ROOT, "frontend/index.html"), "utf8");
-  assert.match(indexSource, /track3-desktop\.css\?v=20260724-t1-responsive-layout/);
+  assert.match(indexSource, /track3-desktop\.css\?v=20260725-t3-mobile-scroll/);
   assert.match(indexSource, /track3-content-fix\.js\?v=20260723-weakness-title/);
 });
 
