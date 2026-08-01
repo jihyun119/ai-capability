@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 import { TRACK3_SCENARIOS } from "../src/track3/scenarios.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const frontendSource = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
+const frontendSource = fs.readFileSync(path.join(ROOT, "frontend/track3-ui.js"), "utf8");
 const scenarioSource = fs.readFileSync(path.join(ROOT, "src/track3/scenarios.js"), "utf8");
-const track3Styles = fs.readFileSync(path.join(ROOT, "frontend/track3-desktop.css"), "utf8");
+const track3Styles = fs.readFileSync(path.join(ROOT, "frontend/track3.css"), "utf8");
 const shareCardSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-cards.js"), "utf8");
 
 test("Track 3 workspace explains that the artifact keeps updating", () => {
@@ -105,8 +105,8 @@ test("Track 3 highlights only latest artifact changes with typography", () => {
 
 test("Track 3 artifact assets use their current cache versions", () => {
   const indexSource = fs.readFileSync(path.join(ROOT, "frontend/index.html"), "utf8");
-  assert.match(indexSource, /track3-desktop\.css\?v=20260725-t3-mobile-scroll/);
-  assert.match(indexSource, /track3-content-fix\.js\?v=20260723-weakness-title/);
+  assert.match(indexSource, /track3\.css\?v=20260725-t3-mobile-scroll/);
+  assert.match(indexSource, /track3-ui\.js\?v=20260723-weakness-title/);
 });
 
 test("Track 3 displays five-level axis labels while preserving numeric progress", () => {

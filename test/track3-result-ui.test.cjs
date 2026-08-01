@@ -4,8 +4,8 @@ const path = require("node:path");
 const test = require("node:test");
 
 const ROOT = path.resolve(__dirname, "..");
-const source = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
-const cssSource = fs.readFileSync(path.join(ROOT, "frontend/track3-desktop.css"), "utf8");
+const source = fs.readFileSync(path.join(ROOT, "frontend/track3-ui.js"), "utf8");
+const cssSource = fs.readFileSync(path.join(ROOT, "frontend/track3.css"), "utf8");
 const shareSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-cards.js"), "utf8");
 
 function between(start, end) {

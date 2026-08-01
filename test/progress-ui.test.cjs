@@ -26,7 +26,7 @@ function loadProgressHelpers() {
 }
 
 function loadTrack3ProgressHelper() {
-  const source = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
+  const source = fs.readFileSync(path.join(ROOT, "frontend/track3-ui.js"), "utf8");
   return extractFunctionBlock(
     source,
     "function t3TurnProgressCount",
@@ -82,7 +82,7 @@ test("Track 3 turn progress uses user turns and clamps at five", () => {
 });
 
 test("Track 3 brief, workspace, and chat titles reuse the common title class", () => {
-  const source = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
+  const source = fs.readFileSync(path.join(ROOT, "frontend/track3-ui.js"), "utf8");
   const titleUses = source.match(/<h2 class="t3-step-title">/g) || [];
 
   assert.equal(titleUses.length, 4);

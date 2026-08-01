@@ -2,6 +2,8 @@
 
 > AI를 쓰는 것과, AI를 잘 쓰는 것 사이의 간극을 진단합니다.
 
+[서비스 체험하기](https://ai-capability-green.vercel.app/) · [GitHub 저장소](https://github.com/jihyun119/ai-capability)
+
 POOKIE는 사용자의 **AI 활용 태도, 활용 습관, 실전 문제 해결 과정**을 단계적으로 분석하는 웹 기반 AI 역량 진단 서비스입니다.
 
 가볍게 참여할 수 있는 AI 관계 유형 테스트부터, 업무 상황에서의 활용 방식 분석, 직무별 인앱 채팅 기반 실전 평가까지 총 3개의 Track으로 구성되어 있습니다.
@@ -268,8 +270,8 @@ OpenAI API 키가 없는 경우에도 휴리스틱 기반 fallback 평가가 동
 │   ├── index.html
 │   ├── app.js                   # 화면 렌더링 및 클라이언트 상태 관리
 │   ├── styles.css
-│   ├── track3-desktop.css
-│   ├── track3-content-fix.js
+│   ├── track3.css
+│   ├── track3-ui.js
 │   ├── assets/
 │   ├── characters-final/
 │   ├── fonts/
@@ -293,14 +295,14 @@ OpenAI API 키가 없는 경우에도 휴리스틱 기반 fallback 평가가 동
 
 ### 요구 사항
 
-- Node.js 18 이상 권장
+- Node.js 20 이상
 - npm
 
 ### 설치
 
 ```bash
-git clone <repository-url>
-cd ai-capability-main
+git clone https://github.com/jihyun119/ai-capability.git
+cd ai-capability
 npm install
 ```
 
@@ -536,9 +538,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ## 12. 현재 상태
 
-**Status: In Progress**
+**Status: Portfolio Release**
 
-현재 저장소 기준으로 다음 기능이 구현되어 있습니다.
+핵심 진단 흐름과 배포 구성이 완성된 포트폴리오 릴리스입니다. 현재 저장소 기준으로 다음 기능이 구현되어 있습니다.
 
 - Track 1 전체 화면 흐름, 채점, 유형 결과 및 공유
 - Track 2 전체 화면 흐름, 규칙 기반 채점, 피드백 및 결과 시각화
@@ -547,7 +549,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - Supabase 응시자 및 Track별 결과 저장
 - 결과 ID 기반 조회
 - 반응형 UI 및 데스크톱 Track 3 레이아웃
-- 자동화 테스트
+- 자동화 테스트 122개
 
 향후에는 실사용 데이터를 기반으로 한 평가 기준 보정, Track 3 상대 순위 제공, 운영 분석 대시보드, 학습형 피드백 기능을 확장할 예정입니다.
 
@@ -564,4 +566,4 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ## 14. License
 
-라이선스 정책은 추후 프로젝트 운영 방침에 따라 추가할 예정입니다.
+이 저장소는 포트폴리오 열람 목적으로 공개되어 있습니다. 별도의 라이선스를 부여하지 않으며, 코드와 시각 자산의 복제·배포·상업적 이용은 허용되지 않습니다.

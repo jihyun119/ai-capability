@@ -10,6 +10,15 @@ node_modules/
 *.code-workspace
 frontend/desktop-concept.html
 
+# 로컬 개발 도구와 분석용 산출물
+.claude/
+.playwright-mcp/
+/track*-question-response-distribution.*
+/track3-architecture-figma.html
+/scripts/render_track*_response_distribution.py
+/scripts/export_track*_response_distribution.js
+/frontend/fonts/optimized/
+
 # 로컬 인증키 및 동기화 임시 산출물
 *.service-account.json
 gcp-service-account*.json

@@ -4,18 +4,15 @@
     { "source": "/", "destination": "/frontend/index.html" },
     { "source": "/analytics.js", "destination": "/frontend/analytics.js" },
     { "source": "/app.js", "destination": "/frontend/app.js" },
-    { "source": "/track3-content-fix.js", "destination": "/frontend/track3-content-fix.js" },
+    { "source": "/track3-ui.js", "destination": "/frontend/track3-ui.js" },
     { "source": "/styles.css", "destination": "/frontend/styles.css" },
-    { "source": "/track3-desktop.css", "destination": "/frontend/track3-desktop.css" },
-    { "source": "/desktop-final.css", "destination": "/frontend/desktop-final.css" },
+    { "source": "/track3.css", "destination": "/frontend/track3.css" },
     { "source": "/share/:path*", "destination": "/frontend/share/:path*" },
     { "source": "/assets/:path*", "destination": "/frontend/assets/:path*" },
     { "source": "/vendor/:path*", "destination": "/frontend/vendor/:path*" },
     { "source": "/fonts/:path*", "destination": "/frontend/fonts/:path*" },
     { "source": "/Logo/:path*", "destination": "/frontend/Logo/:path*" },
     { "source": "/characters/:path*", "destination": "/frontend/characters/:path*" },
-    { "source": "/characters-final/:path*", "destination": "/frontend/characters-final/:path*" },
-    { "source": "/캐릭터/:path*", "destination": "/frontend/캐릭터/:path*" },
-    { "source": "/캐릭터_최종/:path*", "destination": "/frontend/캐릭터_최종/:path*" }
+    { "source": "/characters-final/:path*", "destination": "/frontend/characters-final/:path*" }
   ]
 }

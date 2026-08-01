@@ -5,7 +5,7 @@ const test = require("node:test");
 
 const ROOT = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(ROOT, "frontend/app.js"), "utf8");
-const track3Source = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
+const track3Source = fs.readFileSync(path.join(ROOT, "frontend/track3-ui.js"), "utf8");
 const shareCardSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-cards.js"), "utf8");
 
 function between(text, start, end) {

@@ -5,7 +5,7 @@ const test = require("node:test");
 
 const ROOT = path.resolve(__dirname, "..");
 const appSource = fs.readFileSync(path.join(ROOT, "frontend/app.js"), "utf8");
-const track3Source = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
+const track3Source = fs.readFileSync(path.join(ROOT, "frontend/track3-ui.js"), "utf8");
 const shareSource = fs.readFileSync(path.join(ROOT, "frontend/share/share-service.js"), "utf8");
 const indexSource = fs.readFileSync(path.join(ROOT, "frontend/index.html"), "utf8");
 
@@ -13,7 +13,7 @@ test("analytics loads once before the shared service and application scripts", (
   const analyticsIndex = indexSource.indexOf("./analytics.js");
   const shareIndex = indexSource.indexOf("./share/share-service.js");
   const appIndex = indexSource.indexOf("./app.js");
-  const track3Index = indexSource.indexOf("./track3-content-fix.js");
+  const track3Index = indexSource.indexOf("./track3-ui.js");
 
   assert.notEqual(analyticsIndex, -1);
   assert.ok(analyticsIndex < shareIndex);

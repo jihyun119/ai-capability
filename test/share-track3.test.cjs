@@ -269,7 +269,7 @@ test("Track 3 share card is removed and AbortError stays a cancellation without 
 });
 
 test("Track 3 result handler restores the button and suppresses AbortError UI", () => {
-  const source = fs.readFileSync(path.join(ROOT, "frontend/track3-content-fix.js"), "utf8");
+  const source = fs.readFileSync(path.join(ROOT, "frontend/track3-ui.js"), "utf8");
   const handlerStart = source.indexOf("async function shareT3Result");
   const handlerEnd = source.indexOf('document.addEventListener("click"', handlerStart);
   const handler = source.slice(handlerStart, handlerEnd);
