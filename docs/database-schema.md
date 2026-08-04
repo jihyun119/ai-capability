@@ -1,18 +1,14 @@
-# (New) 테이블 구조
+# Database Schema Design Notes
 
-상태: 진행 중
+POOKIE의 초기 Track 1·2 MVP 데이터 구조와 API 스키마를 정리한 설계 기록입니다.
 
-![image.png]((New)%20%ED%85%8C%EC%9D%B4%EB%B8%94%20%EA%B5%AC%EC%A1%B0/image.png)
+현재 서비스에는 Track 3와 Vercel Serverless API가 추가되어 있으므로, 실제 저장 payload와 API 동작의 기준은 [`backend/db.js`](../backend/db.js) 및 각 Track의 API 핸들러입니다. 현재 운영 테이블은 다음과 같습니다.
 
-```
-로그인 없음
-닉네임 기반 임시 응시자 사용
-프론트는 GitHub Pages
-DB는 Supabase
-백엔드는 Supabase Edge Functions
-Track 1, Track 2만 MVP 포함
-Track 3는 제외
-```
+- `respondents`
+- `track1_results`
+- `track2_results`
+- `track3_results`
+- `diagnosis_answers`
 
 ---
 

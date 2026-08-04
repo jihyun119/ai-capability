@@ -24,7 +24,7 @@ TABLE_PRIMARY_KEYS = {
     "track3_results": "result_id",
 }
 
-# 저장소의 backend/db.js payload와 (New) 테이블 구조.md를 기준으로 정리했다.
+# 저장소의 backend/db.js payload와 docs/database-schema.md를 기준으로 정리했다.
 # 실제 Supabase 스키마에 아래 컬럼이 없어도 무시되며, 새 컬럼은 기본적으로 동기화된다.
 EXCLUDED_COLUMNS = {
     "respondents": {
